@@ -1,3 +1,32 @@
+.card {
+  border: 1px solid #ccc; }
+
+.buttons_row {
+  margin-top: 23px; }
+  .buttons_row button {
+    border-radius: 0;
+    font-size: 12px; }
+    .buttons_row button.save {
+      background: #099CBE;
+      color: #fff; }
+  .buttons_row .clear {
+    border: 1px solid #099CBE;
+    border: 1px solid #099CBE;
+    border-radius: 0;
+    color: #099CBE;
+    font-size: 12px; }
+  .buttons_row.form_btn_row {
+    display: block; }
+
+.table-responsive {
+  padding: 10px; }
+
+select.form-control {
+  height: 32px !important; }
+
+.mar-top {
+  margin-top: 15px; }
+
 body {
   font-family: Poppins, sans-serif;
   padding: 0;
@@ -77,37 +106,48 @@ body {
 .main_body_bg_color {
   background: #CDCDCD; }
 
-header .navbar-default {
+header .navbar {
   background: #39464d;
   border: none; }
-  header .navbar-default .navbar-brand {
+  header .navbar .navbar-brand {
     color: #ed6364; }
-    header .navbar-default .navbar-brand:hover {
+    header .navbar .navbar-brand:hover {
       color: #ed6364; }
-  header .navbar-default .navbar-nav > li > a {
+  header .navbar .navbar-nav > li > a {
     color: #aaa;
     font-weight: 500;
     font-size: 12px;
     padding: 15px 10px; }
-    header .navbar-default .navbar-nav > li > a:hover {
+    @media (min-width: 240px) and (max-width: 767px) {
+      header .navbar .navbar-nav > li > a {
+        padding: 5px 10px; } }
+    header .navbar .navbar-nav > li > a:hover {
       color: #ddd; }
-  header .navbar-default .navbar-nav > .open > a {
+  header .navbar .navbar-nav > .open > a {
     background: #ed6364 !important; }
-  header .navbar-default .navbar-nav li .dropdown-menu li a {
+  header .navbar .navbar-nav li .dropdown-toggle img {
+    width: 25px;
+    height: 25px; }
+  header .navbar .navbar-nav li .dropdown-menu a {
     font-size: 12px; }
-  header .navbar-default .navbar-nav.navbar-right .dropdown > a {
+  header .navbar .navbar-nav.navbar-right .dropdown .dropdown-toggle img {
+    width: 25px;
+    height: 25px; }
+  header .navbar .navbar-nav.navbar-right .dropdown > a {
     background: #657b88;
     color: #fff;
     border-right: 1px solid #718895; }
-  header .navbar-default .navbar-form .form-group .form-control {
+    header .navbar .navbar-nav.navbar-right .dropdown > a.nav-link {
+      padding: 0.5rem; }
+  header .navbar .navbar-form .form-group .form-control {
     border-radius: 3px;
     border: none; }
-  header .navbar-default .navbar-form .btn {
+  header .navbar .navbar-form .btn {
     border-radius: 3px;
     padding: 7px 12px;
     border: none;
     background: #41B871; }
-    header .navbar-default .navbar-form .btn.btn-default {
+    header .navbar .navbar-form .btn.btn-default {
       color: #fff; }
 
 /* inner_pages ends here */
@@ -168,23 +208,27 @@ header .navbar-default {
 
 /* main_container stats here  */
 .main_container {
+  padding-top: 10px;
   /* filter_row starts here */
   /* filter_row ends here */
   /* table_container_row starts here */ }
   .main_container .heading_create .heading {
-    font-size: 16px;
+    font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 1px;
     color: #39464d;
     font-weight: 600; }
+    .main_container .heading_create .heading h4 {
+      font-size: 15px; }
   .main_container .heading_create .create_new a {
     background: #ed6364;
     color: #fff;
     font-size: 12px;
     font-weight: 500;
-    text-transform: uppercase;
+    text-transform: capitalize;
+    letter-spacing: initial;
     display: inline-block;
-    padding: 10px 10px 7px 10px; }
+    padding: 5px 10px 3px 10px; }
   .main_container .heading_create .search-row .form-group .input-group .left-dropdown .filters-button {
     font-size: 12px;
     background: #fff;
@@ -225,69 +269,89 @@ header .navbar-default {
   .main_container .heading_create .search-row .dropdown-menu {
     font-size: 12px; }
   .main_container .filter_row, .main_container .assigned_teams, .main_container .overview_form_block, .main_container .details_block, .main_container .attendees {
-    margin-top: 0px; }
-    .main_container .filter_row .panel .panel-heading, .main_container .assigned_teams .panel .panel-heading, .main_container .overview_form_block .panel .panel-heading, .main_container .details_block .panel .panel-heading, .main_container .attendees .panel .panel-heading {
-      text-transform: uppercase; }
-    .main_container .filter_row .panel .panel-content, .main_container .assigned_teams .panel .panel-content, .main_container .overview_form_block .panel .panel-content, .main_container .details_block .panel .panel-content, .main_container .attendees .panel .panel-content {
-      padding: 10px 0; }
-      .main_container .filter_row .panel .panel-content .form-group, .main_container .assigned_teams .panel .panel-content .form-group, .main_container .overview_form_block .panel .panel-content .form-group, .main_container .details_block .panel .panel-content .form-group, .main_container .attendees .panel .panel-content .form-group {
-        margin-bottom: 10px; }
-        .main_container .filter_row .panel .panel-content .form-group label, .main_container .assigned_teams .panel .panel-content .form-group label, .main_container .overview_form_block .panel .panel-content .form-group label, .main_container .details_block .panel .panel-content .form-group label, .main_container .attendees .panel .panel-content .form-group label {
-          color: #5a6e79;
-          font-size: 12px;
-          font-weight: 500; }
-        .main_container .filter_row .panel .panel-content .form-group .form-control, .main_container .assigned_teams .panel .panel-content .form-group .form-control, .main_container .overview_form_block .panel .panel-content .form-group .form-control, .main_container .details_block .panel .panel-content .form-group .form-control, .main_container .attendees .panel .panel-content .form-group .form-control {
-          border-radius: 0;
-          box-shadow: none;
-          font-size: 12px; }
+    margin-top: 10px; }
+    .main_container .filter_row .card, .main_container .assigned_teams .card, .main_container .overview_form_block .card, .main_container .details_block .card, .main_container .attendees .card {
+      border: 1px solid #ccc; }
+      .main_container .filter_row .card .card-body, .main_container .assigned_teams .card .card-body, .main_container .overview_form_block .card .card-body, .main_container .details_block .card .card-body, .main_container .attendees .card .card-body {
+        padding: 0px 0; }
+        .main_container .filter_row .card .card-body .card-title, .main_container .assigned_teams .card .card-body .card-title, .main_container .overview_form_block .card .card-body .card-title, .main_container .details_block .card .card-body .card-title, .main_container .attendees .card .card-body .card-title {
+          background: #e5e5e5;
+          padding: 6px 10px;
+          font-size: 13px; }
+        .main_container .filter_row .card .card-body .form-group, .main_container .assigned_teams .card .card-body .form-group, .main_container .overview_form_block .card .card-body .form-group, .main_container .details_block .card .card-body .form-group, .main_container .attendees .card .card-body .form-group {
+          margin-bottom: 10px; }
+          .main_container .filter_row .card .card-body .form-group label, .main_container .assigned_teams .card .card-body .form-group label, .main_container .overview_form_block .card .card-body .form-group label, .main_container .details_block .card .card-body .form-group label, .main_container .attendees .card .card-body .form-group label {
+            color: #5a6e79;
+            font-size: 12px;
+            font-weight: 500; }
+          .main_container .filter_row .card .card-body .form-group .form-control, .main_container .assigned_teams .card .card-body .form-group .form-control, .main_container .overview_form_block .card .card-body .form-group .form-control, .main_container .details_block .card .card-body .form-group .form-control, .main_container .attendees .card .card-body .form-group .form-control {
+            border-radius: 0;
+            box-shadow: none;
+            font-size: 12px; }
 
 /* main_container ends here */
 .table_container_row {
   margin-top: 10px;
   /* mail_menu starts here */
   /* mail_menu ends here */ }
-  .table_container_row .panel-default .panel-heading {
-    padding: 5px 10px; }
-    .table_container_row .panel-default .panel-heading .dropdown {
+  .table_container_row .card .card-title {
+    padding: 5px 10px;
+    background: #e5e5e5;
+    padding: 6px 10px;
+    font-size: 13px;
+    margin-bottom: 0; }
+    .table_container_row .card .card-title .dropdown {
       display: inline-block; }
-      .table_container_row .panel-default .panel-heading .dropdown .dropdown-toggle {
+      .table_container_row .card .card-title .dropdown .dropdown-toggle {
         background: #099CBE;
         font-size: 12px;
         color: #fff;
         border-radius: 0;
         border: none; }
-    .table_container_row .panel-default .panel-heading .mark_read {
+    .table_container_row .card .card-title .mark_read {
       background: #CDCDCD;
       display: inline-block;
       padding: 6px 10px;
       margin-left: 6px;
       color: #5a6e79; }
-      .table_container_row .panel-default .panel-heading .mark_read:hover {
+      .table_container_row .card .card-title .mark_read:hover {
         background: #5a6e79;
         color: #fff;
         text-decoration: none; }
-    .table_container_row .panel-default .panel-heading .total_count {
-      margin-top: 5px; }
-  .table_container_row .panel-content {
-    padding: 15px; }
-    .table_container_row .panel-content table thead tr th {
+    .table_container_row .card .card-title .total_count {
+      margin-top: 0px; }
+  .table_container_row .card-body {
+    padding: 0px 0px; }
+    .table_container_row .card-body table thead tr th {
       background: #5b646d;
       color: #fff;
       font-weight: 500;
       /* text-transform: uppercase; */
       font-size: 12px;
-      border: none; }
-    .table_container_row .panel-content table tbody tr td {
+      border: none;
+      padding: 6px; }
+    .table_container_row .card-body table tbody tr td {
       vertical-align: middle;
-      color: #5b636d;
+      color: #454545;
       font-size: 12px;
-      font-weight: 500; }
-      .table_container_row .panel-content table tbody tr td .dropdown .dropdown-toggle {
+      font-weight: 400;
+      padding: 7px 0; }
+      .table_container_row .card-body table tbody tr td a {
+        color: #454545; }
+      .table_container_row .card-body table tbody tr td .dropdown .dropdown-toggle {
         background: #099CBE;
         font-size: 12px;
         color: #fff;
         border-radius: 0;
         border: none; }
+      .table_container_row .card-body table tbody tr td.actions .btn {
+        border-radius: 0;
+        font-size: 12px;
+        padding: 3px 5px;
+        color: #fff; }
+        .table_container_row .card-body table tbody tr td.actions .btn svg {
+          display: inline-block;
+          margin-right: 5px; }
   .table_container_row .mail_menu .panel {
     border-radius: 0;
     padding: 0;
@@ -324,6 +388,8 @@ header .navbar-default {
 .breadcrumb {
   margin: 0;
   background: none; }
+  .breadcrumb .breadcrumb-item a {
+    color: #099CBE; }
 
 .breadcrumb > li + li:before {
   color: #5a6e79; }
@@ -337,6 +403,24 @@ header .navbar-default {
 /* overview_form_block starts here */
 .overview_form_block {
   margin-top: 0; }
+  .overview_form_block .card-title {
+    height: 45px; }
+    .overview_form_block .card-title h5 {
+      margin-bottom: 0;
+      position: relative;
+      top: 10px;
+      font-size: 13px; }
+    .overview_form_block .card-title .dropdown .dropdown-menu li a {
+      font-size: 0.85rem;
+      color: #454545;
+      text-transform: capitalize !important;
+      font-weight: 400;
+      display: block;
+      padding: 5px 8px; }
+  .overview_form_block .buttons_row {
+    margin: 0;
+    position: relative;
+    top: -10px; }
   .overview_form_block .form-control {
     border-radius: 0;
     box-shadow: none;
@@ -373,14 +457,10 @@ header .navbar-default {
       background: #099CBE;
       color: #fff; }
 
-.nav>li>a>img {
-    max-width: none;
-    width: 20px;
-    height: 20px;
-}
-
 /* details_block ends here */
 /* attendees starts here */
 /* attendees ends here */
+.case-list-container {
+  margin-bottom: 15px; }
 
 /*# sourceMappingURL=main.css.map */

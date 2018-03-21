@@ -1,3 +1,30 @@
+.card {
+  border: 1px solid #ccc; }
 
+.buttons_row {
+  margin-top: 23px; }
+  .buttons_row button {
+    border-radius: 0;
+    font-size: 12px; }
+    .buttons_row button.save {
+      background: #099CBE;
+      color: #fff; }
+  .buttons_row .clear {
+    border: 1px solid #099CBE;
+    border: 1px solid #099CBE;
+    border-radius: 0;
+    color: #099CBE;
+    font-size: 12px; }
+  .buttons_row.form_btn_row {
+    display: block; }
+
+.table-responsive {
+  padding: 10px; }
+
+select.form-control {
+  height: 32px !important; }
+
+.mar-top {
+  margin-top: 15px; }
 
 /*# sourceMappingURL=ref.css.map */
