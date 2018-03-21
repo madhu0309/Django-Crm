@@ -4,7 +4,6 @@ Python 3.4:
     - virtualenv -p python3 env
     - source env/bin/activate
     - pip install -r requirements.txt
-    - pip install redis
     - python manage.py test
     - coverage run --source=accounts,cases,common,contacts,emails,leads,opportunity,planner  manage.py test
     - coverage report -m
