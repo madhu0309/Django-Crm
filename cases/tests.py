@@ -6,6 +6,7 @@ from django.test import Client
 from common.models import Address
 from django.core.urlresolvers import reverse
 from common.models import User
+from django.utils import timezone
 
 
 class CaseCreation(object):
@@ -16,6 +17,8 @@ class CaseCreation(object):
         self.user = User.objects.create(first_name="raghu", username='raghu', email='r@mp.com')
         self.user.set_password('raghu')
         self.user.save()
+        self.client.login(email='r@mp.com', password='raghu')
+
 
         self.client.login(email='r@mp.com', password='raghu')
 

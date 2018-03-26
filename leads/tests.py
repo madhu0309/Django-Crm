@@ -1,5 +1,9 @@
 from django.test import TestCase
 from django.test import Client
+<<<<<<< HEAD
+=======
+# from django.contrib.auth.models import User
+>>>>>>> 3b01386b77046bcea421397086b0f3a7a73aa702
 from leads.models import Lead
 from common.models import Address, User
 from accounts.models import Account
@@ -9,11 +13,11 @@ class TestLeadModel(object):
     def setUp(self):
         self.client = Client()
 
-        self.user = User.objects.create(first_name="anjali", username='anjali', email="a@mp.com")
-        self.user.set_password('anjali123')
+        self.user = User.objects.create(username='uday', email='u@mp.com')
+        self.user.set_password('uday2293')
         self.user.save()
 
-        self.client.login(username='a@mp.com', password='anjali123')
+        self.client.login(username='u@mp.com', password='uday2293')
 
         self.address = Address.objects.create(street="Gokul enclave colony",
                                               city="Hasthinapuram",
@@ -32,7 +36,8 @@ class TestLeadModel(object):
                                                   created_by=self.user)
 
         self.lead = Lead.objects.create(title="LeadCreation",
-                                        first_name="kotha",
+                                        first_name="anjali",
+                                        last_name="k",
                                         email="anjalikotha1993@gmail.com",
                                         account=self.account,
                                         address=self.address,
@@ -133,7 +138,8 @@ class LeadsViewTestCase(TestLeadModel, TestCase):
 
     def test_leads_view(self):
         Lead.objects.create(title="LeadCreationbylead",
-                            first_name="kotha",
+                            first_name="anjali",
+                            last_name="k",
                             email="srilathakotha1993@gmail.com",
                             account=self.account,
                             address=self.address,

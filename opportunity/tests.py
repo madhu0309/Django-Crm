@@ -4,6 +4,7 @@ from common.models import Address
 from accounts.models import Account
 from contacts.models import Contact
 from common.models import User
+from django.utils import timezone
 
 
 # Create your tests here.
@@ -30,11 +31,13 @@ class OpportunityModel(object):
 
         self.contacts = Contact.objects.create(
             first_name="navi",
+            last_name="s",
             email="navi@gmail.com", phone="8547",
             account=self.account,
             description="defyj",
             address=self.address,
             created_by=self.user)
+<<<<<<< HEAD
 
         self.opportunity = Opportunity.objects.create(
             name="madhurima", amount="478",

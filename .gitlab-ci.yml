@@ -1,0 +1,12 @@
+Python 3.4:
+    script:
+    - export PY_EXE=python3.4
+    - virtualenv -p python3 env
+    - source env/bin/activate
+    - ipaddr
+    - pip install -r requirements.txt
+    - python manage.py test
+    - coverage run --source=accounts,cases,common,contacts,emails,leads,opportunity,planner  manage.py test
+    - coverage report -m
+    except:
+    - tags
