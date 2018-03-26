@@ -22,7 +22,6 @@ def profile(request):
 
 @csrf_exempt
 def login_crm(request):
-    print('login')
     if request.user.is_authenticated():
         return HttpResponseRedirect('/')
     if request.method == 'POST':
