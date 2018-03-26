@@ -1,9 +1,4 @@
-from django.test import TestCase
-from django.test import Client
-<<<<<<< HEAD
-=======
-# from django.contrib.auth.models import User
->>>>>>> 3b01386b77046bcea421397086b0f3a7a73aa702
+from django.test import TestCase, Client
 from leads.models import Lead
 from common.models import Address, User
 from accounts.models import Account

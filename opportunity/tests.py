@@ -37,7 +37,6 @@ class OpportunityModel(object):
             description="defyj",
             address=self.address,
             created_by=self.user)
-<<<<<<< HEAD
 
         self.opportunity = Opportunity.objects.create(
             name="madhurima", amount="478",
