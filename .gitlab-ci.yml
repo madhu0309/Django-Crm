@@ -15,10 +15,10 @@ deploy_live:
   environment:
     name: live
   script:
-    - sudo /bin/rm -rf /home/django_crm/django_crm/; cp -r . /home/django_crm/django_crm
-    - source /home/django_crm/env/bin/activate
-    - pip install -r /home/django_crm/django_crm/requirements.txt
-    - python /home/django_crm/django_crm/manage.py migrate --noinput
+    - sudo /bin/rm -rf /home/dj_crm/dj_crm/; cp -r . /home/dj_crm/dj_crm
+    - source /home/dj_crm/env/bin/activate
+    - pip install -r /home/dj_crm/django_crm/requirements.txt
+    - python /home/dj_crm/dj_crm/manage.py migrate --noinput
     - sudo /etc/init.d/uwsgi restart
     - sudo /usr/bin/supervisorctl restart all
   only:
