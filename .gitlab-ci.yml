@@ -10,3 +10,19 @@ Python 3.4:
     - coverage report -m
     except:
     - tags
+
+deploy_live:
+  stage: deploy
+  environment:
+    name: live
+  script:
+    - sudo /bin/rm -rf /home/django_crm/django_crm/; cp -r . /home/django_crm/django_crm
+    - source /home/django_crm/env/bin/activate
+    - pip install -r /home/django_crm/django_crm/requirements.txt
+    - python /home/django_crm/django_crm/manage.py migrate --noinput
+    - sudo /etc/init.d/uwsgi restart
+    - sudo /usr/bin/supervisorctl restart all
+  only:
+    - master
+  tags:
+    - github-crm
