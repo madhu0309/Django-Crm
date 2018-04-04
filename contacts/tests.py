@@ -3,7 +3,7 @@ from contacts.models import Contact
 from accounts.models import Account
 from common.models import Address, User
 from django.test import Client
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 
 class ContactObjectsCreation(object):

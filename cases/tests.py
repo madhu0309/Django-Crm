@@ -4,7 +4,7 @@ from contacts.models import Contact
 from accounts.models import Account
 from django.test import Client
 from common.models import Address
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from common.models import User
 from django.utils import timezone
 
