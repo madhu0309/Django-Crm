@@ -1,20 +1,24 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
 {% block breadcrumb %}
+<nav aria-label="breadcrumb">
   <ol class="breadcrumb">
-    <li><a href="{%  url 'accounts:list' %}">Accounts</a></li>
-    <li class="active">Create</li>
+    <li class="breadcrumb-item"><a href="{% url 'accounts:list' %}">Accounts</a></li>
+    <li class="breadcrumb-item active">Create</li>
   </ol>
+</nav>
+
 {% endblock %}
 {% block content %}
   <form id="formid" action='' method="POST" novalidate>{% csrf_token %}
-    <div class="assigned_teams ro marl">
+    <!-- <div class="assigned_teams ro marl">
       <div class="col-md-12">
-        <div class="panel panel-default">
-          <div class="panel-heading">
+        <div class="card">
+          <div class="card-body">
+          <div class="card-title">
             Assigned Users & Teams
           </div>
-          <div class="panel-content">
+          <div class="row marl">
             <div class="filter_col col-md-6">
               <div class="form-group">
                 <label for="exampleInputEmail1">Assigned Users</label>
@@ -31,122 +35,131 @@
             </div>
             <br clear="all">
           </div>
+          </div>
         </div>
       </div>
       <br clear="all">
-    </div>
-    <!-- assigned users & teams ends here -->
+    </div> -->
     <!-- overview starts here -->
-    <div class="overview_form_block row marl">
+    <div class="overview_form_block row marl ">
       <div class="col-md-12">
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            Overview
+        <div class="card">
+          
+          <div class="card-body">
+          <div class="card-title text-center">
+            CREATE ACCOUNT
           </div>
-          <div class="panel-content">
             <div class="row marl">
               <div class="col-md-6">
                 <div class="filter_col col-md-12">
                   <div class="form-group">
-                    <label for="exampleInputEmail1" class="required">Name</label>
+                    <label for="exampleInputEmail1" class="required">Name{% if account_form.name.field.required %}<span class="error">*</span>{% endif %}</label>
                     {{ account_form.name }}
-                    {{ account_form.name.errors }}
+                    <span class="error">{{ account_form.name.errors }}</span>
                   </div>
                 </div>
                 <div class="filter_col col-md-12">
                   <div class="form-group">
-                    <label for="exampleInputEmail1">Website</label>
+                    <label for="exampleInputEmail1">Website{% if account_form.website.field.required %}<span class="error">*</span>{% endif %}</label>
                     {{ account_form.website }}
-                    {{ account_form.website.errors }}
+                    <span class="error">{{ account_form.website.errors }}</span>
                   </div>
                 </div>
                 <div class="filter_col col-md-12">
                   <div class="form-group">
-                    <label for="exampleInputEmail1" class="required">Phone</label>
+                    <label for="exampleInputEmail1" class="required">Phone{% if account_form.phone.field.required %}<span class="error">*</span>{% endif %}</label>
                     {{ account_form.phone }}
-                    {{ account_form.phone.errors }}
+                    <span class="error">{{ account_form.phone.errors }}</span>
                   </div>
                 </div>
                 <div class="filter_col col-md-12">
                   <div class="form-group ">
-                    <label for="exampleInputEmail1" class="required">Email Address</label>
+                    <label for="exampleInputEmail1" class="required">Email Address{% if account_form.email.field.required %}<span class="error">*</span>{% endif %}</label>
                     {{ account_form.email }}
-                    {{ account_form.email.errors }}
+                    <span class="error">{{ account_form.email.errors }}</span>
                   </div>
                 </div>
                 <div class="filter_col col-md-12">
                   <div class="form-group">
-                    <label for="exampleInputEmail1">Industry</label>
+                    <label for="exampleInputEmail1">Industry{% if account_form.industry.field.required %}<span class="error">*</span>{% endif %}</label>
                     {{ account_form.industry }}
-                    {{ account_form.industry.errors }}
+                    <span class="error">{{ account_form.industry.errors }}</span>
                   </div>
                 </div>
                 <div class="filter_col col-md-12">
                   <div class="form-group">
-                    <label for="exampleInputEmail1">Description</label>
+                    <label for="exampleInputEmail1">Description{% if account_form.description.field.required %}<span class="error">*</span>{% endif %}</label>
                     {{ account_form.description }}
-                    {{ account_form.description.errors }}
+                    <span class="error">{{ account_form.description.errors }}</span>
                   </div>
                 </div>
               </div>
               <div class="col-md-6">
+                <div class="filter_col col-12">
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">Assigned Users</label>
+                    {{ account_form.assigned_to }}
+                    {{ account_form.assigned_to.errors }}
+                  </div>
+                </div>
+                <br>
                 <div class="filter_col billing_block col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Billing Address</label>
                     {{ billing_form.address_line }}
-                    {{ billing_form.address_line.errors }}
+                    <span class="error">{{ billing_form.address_line.errors }}</span>
                   </div>
                     {{ billing_form.street }}
-                    {{ billing_form.street.errors }}
+                    <span class="error">{{ billing_form.street.errors }}</span>
                   <div class="row" style="margin-top: 10px;">
                     <div class="col-md-4">
                       {{ billing_form.city }}
-                      {{ billing_form.city.errors }}
+                      <span class="error">{{ billing_form.city.errors }}</span>
                     </div>
                     <div class="col-md-4">
                       {{ billing_form.state }}
-                      {{ billing_form.state.errors }}
+                      <span class="error">{{ billing_form.state.errors }}</span>
                     </div>
                     <div class="col-md-4">
                       {{ billing_form.postcode }}
-                      {{ billing_form.postcode.errors }}
+                      <span class="error">{{ billing_form.postcode.errors }}</span>
                     </div>
                     <div class="col-md-12" style="margin-top: 10px;">
                       {{ billing_form.country }}
-                      {{ billing_form.country.errors }}
+                      <span class="error">{{ billing_form.country.errors }}</span>
                     </div>
                   </div>
                 </div>
                 <div>
                   <h6 style="color:white;">Copy Address</h6>
                 </div>
-                <div class="col-md-12" style="text-align:center;">
-                  <button type="button" id="copy_billing_btn" class="btn btn-primary">Copy Billing Address</button>
+                <div class="col-md-12 buttons_row" style="text-align:center;">
+                  <button type="button" id="copy_billing_btn" class="btn btn-primary save">Copy Billing Address</button>
                 </div>
                 <div class="filter_col shipping_block col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Shipping Address</label>
                     {{ shipping_form.address_line }}
-                    {{ shipping_form.address_line.errors }}
+                    <span class="error">{{ shipping_form.address_line.errors }}</span>
                   </div>
                     {{ shipping_form.street }}
-                    {{ shipping_form.street.errors }}
+                    <span class="error">{{ shipping_form.street.errors }}</span>
                   <div class="row" style="margin-top: 10px;">
                     <div class="col-md-4">
                       {{ shipping_form.city }}
-                      {{ shipping_form.city.errors }}
+                      <span class="error">{{ shipping_form.city.errors }}</span>
                     </div>
                     <div class="col-md-4">
                       {{ shipping_form.state }}
-                      {{ shipping_form.state.errors }}
+                      <span class="error">{{ shipping_form.state.errors }}</span>
                     </div>
                     <div class="col-md-4">
                       {{ shipping_form.postcode }}
-                      {{ shipping_form.postcode.errors }}
+                      <span class="error">{{ shipping_form.postcode.errors }}</span>
                     </div>
                     <div class="col-md-12" style="margin-top: 10px;">
                       {{ shipping_form.country }}
-                      {{ shipping_form.country.errors }}
+                      <span class="error">{{ shipping_form.country.errors }}</span>
                     </div>
                   </div>
                 </div>
@@ -160,12 +173,12 @@
       <input type="hidden" id="save_new_form" name="savenewform">
     </div>
     <!-- overview ends here -->
-    <div class="row marl buttons_row text-center">
+    <div class="row marl buttons_row text-center form_btn_row">
       <button class="btn btn-default save" type="submit">Save</button>
       {% if not account_obj %}
-        <button class="btn btn-success save savenew" type="submit">Save & New</button>
+        <button class="btn btn-default save " type="submit">Save & New</button>
       {% endif %}
-      <a href="{% url 'accounts:list' %}" class="btn btn-default">CANCEL</a>
+      <a href="{% url 'accounts:list' %}" class="btn btn-default clear">CANCEL</a>
     </div>
   </form>
 {% endblock %}

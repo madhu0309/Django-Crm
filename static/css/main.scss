@@ -100,7 +100,7 @@ box-shadow: 10px 10px 0px -4px rgba(0,0,0,0.19);
   background: $inner_page_bg;
 }
 header{
-  .navbar-default{
+  .navbar{
     background: darken($text_color, 15%);
     border:none;
     .navbar-brand{
@@ -116,6 +116,9 @@ header{
           font-weight: 500;
           font-size: 12px;
           padding:15px 10px;
+          @media(min-width: $mob_min) and (max-width: $smob_max) {
+            padding:5px 10px;
+          }
           &:hover{
             color:#ddd;
           }
@@ -128,20 +131,33 @@ header{
         }
       }
       li{
-        .dropdown-menu{
-          li{
-            a{
-              font-size: 12px;
+         .dropdown-toggle{
+            img{
+              width: 25px;
+              height: 25px;
             }
           }
+        .dropdown-menu{
+            a{
+              font-size: 12px;
+           }
         }
       }
       &.navbar-right{
         .dropdown{
+           .dropdown-toggle{
+            img{
+              width: 25px;
+              height: 25px;
+            }
+          }
           >a{
             background:lighten($text_color,5%);
             color: #fff;
             border-right:1px solid lighten($text_color,10%);
+            &.nav-link{
+              padding:0.5rem;
+            }
           }
         }
       }
@@ -230,13 +246,17 @@ $color_2: #000;
 
 /* main_container stats here  */
 .main_container{
+  padding-top: 10px;
   .heading_create{
     .heading{
-      font-size: 16px;
+      font-size: 14px;
       text-transform: uppercase;
       letter-spacing: 1px;
       color: darken($text_color, 15%);
       font-weight: 600;
+      h4{
+        font-size: 15px;
+      }
     }
     .create_new{
      a{
@@ -244,9 +264,10 @@ $color_2: #000;
         color: #fff;
         font-size: 12px;
         font-weight: 500;
-        text-transform: uppercase;
+        text-transform: capitalize;
+        letter-spacing: initial;
         display: inline-block;
-        padding: 10px 10px 7px 10px;
+        padding: 5px 10px 3px 10px;
      }
     }
     .search-row{
@@ -314,13 +335,17 @@ $color_2: #000;
 
   /* filter_row starts here */
   .filter_row{
-    margin-top:0px;
-    .panel{
-      .panel-heading{
-        text-transform: uppercase;
-      }
-      .panel-content{
-        padding:10px 0;
+    margin-top:10px;
+    .card{
+      border:1px solid #ccc;
+      .card-body{
+        padding:0px 0;
+        .card-title{
+          background: #e5e5e5;
+          padding:6px 10px;
+          font-size: 13px;
+
+        }
         .form-group{
           margin-bottom: 10px;
           label{
@@ -344,9 +369,13 @@ $color_2: #000;
 /* main_container ends here */
  .table_container_row{
     margin-top: 10px;
-    .panel-default{
-      .panel-heading{
+    .card{
+      .card-title{
         padding:5px 10px;
+        background: #e5e5e5;
+          padding:6px 10px;
+          font-size: 13px;
+        margin-bottom: 0;
         .dropdown{
           display: inline-block;
           .dropdown-toggle{
@@ -370,12 +399,12 @@ $color_2: #000;
           }
         }
         .total_count{
-          margin-top:5px;
+          margin-top:0px;
         }
       }
     }
-    .panel-content{
-      padding:15px;
+    .card-body{
+      padding:0px 0px;
       table{
         thead{
           tr{
@@ -386,6 +415,7 @@ $color_2: #000;
               /* text-transform: uppercase; */
               font-size: 12px;
               border: none;
+              padding:6px;
             }
           }
         }
@@ -393,9 +423,13 @@ $color_2: #000;
           tr{
             td{
               vertical-align: middle;
-              color: #5b636d;
+              color: #454545;
               font-size: 12px;
-              font-weight: 500;
+              font-weight: 400;
+              padding:7px 0;
+              a{
+                color: #454545;
+              }
               .dropdown{
                 .dropdown-toggle{
                   background: $dark_sky;
@@ -404,6 +438,18 @@ $color_2: #000;
                   border-radius: 0;
                   border:none;
                 }  
+              }
+              &.actions{
+                .btn{
+                  border-radius: 0;
+                  font-size: 12px;
+                  padding:3px 5px;
+                  color: #fff;
+                  svg{
+                    display: inline-block;
+                    margin-right: 5px;
+                  }
+                }
               }
             }
           }
@@ -459,6 +505,11 @@ $color_2: #000;
 .breadcrumb{
  margin:0; 
  background: none;
+ .breadcrumb-item{
+  a{
+    color: $dark_sky;
+  }
+ }
 }
 .breadcrumb>li+li:before{
   color:$text_color;
@@ -474,6 +525,35 @@ $color_2: #000;
 /* overview_form_block starts here */
 .overview_form_block{
   @extend .filter_row;
+  .card-title{
+    height: 45px;
+    height: auto;
+    padding:1.8% 10px !important;
+    h5{
+      margin-bottom: 0;
+      position: relative;
+      font-size: 13px;
+    }
+    .dropdown{
+      .dropdown-menu{
+        li{
+          a{
+            font-size: 0.85rem;
+            color: #454545;
+            text-transform: capitalize !important;
+            font-weight: 400;
+            display: block;
+            padding:5px 8px;
+          }
+        }
+      }
+    }
+  }
+  .buttons_row{
+    margin:0;
+    position: relative;
+    top: -10px;
+  }
   .form-control{
     border-radius: 0;
     box-shadow: none;
@@ -531,3 +611,26 @@ $color_2: #000;
 }
 /* attendees ends here */
 
+
+
+.case-list-container{
+  margin-bottom: 15px;
+}
+
+.profile_pic{
+  text-align: center;
+  img{
+    width: 125px;
+    height: 125px;
+    border:4px solid #eee;
+  }
+}
+
+.error {
+  color: red;
+}
+
+.error ul {
+  list-style-type: none;
+  padding: 0px;
+}

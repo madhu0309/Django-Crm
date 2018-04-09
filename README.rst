@@ -34,6 +34,9 @@ This project contains the following modules.
 Installation
 ============
 
+dependency for debian and ubuntu:
+    apt install ruby-sass 
+
 If you cloned the package from git use virtualenv to install requirements::
 
     pip install -r requirements.txt
@@ -51,5 +54,4 @@ Credentials to CRM Dashboard:
 We welcome your feedback and support, raise github ticket if you want to report a bug. Need new features? `Contact us here`_
 
 .. _contact us here: https://micropyramid.com/contact-us/
-.. _Demo: https://test-django-crm-app.herokuapp.com
-
+.. _Demo: https://dj-crm.micropyramid.com/
