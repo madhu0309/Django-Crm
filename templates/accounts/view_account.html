@@ -220,16 +220,14 @@
             <div class="row marl">
               <div class="filter_col col-md-12">
                 <div class="form-group">
-                  <label class="acc_field_label" for="id_assigned_user" data-name="name">Assigned User(s)</label>
-                  <div class="account_field" id="account_assigned_users" data-name="name">
-                    {%if not account_record.assigned_to.all %}
-                      Not Assigned Yet
-                    {% else %}
+                  {%if not account_record.assigned_to %}
+                    <label class="acc_field_label" for="id_assigned_user" data-name="name">Assigned User(s)</label>
+                    <div class="account_field" id="account_assigned_users" data-name="name">
                       {% for user in account_record.assigned_to.all %}
                         <li>{{ user }}</li>
                       {% endfor %}
-                    {% endif %}
-                  </div>
+                    </div>
+                  {% endif %}
                 </div>
               </div>
               <!-- <div class="filter_col col-md-12">
