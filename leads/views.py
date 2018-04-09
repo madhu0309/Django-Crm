@@ -23,7 +23,7 @@ from opportunity.forms import OpportunityForm
 
 @login_required
 def leads_list(request):
-    lead_obj = Lead.objects.all()
+    lead_obj = Lead.objects.all().exclude(status='converted')
     page = request.POST.get('per_page')
     first_name = request.POST.get('first_name')
     last_name = request.POST.get('last_name')
