@@ -211,16 +211,14 @@
           <div class="row marl">
             <div class="filter_col col-md-12">
               <div class="form-group">
+              {%if not lead_record.assigned_to %}
                 <label class="lead_field_label" for="id_assigned_user" data-name="name" >Assigned User(s)</label>
                 <div class="lead_field" id="lead_assigned_users" data-name="name">
-                  {%if not lead_record.assigned_to %}
-                    Not Assigned Yet
-                  {% else %}
                     {% for user in lead_record.assigned_to.all %}
                       <li>{{ user }}</li>
                     {% endfor %}
-                  {% endif %}
                 </div>
+              {% endif %}
               </div>
             </div>
             <!-- <div class="filter_col col-md-12">

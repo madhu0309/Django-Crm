@@ -634,3 +634,18 @@ $color_2: #000;
   list-style-type: none;
   padding: 0px;
 }
+
+.view-pad{
+  h5{
+    text-align: left;
+  }
+  a{
+    float: right;
+    margin-right: 105px;
+    color: #000;
+    &:hover{
+      text-decoration:none;
+    }
+  }
+
+}

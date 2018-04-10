@@ -3,25 +3,42 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib.auth import logout, authenticate, login
+from django.contrib.auth.hashers import check_password
 
 from common.models import User
-from common.forms import UserForm, LoginForm
+from common.forms import UserForm, LoginForm, ChangePasswordForm
 
 
-#@login_required
+@login_required
 def home(request):
     return render(request, 'index.html')
 
 
 @login_required
 def change_pass(request):
-    return render(request, 'change_password.html')
+    error, errors = "", ""
+    form = ChangePasswordForm()
+    if request.method == 'POST':
+        form = ChangePasswordForm(request.POST)
+        if form.is_valid():
+            user = request.user
+            if not check_password(request.POST['CurrentPassword'], user.password):
+                error = "Your current password do not match with your password"
+            else:
+                user.set_password(request.POST.get('Newpassword'))
+                user.is_active = True
+                user.save()
+                return HttpResponseRedirect('/')
+        else:
+            errors = form.errors
+    return render(request, "change_password.html", {'error': error,
+                                                    'errors': errors})
 
 
 @login_required
 def profile(request):
     user = request.user
-    user_obj = User.objects.filter(id=user.id)
+    user_obj = User.objects.get(id=user.id)
     return render(request, "profile.html", {'user_obj': user_obj})
 
 @csrf_exempt
@@ -64,13 +81,13 @@ def users_list(request):
     active_users = User.objects.filter(is_active=True)
     inactive_users = User.objects.filter(is_active=False)
     if first_name:
-        users_list = User.objects.filter(first_name__icontains=first_name)
+        users_list = users_list.filter(first_name__icontains=first_name)
     if last_name:
-        users_list = User.objects.filter(last_name__icontains=last_name)
+        users_list = users_list.filter(last_name__icontains=last_name)
     if username:
-        users_list = User.objects.filter(username__icontains=username)
+        users_list = users_list.filter(username__icontains=username)
     if email:
-        users_list = User.objects.filter(email__icontains=email)
+        users_list = users_list.filter(email__icontains=email)
     return render(request, "users/list.html", {
         'users': users_list, 'active_users': active_users,
         'per_page': page, 'inactive_users': inactive_users
