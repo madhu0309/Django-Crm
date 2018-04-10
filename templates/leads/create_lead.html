@@ -108,12 +108,12 @@
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Assigned Users</label>
-                     <select class="assigned_users form-control" name="states[]" multiple="multiple">
-                      {% for key in lead_form.assigned_to %}
-                        <option value="{{key}}">{{ksy}}</option>
+                     <select class="assigned_users form-control" name="assigned_to" multiple="multiple">
+                      {% for user in users %}
+                        <option value="{{user.id}}" {% if user in lead_obj.assigned_to.all %} selected="" {% endif %}>{{user.email}}</option>
                       {% endfor %}
                     </select>
-                    {{ lead_form.assigned_to.errors }}
+                    <span class="error">{{ lead_form.assigned_to.errors }}</span>
                   </div>
                 </div>
                 <br>
