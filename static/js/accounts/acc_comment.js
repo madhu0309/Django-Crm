@@ -37,15 +37,15 @@ $("#comment_form").submit(function(e){
       }
       else {
           $("#comments_div").prepend("<li class='list-group-item list-row' id='comment"+data.com_id+"'>"+
-                               "<div class='pull-right right-container'>"+
-                               "<div class='list-row-buttons btn-group pull-right'>"+
+                               "<div class='float-right right-container'>"+
+                               "<div class='list-row-buttons btn-group float-right'>"+
                                "<button class='btn btn-link btn-sm dropdown-toggle' data-toggle='dropdown' type='button'><span class='caret'></span></button>"+
-                               "<ul class='dropdown-menu pull-right'>"+
+                               "<ul class='dropdown-menu text-center'>"+
                                "<li><a class='action' onclick='edit_comment("+data.com_id+")'>Edit</a></li>"+
                                "<li><a class='action' onclick='remove_comment("+data.com_id+")''>Remove</a></li></ul></div></div>"+
-                               "<div class='stream-head-container'> "+data.com_user+" Commented</div>"+
                                "<div class='stream-post-container' id='comment_name"+data.com_id+"'>"+data.comment+"</div>"+
-                               "<div class='stream-date-container"+data.com_id+"'>"+data.comment_date+"</div></div><div class='stream-date-container' id='comment_file_div"+data.com_id+"'><div id='new_comment"+data.com_id+"'</div></div></li>"
+                               "<div class='stream-container'><p class='float-left'>"+data.com_user+"</p><p class='float-right'>"+data.comment_date+"</p></div>"+
+                               "<div class='stream-date-container' id='comment_file_div"+data.com_id+"'><div id='new_comment"+data.com_id+"'</div></div></li>"
                                )
           $("#id_comments").val("")
           alert("Comment Submitted")
