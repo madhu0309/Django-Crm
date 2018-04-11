@@ -134,5 +134,5 @@ class ChangePasswordForm(forms.Form):
                 'Password must be at least 4 characters long!')
         if self.data.get('confirm') != self.cleaned_data.get('Newpassword'):
             raise forms.ValidationError(
-                'Confirm passwords do not match with new password')
+                'Confirm password do not match with new password')
         return self.data.get('confirm')

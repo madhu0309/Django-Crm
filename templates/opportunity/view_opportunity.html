@@ -192,7 +192,7 @@
             <div class="row marl">
               <div class="filter_col col-md-12">
                 <div class="form-group">
-                  {%if not opportunity_record.assigned_to %}
+                  {%if opportunity_record.assigned_to.all %}
                     <label class="opportunity_field_label" for="id_assigned_user" data-name="name">Assigned User(s)</label>
                     <div class="opportunity_field" id="opportunity_assigned_users" data-name="name">
                         {% for user in opportunity_record.assigned_to.all %}
