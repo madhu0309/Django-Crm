@@ -163,10 +163,10 @@
                 <ul class="list-group" id="comments_div">
                   {% for comment in comments %}
                   <li class="list-group-item list-row" id="comment{{comment.id}}">
-                    <div class="pull-right right-container">
-                      <div class="list-row-buttons btn-group pull-right">
+                    <div class="float-right right-container">
+                      <div class="list-row-buttons btn-group float-right">
                         <button class="btn btn-link btn-sm dropdown-toggle" data-toggle="dropdown" type="button"><span class="caret"></span></button>
-                        <ul class="dropdown-menu pull-right">
+                        <ul class="dropdown-menu text-center">
                           <li>
                             <a class="action" onclick="edit_comment({{comment.id}})">Edit</a>
                           </li>
@@ -176,9 +176,11 @@
                         </ul>
                       </div>
                     </div>
-                    <div class="stream-head-container">{{ comment.commented_by }} Commented</div>
                     <div class="stream-post-container" id="comment_name{{comment.id}}"><pre>{{ comment.comment }}</pre></div>
-                    <div class="stream-date-container">{{ comment.commented_on }}</div>
+                    <div class="stream-container">
+                      <pre class="float-left">{{ comment.commented_by }}</pre>
+                      <pre class="float-right">{{ comment.commented_on }}</pre>
+                    </div>
                   </li>
                   {% endfor %}
                 </ul>
