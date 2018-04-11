@@ -175,7 +175,7 @@
             <div class="row marl">
               <div class="filter_col col-md-12">
                 <div class="form-group">
-                  {%if not contact_record.assigned_to %}
+                  {%if contact_record.assigned_to.all %}
                     <label class="contact_field_label" for="id_assigned_user" data-name="name">Assigned User(s)</label>
                     <div class="contact_field" id="contact_assigned_users" data-name="name">
                       {% for user in contact_record.assigned_to.all %}

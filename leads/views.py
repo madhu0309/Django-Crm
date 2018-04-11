@@ -67,10 +67,12 @@ def add_lead(request):
             lead_obj.assigned_to.add(*assignedto_list)
             lead_obj.teams.add(*teams_list)
             if request.POST.get('status') == "converted":
-                Account.objects.create(
+                account_object = Account.objects.create(
                     created_by=request.user, name=lead_account,
                     email=lead_email, phone=lead_phone
                 )
+                account_object.billing_address = address_object
+                account_object.save()
             if request.POST.get("savenewform"):
                 return HttpResponseRedirect(reverse("leads:add_lead"))
             else:
@@ -145,10 +147,12 @@ def edit_lead(request, lead_id):
             lead_obj.teams.clear()
             lead_obj.teams.add(*teams_list)
             if request.POST.get('status') == "converted":
-                Account.objects.create(
+                account_object = Account.objects.create(
                     created_by=request.user, name=lead_account,
                     email=lead_email, phone=lead_phone
                 )
+                account_object.billing_address = dis_address_obj
+                account_object.save()
             return HttpResponseRedirect(reverse('leads:list'))
         else:
             return render(request, 'leads/create_lead.html', {

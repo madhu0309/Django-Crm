@@ -23,7 +23,7 @@ def change_pass(request):
         if form.is_valid():
             user = request.user
             if not check_password(request.POST['CurrentPassword'], user.password):
-                error = "Your current password do not match with your password"
+                error = "Invalid old password"
             else:
                 user.set_password(request.POST.get('Newpassword'))
                 user.is_active = True
@@ -134,7 +134,10 @@ def edit_user(request, user_id):
         user_form = UserForm(request.POST, instance=user_obj)
         if user_form.is_valid():
             user_form.save()
-            return redirect("common:users_list")
+            if not request.user.is_staff:
+                return redirect("common:profile")
+            else:
+                return redirect("common:users_list")
         else:
             return render(request, 'users/create.html', {'user_form': user_form, "errors": user_form.errors})
     else:
