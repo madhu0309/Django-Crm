@@ -158,6 +158,9 @@ header{
             &.nav-link{
               padding:0.5rem;
             }
+            &.nav-link .active {
+              color: white;
+            }
           }
         }
       }
