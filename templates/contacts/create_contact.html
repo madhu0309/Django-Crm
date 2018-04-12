@@ -64,7 +64,7 @@
                     <label for="exampleInputEmail1">Assigned Users</label>
                     <select class="assigned_users form-control" name="assigned_to" multiple="multiple">
                       {% for user in users %}
-                        <option value="{{user.id}}" {% if user in contact_obj.assigned_to.all %} selected="" {% endif %}>{{user.email}}</option>
+                        <option value="{{user.id}}" {% if user in contact_obj.assigned_to.all or user.id in assignedto_list %} selected="" {% endif %}>{{user.email}}</option>
                       {% endfor %}
                     </select>
                      <span class="error">{{ contact_form.assigned_to.errors }}</span>

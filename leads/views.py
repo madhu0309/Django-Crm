@@ -68,9 +68,12 @@ def add_lead(request):
             if request.POST.get('status') == "converted":
                 account_object = Account.objects.create(
                     created_by=request.user, name=lead_account,
-                    email=lead_email, phone=lead_phone
+                    email=lead_email, phone=lead_phone,
+                    description=request.POST.get('description'),
+                    website=request.POST.get('website'),
                 )
                 account_object.billing_address = address_object
+                account_object.assigned_to.add(*assignedto_list)
                 account_object.save()
             if request.POST.get("savenewform"):
                 return HttpResponseRedirect(reverse("leads:add_lead"))
@@ -82,7 +85,7 @@ def add_lead(request):
                           'accounts': accounts, 'countries': COUNTRIES,
                           'teams': teams, 'users': users,
                           'status': LEAD_STATUS, 'source': LEAD_SOURCE,
-                          'assignedto_list': assignedto_list, 'teams_list': teams_list})
+                          'assignedto_list': [int(user_id) for user_id in assignedto_list], 'teams_list': teams_list})
     else:
         return render(request, 'leads/create_lead.html', {
                       'lead_form': form, 'address_form': address_form,
@@ -147,9 +150,12 @@ def edit_lead(request, lead_id):
             if request.POST.get('status') == "converted":
                 account_object = Account.objects.create(
                     created_by=request.user, name=lead_account,
-                    email=lead_email, phone=lead_phone
+                    email=lead_email, phone=lead_phone,
+                    description=request.POST.get('description'),
+                    website=request.POST.get('website')
                 )
                 account_object.billing_address = dis_address_obj
+                account_object.assigned_to.add(*assignedto_list)
                 account_object.save()
             return HttpResponseRedirect(reverse('leads:list'))
         else:
@@ -160,7 +166,7 @@ def edit_lead(request, lead_id):
                           'accounts': accounts, 'countries': COUNTRIES,
                           'teams': teams, 'users': users,
                           'status': LEAD_STATUS, 'source': LEAD_SOURCE,
-                          'assignedto_list': assignedto_list, 'teams_list': teams_list})
+                          'assignedto_list': [int(user_id) for user_id in assignedto_list], 'teams_list': teams_list})
     else:
         return render(request, 'leads/create_lead.html', {
                       'lead_form': form, 'address_form': address_form,
