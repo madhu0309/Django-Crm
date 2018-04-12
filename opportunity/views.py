@@ -1,6 +1,4 @@
-import json
-
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
@@ -200,10 +198,6 @@ def contacts(request):
         new = {i.pk: i.first_name}
         data.update(new)
     return JsonResponse(data)
-
-
-# CRUD Operations Ends
-# Comments Section Start
 
 
 @login_required

@@ -3,13 +3,12 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.db.models import Q
-from django.views.decorators.csrf import csrf_exempt
 from django.forms.models import modelformset_factory
 
 from leads.models import Lead
 from contacts.forms import ContactForm
 from common.models import User, Address, Comment, Team
-from common.utils import LEAD_STATUS, LEAD_SOURCE, INDCHOICES, TYPECHOICES, COUNTRIES
+from common.utils import LEAD_STATUS, LEAD_SOURCE, INDCHOICES, COUNTRIES
 from leads.forms import LeadCommentForm, LeadForm
 from accounts.forms import AccountForm
 from common.forms import BillingAddressForm, ShippingAddressForm
@@ -96,7 +95,6 @@ def add_lead(request):
 
 
 @login_required
-@csrf_exempt
 def view_lead(request, lead_id):
     lead_record = get_object_or_404(Lead, id=lead_id)
     comments = Comment.objects.filter(lead__id=lead_id).order_by('-id')
