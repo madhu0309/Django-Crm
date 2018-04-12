@@ -15,53 +15,60 @@
     <div class="col-md-6">
       <div class="card">
         <div class="card-body">
-         <div class="card-title">
-          Create User
+         <div class="card-title text-center">
+          CREATE USER
         </div>
           <div class="row marl">
             <div class="col-md-12">
               <div class="filter_col col-md-12">
                 <div class="form-group">
-                  <label for="exampleInputEmail1">First Name</label>{{ user_obj.first_name }}
+                  <label for="id_firstname">First Name{% if user_form.first_name.field.required %}<span class="error">*</span>{% endif %}</label>
                   <input type="text" class="form-control" name="first_name" value="{% if user_obj %} {{ user_obj.first_name }} {% else %} {{request.POST.first_name}} {% endif %}">
                 </div>
-                {{ errors.first_name }}
+                <span class="error">{{ errors.first_name }}</span>
               </div>
               <div class="filter_col col-md-12">
                 <div class="form-group">
-                  <label for="exampleInputEmail1">Last Name</label>
+                  <label for="id_lastname">Last Name{% if user_form.last_name.field.required %}<span class="error">*</span>{% endif %}</label>
                   <input type="text" class="form-control" name="last_name" value="{% if user_obj %} {{ user_obj.last_name }} {% else %} {{request.POST.last_name}} {% endif %}">
                 </div>
-                {{ errors.last_name }}
+                <span class="error">{{ errors.last_name }}</span>
               </div>
               <div class="filter_col col-md-12">
                 <div class="form-group">
-                  <label for="exampleInputEmail1">Username</label>
+                  <label for="id_username">Username{% if user_form.username.field.required %}<span class="error">*</span>{% endif %}</label>
                   <input type="text" class="form-control" name="username" value="{% if user_obj %} {{ user_obj.username }} {% else %} {{request.POST.username}} {% endif %}">
                 </div>
-                {{ errors.username }}
+                <span class="error">{{ errors.username }}</span>
               </div>
               <div class="filter_col col-md-12">
                 <div class="form-group">
-                  <label for="exampleInputEmail1">Email Address</label>
-                  <input type="text" class="form-control" name="email" value="{% if user_obj %} {{ user_obj.email }} {% else %} {{request.POST.email}} {% endif %}">
+                  <label for="id_email">Email Address{% if user_form.email.field.required %}<span class="error">*</span>{% endif %}</label>
+                  <input type="text" class="form-control" name="email" value="{% if user_obj %} {{ user_obj.email }} {% else %} {{request.POST.email}} {% endif %}" {% if user_obj and not user_obj.is_staff %} readonly=""{% endif %}>
                 </div>
-                {{ errors.email }}
+                <span class="error">{{ errors.email }}</span>
               </div>
+              <div class="filter_col col-md-12">
+                  <div class="form-group">
+                    <label for="id_role">User Role{% if user_form.role.field.required %}<span class="error">*</span>{% endif %}</label>
+                    {{ user_form.role }}
+                    <span class="error">{{ user_form.role.errors }}</span>
+                  </div>
+                </div>
               {% if not user_obj %}
               <div class="filter_col col-md-12">
                 <div class="form-group">
-                  <label for="exampleInputEmail1">Password</label>
+                  <label for="exampleInputEmail1">Password{% if user_form.password.field.required %}<span class="error">*</span>{% endif %}</label>
                   <input type="password" class="form-control" name="password" value="{{request.POST.password}}">
                 </div>
-                {{ errors.password }}
+                <span class="error">{{ errors.password }}</span>
               </div>
               {% endif %}
             </div>
           </div>
           <div class="row marl buttons_row form_btn_row text-center">
             <button class="btn btn-default save" type="submit">Save</button>
-            <button class="btn btn-default" type="submit">Cancel</button>
+            <a href="{% url 'common:users_list' %}" class="btn btn-default clear" id="create_user_cancel">Cancel</a>
           </div>
         </div>
       </div>

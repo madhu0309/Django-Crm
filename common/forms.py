@@ -1,4 +1,6 @@
 from django import forms
+from django.contrib.auth import authenticate
+
 from common.models import Address, User
 
 
@@ -53,7 +55,7 @@ class UserForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'username']
+        fields = ['email', 'first_name', 'last_name', 'username', 'role']
 
     def __init__(self, *args, **kwargs):
         super(UserForm, self).__init__(*args, **kwargs)
@@ -88,3 +90,47 @@ class UserForm(forms.ModelForm):
                     return self.cleaned_data.get("email")
             else:
                 raise forms.ValidationError('User already exists with this email')
+
+
+class LoginForm(forms.ModelForm):
+    email = forms.EmailField()
+    password = forms.CharField(widget=forms.PasswordInput)
+
+    class Meta:
+        model = User
+        fields = ['email', 'password']
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request", None)
+        super(LoginForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        email = self.cleaned_data.get("email")
+        password = self.cleaned_data.get("password")
+
+        if email and password:
+            self.user = authenticate(email=email, password=password)
+            if self.user:
+                if not self.user.is_active:
+                    raise forms.ValidationError("User is Inactive")
+            else:
+                raise forms.ValidationError("Invalid email and password")
+        return self.cleaned_data
+
+
+class ChangePasswordForm(forms.Form):
+    CurrentPassword = forms.CharField(max_length=100)
+    Newpassword = forms.CharField(max_length=100)
+    confirm = forms.CharField(max_length=100)
+
+    def __init__(self, *args, **kwargs):
+        super(ChangePasswordForm, self).__init__(*args, **kwargs)
+
+    def clean_confirm(self):
+        if len(self.data.get('confirm')) < 4:
+            raise forms.ValidationError(
+                'Password must be at least 4 characters long!')
+        if self.data.get('confirm') != self.cleaned_data.get('Newpassword'):
+            raise forms.ValidationError(
+                'Confirm password do not match with new password')
+        return self.data.get('confirm')

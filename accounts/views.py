@@ -25,7 +25,7 @@ def accounts_list(request):
     industry = request.POST.get('industry')
 
     if name:
-        accounts_list = Account.objects.filter(name__icontains=name)
+        accounts_list = accounts_list.filter(name__icontains=name)
     if city:
         accounts_list = accounts_list.filter(
             billing_address__in=[i.id for i in Address.objects.filter(city__contains=city)])
@@ -76,7 +76,7 @@ def add_account(request):
                 'countries': COUNTRIES,
                 'users': users,
                 'teams': teams,
-                'assignedto_list': assignedto_list,
+                'assignedto_list': [int(user_id) for user_id in assignedto_list],
                 'teams_list': teams_list
             })
 
@@ -164,7 +164,7 @@ def edit_account(request, edid):
                 'industries': INDCHOICES,
                 'teams': teams,
                 'users': users,
-                'assignedto_list': assignedto_list,
+                'assignedto_list': [int(user_id) for user_id in assignedto_list],
                 'teams_list': teams_list
             })
     else:

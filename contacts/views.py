@@ -44,7 +44,7 @@ def contacts_list(request):
 
 @login_required
 def add_contact(request):
-    accounts = Account.objects.filter()
+    accounts = Account.objects.all()
     users = User.objects.filter(is_active=True).order_by('email')
     form = ContactForm(assigned_to=users, account=accounts)
     address_form = BillingAddressForm()
@@ -78,7 +78,7 @@ def add_contact(request):
                 'countries': COUNTRIES,
                 'teams': teams,
                 'users': users,
-                'assignedto_list': assignedto_list,
+                'assignedto_list': [int(user_id) for user_id in assignedto_list],
                 'teams_list': teams_list
             })
     else:
@@ -108,7 +108,7 @@ def view_contact(request, contact_id):
 def edit_contact(request, pk):
     contact_obj = get_object_or_404(Contact, id=pk)
     address_obj = get_object_or_404(Address, id=contact_obj.address.id)
-    accounts = Account.objects.filter()
+    accounts = Account.objects.all()
     users = User.objects.filter(is_active=True).order_by('email')
     form = ContactForm(instance=contact_obj, assigned_to=users, account=accounts)
     address_form = BillingAddressForm(instance=address_obj)
@@ -142,7 +142,7 @@ def edit_contact(request, pk):
                 'countries': COUNTRIES,
                 'teams': teams,
                 'users': users,
-                'assignedto_list': assignedto_list,
+                'assignedto_list': [int(user_id) for user_id in assignedto_list],
                 'teams_list': teams_list
             })
     else:

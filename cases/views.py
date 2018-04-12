@@ -25,7 +25,7 @@ def cases_list(request):
     if not account:
         account = 0
     if name:
-        cases = Case.objects.filter(name__contains=name)
+        cases = cases.filter(name__contains=name)
     if account:
         cases = cases.filter(account=account)
     if status:
@@ -79,7 +79,7 @@ def add_case(request):
                 'case_priority': PRIORITY_CHOICE,
                 'case_status': STATUS_CHOICE,
                 'teams_list': teams_list,
-                'assignedto_list': assignedto_list,
+                'assignedto_list': [int(user_id) for user_id in assignedto_list],
                 'contacts_list': contacts_list
             })
     return render(request, "cases/create_cases.html", {
@@ -151,7 +151,7 @@ def edit_case(request, case_id):
                 'case_priority': PRIORITY_CHOICE,
                 'case_status': STATUS_CHOICE,
                 'teams_list': teams_list,
-                'assignedto_list': assignedto_list,
+                'assignedto_list': [int(user_id) for user_id in assignedto_list],
                 'contacts_list': contacts_list
             })
 

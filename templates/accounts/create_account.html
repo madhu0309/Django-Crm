@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
 {% block breadcrumb %}
+{% block extralinks %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{% url 'accounts:list' %}">Accounts</a></li>
@@ -11,7 +14,7 @@
 {% endblock %}
 {% block content %}
   <form id="formid" action='' method="POST" novalidate>{% csrf_token %}
-    <div class="assigned_teams ro marl">
+    <!-- <div class="assigned_teams ro marl">
       <div class="col-md-12">
         <div class="card">
           <div class="card-body">
@@ -39,123 +42,135 @@
         </div>
       </div>
       <br clear="all">
-    </div>
-    <!-- assigned users & teams ends here -->
+    </div> -->
     <!-- overview starts here -->
     <div class="overview_form_block row marl ">
       <div class="col-md-12">
         <div class="card">
           
           <div class="card-body">
-          <div class="card-title">
-            Overview
+          <div class="card-title text-center">
+            CREATE ACCOUNT
           </div>
             <div class="row marl">
               <div class="col-md-6">
                 <div class="filter_col col-md-12">
                   <div class="form-group">
-                    <label for="exampleInputEmail1" class="required">Name</label>
+                    <label for="exampleInputEmail1" class="required">Name{% if account_form.name.field.required %}<span class="error">*</span>{% endif %}</label>
                     {{ account_form.name }}
-                    {{ account_form.name.errors }}
+                    <span class="error">{{ account_form.name.errors }}</span>
                   </div>
                 </div>
                 <div class="filter_col col-md-12">
                   <div class="form-group">
-                    <label for="exampleInputEmail1">Website</label>
+                    <label for="exampleInputEmail1">Website{% if account_form.website.field.required %}<span class="error">*</span>{% endif %}</label>
                     {{ account_form.website }}
-                    {{ account_form.website.errors }}
+                    <span class="error">{{ account_form.website.errors }}</span>
                   </div>
                 </div>
                 <div class="filter_col col-md-12">
                   <div class="form-group">
-                    <label for="exampleInputEmail1" class="required">Phone</label>
+                    <label for="exampleInputEmail1" class="required">Phone{% if account_form.phone.field.required %}<span class="error">*</span>{% endif %}</label>
                     {{ account_form.phone }}
-                    {{ account_form.phone.errors }}
+                    <span class="error">{{ account_form.phone.errors }}</span>
                   </div>
                 </div>
                 <div class="filter_col col-md-12">
                   <div class="form-group ">
-                    <label for="exampleInputEmail1" class="required">Email Address</label>
+                    <label for="exampleInputEmail1" class="required">Email Address{% if account_form.email.field.required %}<span class="error">*</span>{% endif %}</label>
                     {{ account_form.email }}
-                    {{ account_form.email.errors }}
+                    <span class="error">{{ account_form.email.errors }}</span>
                   </div>
                 </div>
                 <div class="filter_col col-md-12">
                   <div class="form-group">
-                    <label for="exampleInputEmail1">Industry</label>
+                    <label for="exampleInputEmail1">Industry{% if account_form.industry.field.required %}<span class="error">*</span>{% endif %}</label>
                     {{ account_form.industry }}
-                    {{ account_form.industry.errors }}
+                    <span class="error">{{ account_form.industry.errors }}</span>
                   </div>
                 </div>
                 <div class="filter_col col-md-12">
                   <div class="form-group">
-                    <label for="exampleInputEmail1">Description</label>
+                    <label for="exampleInputEmail1">Description{% if account_form.description.field.required %}<span class="error">*</span>{% endif %}</label>
                     {{ account_form.description }}
-                    {{ account_form.description.errors }}
+                    <span class="error">{{ account_form.description.errors }}</span>
                   </div>
                 </div>
               </div>
               <div class="col-md-6">
+                <div class="filter_col col-12">
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">Assigned Users</label>
+                    {{request.POST.assigned_to}}
+                     <select class="assigned_users form-control" name="assigned_to" multiple="multiple">
+                      {% for user in users %}
+                        <option value="{{user.id}}" {% if user in account_obj.assigned_to.all  or user.id in assignedto_list %} selected="" {% endif %}>{{user.email}}</option>
+                      {% endfor %}
+                    </select>
+                    {{ account_form.assigned_to.errors }}
+                  </div>
+                </div>
+                <br>
                 <div class="filter_col billing_block col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Billing Address</label>
                     {{ billing_form.address_line }}
-                    {{ billing_form.address_line.errors }}
+                    <span class="error">{{ billing_form.address_line.errors }}</span>
                   </div>
                     {{ billing_form.street }}
-                    {{ billing_form.street.errors }}
+                    <span class="error">{{ billing_form.street.errors }}</span>
                   <div class="row" style="margin-top: 10px;">
                     <div class="col-md-4">
                       {{ billing_form.city }}
-                      {{ billing_form.city.errors }}
+                      <span class="error">{{ billing_form.city.errors }}</span>
                     </div>
                     <div class="col-md-4">
                       {{ billing_form.state }}
-                      {{ billing_form.state.errors }}
+                      <span class="error">{{ billing_form.state.errors }}</span>
                     </div>
                     <div class="col-md-4">
                       {{ billing_form.postcode }}
-                      {{ billing_form.postcode.errors }}
+                      <span class="error">{{ billing_form.postcode.errors }}</span>
                     </div>
                     <div class="col-md-12" style="margin-top: 10px;">
                       {{ billing_form.country }}
-                      {{ billing_form.country.errors }}
+                      <span class="error">{{ billing_form.country.errors }}</span>
                     </div>
                   </div>
                 </div>
                 <div>
                   <h6 style="color:white;">Copy Address</h6>
                 </div>
-                <div class="col-md-12 buttons_row" style="text-align:center;">
+               <!--  <div class="col-md-12 buttons_row" style="text-align:center;">
                   <button type="button" id="copy_billing_btn" class="btn btn-primary save">Copy Billing Address</button>
-                </div>
-                <div class="filter_col shipping_block col-md-12">
+                </div> -->
+               <!--  <div class="filter_col shipping_block col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Shipping Address</label>
                     {{ shipping_form.address_line }}
-                    {{ shipping_form.address_line.errors }}
+                    <span class="error">{{ shipping_form.address_line.errors }}</span>
                   </div>
                     {{ shipping_form.street }}
-                    {{ shipping_form.street.errors }}
+                    <span class="error">{{ shipping_form.street.errors }}</span>
                   <div class="row" style="margin-top: 10px;">
                     <div class="col-md-4">
                       {{ shipping_form.city }}
-                      {{ shipping_form.city.errors }}
+                      <span class="error">{{ shipping_form.city.errors }}</span>
                     </div>
                     <div class="col-md-4">
                       {{ shipping_form.state }}
-                      {{ shipping_form.state.errors }}
+                      <span class="error">{{ shipping_form.state.errors }}</span>
                     </div>
                     <div class="col-md-4">
                       {{ shipping_form.postcode }}
-                      {{ shipping_form.postcode.errors }}
+                      <span class="error">{{ shipping_form.postcode.errors }}</span>
                     </div>
                     <div class="col-md-12" style="margin-top: 10px;">
                       {{ shipping_form.country }}
-                      {{ shipping_form.country.errors }}
+                      <span class="error">{{ shipping_form.country.errors }}</span>
                     </div>
                   </div>
-                </div>
+                </div> -->
               </div>
             </div>
             <br clear="all">
@@ -176,6 +191,7 @@
   </form>
 {% endblock %}
 {% block js_block %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
   <script type="text/javascript">
     $("#copy_billing_btn").click(function(){
       var address_line = $("#id_address_line").val()
@@ -196,6 +212,9 @@
       e.preventDefault()
       $("#save_new_form").val('true')
       $('#formid').submit()
+    });
+    $(document).ready(function() {
+      $('.assigned_users').select2();
     });
   </script>
 {% endblock js_block %}
