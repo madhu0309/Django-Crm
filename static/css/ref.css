@@ -5,7 +5,8 @@
   margin-top: 23px; }
   .buttons_row button {
     border-radius: 0;
-    font-size: 12px; }
+    font-size: 1rem;
+    font-weight: 600; }
     .buttons_row button.save {
       background: #099CBE;
       color: #fff; }
@@ -14,7 +15,7 @@
     border: 1px solid #099CBE;
     border-radius: 0;
     color: #099CBE;
-    font-size: 12px; }
+    font-size: 1rem; }
   .buttons_row.form_btn_row {
     display: block; }
 
@@ -22,7 +23,7 @@
   padding: 10px; }
 
 select.form-control {
-  height: 32px !important; }
+  height: 32px; }
 
 .mar-top {
   margin-top: 15px; }

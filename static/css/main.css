@@ -5,7 +5,8 @@
   margin-top: 23px; }
   .buttons_row button {
     border-radius: 0;
-    font-size: 12px; }
+    font-size: 1rem;
+    font-weight: 600; }
     .buttons_row button.save {
       background: #099CBE;
       color: #fff; }
@@ -14,7 +15,7 @@
     border: 1px solid #099CBE;
     border-radius: 0;
     color: #099CBE;
-    font-size: 12px; }
+    font-size: 1rem; }
   .buttons_row.form_btn_row {
     display: block; }
 
@@ -22,7 +23,7 @@
   padding: 10px; }
 
 select.form-control {
-  height: 32px !important; }
+  height: 32px; }
 
 .mar-top {
   margin-top: 15px; }
@@ -317,17 +318,19 @@ header .navbar {
         .main_container .filter_row .card .card-body .card-title, .main_container .assigned_teams .card .card-body .card-title, .main_container .overview_form_block .card .card-body .card-title, .main_container .details_block .card .card-body .card-title, .main_container .attendees .card .card-body .card-title {
           background: #e5e5e5;
           padding: 6px 10px;
-          font-size: 13px; }
+          font-weight: 600;
+          font-size: 1rem; }
         .main_container .filter_row .card .card-body .form-group, .main_container .assigned_teams .card .card-body .form-group, .main_container .overview_form_block .card .card-body .form-group, .main_container .details_block .card .card-body .form-group, .main_container .attendees .card .card-body .form-group {
           margin-bottom: 10px; }
           .main_container .filter_row .card .card-body .form-group label, .main_container .assigned_teams .card .card-body .form-group label, .main_container .overview_form_block .card .card-body .form-group label, .main_container .details_block .card .card-body .form-group label, .main_container .attendees .card .card-body .form-group label {
             color: #5a6e79;
-            font-size: 12px;
-            font-weight: 500; }
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: none; }
           .main_container .filter_row .card .card-body .form-group .form-control, .main_container .assigned_teams .card .card-body .form-group .form-control, .main_container .overview_form_block .card .card-body .form-group .form-control, .main_container .details_block .card .card-body .form-group .form-control, .main_container .attendees .card .card-body .form-group .form-control {
             border-radius: 0;
             box-shadow: none;
-            font-size: 12px; }
+            font-size: 1rem; }
 
 /* main_container ends here */
 .table_container_row {
@@ -338,8 +341,9 @@ header .navbar {
     padding: 5px 10px;
     background: #e5e5e5;
     padding: 6px 10px;
-    font-size: 13px;
-    margin-bottom: 0; }
+    font-size: 1rem;
+    margin-bottom: 0;
+    font-weight: 600; }
     .table_container_row .card .card-title .dropdown {
       display: inline-block; }
       .table_container_row .card .card-title .dropdown .dropdown-toggle {
@@ -365,17 +369,20 @@ header .navbar {
     .table_container_row .card-body table thead tr th {
       background: #5b646d;
       color: #fff;
-      font-weight: 500;
+      font-weight: 600;
       /* text-transform: uppercase; */
-      font-size: 12px;
+      font-size: 1rem;
       border: none;
       padding: 6px; }
     .table_container_row .card-body table tbody tr td {
       vertical-align: middle;
       color: #454545;
-      font-size: 12px;
-      font-weight: 400;
+      font-size: 1rem;
+      font-weight: 500;
       padding: 7px 0; }
+      @media (min-width: 1500px) {
+        .table_container_row .card-body table tbody tr td {
+          font-size: 1rem; } }
       .table_container_row .card-body table tbody tr td a {
         color: #454545; }
       .table_container_row .card-body table tbody tr td .dropdown .dropdown-toggle {
@@ -386,12 +393,13 @@ header .navbar {
         border: none; }
       .table_container_row .card-body table tbody tr td.actions .btn {
         border-radius: 0;
-        font-size: 12px;
+        font-size: 1rem;
         padding: 3px 5px;
         color: #fff; }
         .table_container_row .card-body table tbody tr td.actions .btn svg {
           display: inline-block;
-          margin-right: 5px; }
+          margin-right: 5px;
+          font-size: 0.85rem; }
   .table_container_row .mail_menu .panel {
     border-radius: 0;
     padding: 0;
@@ -465,7 +473,7 @@ header .navbar {
   .overview_form_block .form-control {
     border-radius: 0;
     box-shadow: none;
-    font-size: 12px; }
+    font-size: 1rem; }
   .overview_form_block .country_class {
     margin-top: 10px; }
   .overview_form_block .shiiping_block {
@@ -493,7 +501,8 @@ header .navbar {
   margin-bottom: 20px; }
   .buttons_row button {
     border-radius: 0;
-    font-size: 12px; }
+    font-size: 1rem;
+    font-weight: 600; }
     .buttons_row button.save {
       background: #099CBE;
       color: #fff; }
@@ -521,22 +530,31 @@ header .navbar {
 .view-pad {
   padding: 0px !important; }
   .view-pad h5 {
-    width: 79%;
+    width: 90%;
     margin-bottom: 0;
     position: relative;
-    font-size: 13px;
+    font-size: 1rem;
+    font-weight: 600;
     display: inline-block;
     text-align: left;
     padding-top: 0px; }
   .view-pad a {
     float: right;
-    margin-right: 95px;
     border-radius: 0;
-    font-size: 12px;
+    font-size: 1rem;
     padding: 3px 10px;
     color: #fff;
     margin-top: -4px; }
     .view-pad a:hover {
       text-decoration: none; }
+
+.select2-container {
+  width: 100% !important;
+  border-radius: 0;
+  border: 1px solid #ced4da; }
+
+.select2-container--default .select2-selection--multiple {
+  border-radius: 0 important;
+  border: none !important; }
 
 /*# sourceMappingURL=main.css.map */
