@@ -56,5 +56,11 @@
 {% block js_block %}
 
 {% endblock js_block %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        word = window.location.pathname.split('/')[1]
+        $('#'+word).addClass('active')
+    })
+</script>
 </body>
 </html>

@@ -85,7 +85,7 @@ def opp_create(request):
                 'stages': STAGES,
                 'sources': SOURCES,
                 'currencies': CURRENCY_CODES,
-                'assignedto_list': assignedto_list,
+                'assignedto_list': [int(user_id) for user_id in assignedto_list],
                 'teams_list': teams_list,
                 'contacts_list': contacts_list
             })
@@ -159,7 +159,7 @@ def opp_edit(request, pk):
                 'stages': STAGES,
                 'sources': SOURCES,
                 'currencies': CURRENCY_CODES,
-                'assignedto_list': assignedto_list,
+                'assignedto_list': [int(user_id) for user_id in assignedto_list],
                 'teams_list': teams_list,
                 'contacts_list': contacts_list
             })
