@@ -1998,7 +1998,13 @@
       url = $(this).attr('href')
       if (!confirm('Are you sure you want to delete?'))
         return;
-      window.location = $(this).attr('href')
+        $.ajax({
+             type:"POST",
+             url: url,
+             success: function(){
+                location.reload(true);
+             }
+        });
     });
   </script>
 {% endblock js_block %}

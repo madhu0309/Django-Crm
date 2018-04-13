@@ -115,8 +115,8 @@ header{
       }
     }
     .navbar-nav{
-      >li{
-        >a{
+      li{
+        a{
           color: lighten($text_color3, 10%) !important;
           font-weight: 600;
           font-size: 0.9rem;
@@ -131,10 +131,13 @@ header{
           &:hover{
             color:#fff !important;
           }
+          &.active{
+            color: #fff!important;
+          }
         }
       }
-      >.open{
-        >a{
+      .open{
+        a{
           background: $login_btn_bg !important;
          
         }
@@ -169,15 +172,12 @@ header{
               height: 25px;
             }
           }
-          >a{
+          a{
             background:lighten($text_color,5%);
             color: #fff;
             border-right:1px solid lighten($text_color,10%);
             &.nav-link{
               padding:0.5rem;
-            }
-            &.nav-link .active {
-              color: white;
             }
           }
         }
@@ -553,7 +553,7 @@ $color_2: #000;
   }
  }
 }
-.breadcrumb>li+li:before{
+.breadcrumb li+li:before{
   color:$text_color;
 }
 /* breadcrumb ends here */
