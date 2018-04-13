@@ -205,10 +205,10 @@ def leads_convert(request, pk):
         lead_obj.status = 'converted'
         lead_obj.save()
         account_object = Account.objects.create(
-                    created_by=request.user, name=lead_obj.account_name,
-                    email=lead_obj.email, phone=lead_obj.phone,
-                    description=lead_obj.description,
-                    website=lead_obj.website, billing_address=lead_obj.address
+            created_by=request.user, name=lead_obj.account_name,
+            email=lead_obj.email, phone=lead_obj.phone,
+            description=lead_obj.description,
+            website=lead_obj.website, billing_address=lead_obj.address
         )
         assignedto_list = lead_obj.assigned_to.all().values_list('id', flat=True)
         account_object.assigned_to.add(*assignedto_list)
