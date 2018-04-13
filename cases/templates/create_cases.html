@@ -116,7 +116,6 @@
 {% endblock %}
 {% block js_block %}
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
-  <script src="{% static 'js/cases/create_case.js' %}"></script>
   <script type="text/javascript">
     $(function () {
      var date = new Date();
@@ -135,5 +134,15 @@
     $(document).ready(function() {
       $('.assigned_users').select2();
     });
+
+    $('#id_account').change(function(){
+    var account = $("#id_account").val()
+    $.get("{% url 'cases:select_contacts' %}", {"account":account}, function(data){
+      $("#id_contacts").html("")
+      $.each(data, function (index, value) {
+        $("#id_contacts").append("<option value="+index+">"+value+"</option>")
+      });
+    })
+});
   </script>
 {% endblock js_block %}
