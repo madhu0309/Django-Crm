@@ -135,7 +135,6 @@ def view_user(request, user_id):
     })
 
 
-@admin_required
 def edit_user(request, user_id):
     user_obj = get_object_or_404(User, id=user_id)
     user_form = UserForm(instance=user_obj)
