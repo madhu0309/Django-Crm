@@ -133,8 +133,7 @@ def edit_lead(request, lead_id):
     teams = Team.objects.all()
     error = ""
     if status:
-        if not lead_obj.account_name:
-            error = "please specify account name"
+        error = "please specify account name"
         lead_obj.status = "converted"
         form = LeadForm(instance=lead_obj, assigned_to=users)
     if request.method == 'POST':
@@ -144,8 +143,6 @@ def edit_lead(request, lead_id):
             form.fields['account_name'].required = True
         else:
             form.fields['account_name'].required = False
-        if status:
-            form.fields['phone'].required = True
         if form.is_valid() and address_form.is_valid():
             dis_address_obj = address_form.save()
             lead_obj = form.save(commit=False)
@@ -186,7 +183,7 @@ def edit_lead(request, lead_id):
                       'accounts': accounts, 'countries': COUNTRIES, 'teams': teams,
                       'users': users, 'status': LEAD_STATUS, 'source': LEAD_SOURCE,
                       'assignedto_list': assignedto_list, 'teams_list': teams_list,
-                      'error': error, 'check_status': status})
+                      'error': error, 'status': status})
 
 
 @login_required
@@ -204,7 +201,7 @@ def remove_lead(request, lead_id):
 @login_required
 def leads_convert(request, pk):
     lead_obj = get_object_or_404(Lead, id=pk)
-    if lead_obj.account_name and lead_obj.phone:
+    if lead_obj.account_name:
         lead_obj.status = 'converted'
         lead_obj.save()
         account_object = Account.objects.create(
