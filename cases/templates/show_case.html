@@ -754,6 +754,38 @@
         <button class="btn btn-default save" id="edit_update" type="submit">Update</button>
         <a href="/cases/list" ><button class="btn btn-default" id="edit_cancel" type="submit">Cancel</button></a></form>
       </div></div></div>  </div>
-      <script src="{% static 'js/cases/show_case.js' %}"></script>
-      <script src="{% static 'js/cases/create_case.js' %}"></script>
     {% endblock %}
+
+  {% block js_block %}
+    <script src='js/cases/show_case.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+    <script type="text/javascript">
+      $(function () {
+       var date = new Date();
+       var today = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        $('#id_closed_on').datetimepicker({
+            'format': 'YYYY-MM-DD',
+            minDate: today
+        })
+      });
+
+      $(".savenew").on('click', function(e){
+        e.preventDefault()
+        $("#save_new_form").val('true')
+        $('#submitForm').submit()
+      });
+      $(document).ready(function() {
+        $('.assigned_users').select2();
+      });
+
+      $('#id_account').change(function(){
+      var account = $("#id_account").val()
+      $.get("{% url 'cases:select_contacts' %}", {"account":account}, function(data){
+        $("#id_contacts").html("")
+        $.each(data, function (index, value) {
+          $("#id_contacts").append("<option value="+index+">"+value+"</option>")
+        });
+      })
+  });
+    </script>
+  {% endblock js_block %}
