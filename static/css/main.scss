@@ -5,9 +5,9 @@ body {
   font-weight: 500;
   margin: 0;
   padding-top:60px; 
-  font-size: 14px;
+  font-size: 15px;
   @media(min-width:$large){
-    font-size:16px;
+    font-size:17px;
   }
 }
 .login_register_body {
@@ -15,7 +15,7 @@ body {
 }
 
 *{
-    font-size: 14px;
+    font-size: 15px;
     @media(min-width:$large){
       font-size:17px;
     }
@@ -39,6 +39,11 @@ body {
         color: $color_screamin_green_approx;
       }
     }
+  }
+}
+a{
+  &:hover{
+    text-decoration:none;
   }
 }
 .login_form_block {
@@ -106,27 +111,32 @@ body {
 
 /* inner_pages starts here */
 .main_body_bg_color{
-  background: $inner_page_bg;
+  background: #fff;
 }
 header{
   .navbar{
-    background: darken($text_color, 15%);
+    background: #fff;
     border:none;
+    border:1px solid #ddd;
+    padding:0 15px;
     .navbar-brand{
-      color: $login_btn_bg;
+      color: darken($text_color, 10%);
       font-weight: 600;
+      margin-right: 50px;
       &:hover{
         color: $login_btn_bg;
       }
     }
     .navbar-nav{
-      li{
+      .nav-item{
         a{
-          color: lighten($text_color3, 10%) !important;
-          font-weight: 600;
+          color: lighten($text_color,5%) !important;
+          font-weight: 500;
           font-size: 0.9rem;
-          padding:14px 10px;
+          padding:10px 15px;
+          display: inline-block;
           padding-top: 16px;
+          border-bottom: 3px solid #fff;
           @media(min-width: $mob_min) and (max-width: $smob_max) {
             padding:5px 10px;
           }
@@ -134,10 +144,12 @@ header{
             font-size:1rem;
           }
           &:hover{
-            color:#fff !important;
+            color:darken($text_color,5%) !important;
+            border-bottom: 3px solid $dark_sky;
           }
           &.active{
-            color: #fff!important;
+            color:darken($text_color,5%) !important;
+            border-bottom: 3px solid $dark_sky;
           }
         }
       }
@@ -155,9 +167,12 @@ header{
             }
           }
         .dropdown-menu{
+            padding:0;
             a{
               font-size: 0.9rem;
+              padding:8px 10px;
               color: darken($text_color,5%);
+              border:none !important;
               svg{
                 display: inline-block;
                 margin-right: 5px;
@@ -165,6 +180,9 @@ header{
               }
               @media(min-width:$large){
                 font-size:0.95rem;
+              }
+              &:hover{
+                border:none !important;
               }
            }
         }
@@ -178,12 +196,15 @@ header{
             }
           }
           a{
-            background:lighten($text_color,5%);
             color: #fff;
-            border-right:1px solid lighten($text_color,10%);
             &.nav-link{
-              padding:0.5rem;
+              padding:11px 15px;
+              border-bottom:3px solid #fff;
             }
+            &:hover{
+            color:darken($text_color,5%) !important;
+            border-bottom: 3px solid $dark_sky;
+          }
           }
         }
       }
@@ -416,10 +437,10 @@ $color_2: #000;
 }
 /* main_container ends here */
  .table_container_row{
-    margin-top: 10px;
+    margin-top: 0px;
     .card{
       .card-title{
-        padding:5px 10px;
+        padding:5px 10px !important;
         background: #e5e5e5;
         padding:6px 10px;
         font-size: 1rem;
@@ -458,11 +479,10 @@ $color_2: #000;
         thead{
           tr{
             th{
-              background: #5b646d;
-              color: #fff;
+              color: #5b646d;
               font-weight: 600;
               /* text-transform: uppercase; */
-              font-size: 1rem;
+              font-size: 0.9rem;
               border: none;
               padding:6px;
             }
@@ -473,14 +493,18 @@ $color_2: #000;
             td{
               vertical-align: middle;
               color: #454545;
-              font-size: 1rem;
+              font-size: 0.9rem;
               font-weight: 500;
               padding:7px 0;
               @media(min-width: $large){
                 font-size:1rem;
               }
               a{
-                color: #454545;
+                color: lighten($dark_sky,5%);
+                &:hover{
+                  color:$dark_sky;
+                  text-decoration: underline;
+                }
               }
               .dropdown{
                 .dropdown-toggle{
@@ -581,11 +605,12 @@ $color_2: #000;
   .card-title{
     height: 45px;
     height: auto;
-    padding:1.8% 10px !important;
+    padding:15px 10px !important;
     h5{
       margin-bottom: 0;
       position: relative;
-      font-size: 13px;
+      font-size: 1rem;
+      font-weight: 600;
     }
     .dropdown{
       .dropdown-menu{
@@ -647,7 +672,7 @@ $color_2: #000;
   }
 }
 .buttons_row{
-  margin-bottom: 20px;
+  margin-bottom: 0px;
   button{
     border-radius: 0;
     font-size: 1rem;
