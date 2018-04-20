@@ -32,7 +32,7 @@ def cases_list(request):
         cases = cases.filter(status=status)
     if priority:
         cases = cases.filter(priority=priority)
-    return render(request, "cases/cases.html", {
+    return render(request, "cases.html", {
         'cases': cases,
         'accounts': accounts,
         'acc': int(account),
@@ -70,7 +70,7 @@ def add_case(request):
         else:
             if request.is_ajax():
                 return JsonResponse({'error': True, 'case_errors': form.errors})
-            return render(request, "cases/create_cases.html", {
+            return render(request, "create_cases.html", {
                 'case_form': form,
                 'accounts': accounts,
                 'users': users,
@@ -82,7 +82,7 @@ def add_case(request):
                 'assignedto_list': [int(user_id) for user_id in assignedto_list],
                 'contacts_list': contacts_list
             })
-    return render(request, "cases/create_cases.html", {
+    return render(request, "create_cases.html", {
         'case_form': form,
         'accounts': accounts,
         'users': users,
@@ -101,7 +101,7 @@ def view_case(request, case_id):
     case_record = get_object_or_404(
         Case.objects.prefetch_related("contacts", "account"), id=case_id)
     comments = case_record.cases.all()
-    return render(request, "cases/view_case.html", {
+    return render(request, "view_case.html", {
         'case_record': case_record,
         'comments': comments
     })
@@ -141,7 +141,7 @@ def edit_case(request, case_id):
         else:
             if request.is_ajax():
                 return JsonResponse({'error': True, 'case_errors': form.errors})
-            return render(request, "cases/create_cases.html", {
+            return render(request, "create_cases.html", {
                 'case_obj': case_object,
                 'case_form': form,
                 'accounts': accounts,
@@ -155,7 +155,7 @@ def edit_case(request, case_id):
                 'contacts_list': contacts_list
             })
 
-    return render(request, "cases/create_cases.html", {
+    return render(request, "create_cases.html", {
         'case_form': form,
         'case_obj': case_object,
         'accounts': accounts,
@@ -173,10 +173,11 @@ def edit_case(request, case_id):
 @login_required
 def remove_case(request, case_id):
     if request.method == 'POST':
-        cid = request.POST['case_id']
-        get_object_or_404(Case, id=cid).delete()
+        get_object_or_404(Case, id=case_id).delete()
+        if request.is_ajax():
+            return JsonResponse({'error': False})
         count = Case.objects.filter(Q(assigned_to=request.user) | Q(created_by=request.user)).count()
-        data = {"case_id": cid, "count": count}
+        data = {"case_id": case_id, "count": count}
         return JsonResponse(data)
     else:
         Case.objects.filter(id=case_id).delete()
@@ -278,6 +279,6 @@ def remove_comment(request):
 def get_cases(request):
     if request.method == 'GET':
         cases = Case.objects.all()
-        return render(request, 'cases/cases_list.html', {'cases': cases})
+        return render(request, 'cases_list.html', {'cases': cases})
     else:
         return HttpResponse('Oops!! Something Went Wrong..  in load_calls')

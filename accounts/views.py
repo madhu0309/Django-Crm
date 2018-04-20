@@ -3,20 +3,15 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from accounts.models import Account
 from common.models import User, Address, Team, Comment
-from common.utils import INDCHOICES, TYPECHOICES, COUNTRIES, CURRENCY_CODES, CASE_TYPE, PRIORITY_CHOICE, STATUS_CHOICE
+from common.utils import INDCHOICES, COUNTRIES, CURRENCY_CODES, CASE_TYPE, PRIORITY_CHOICE, STATUS_CHOICE
 from opportunity.models import Opportunity, STAGES, SOURCES
 from contacts.models import Contact
 from cases.models import Case
 from accounts.forms import AccountForm, AccountCommentForm
 from common.forms import BillingAddressForm, ShippingAddressForm
-from django.views.decorators.csrf import csrf_exempt
-
-
-# CRUD Operations Start
 
 
 @login_required
-@csrf_exempt
 def accounts_list(request):
     accounts_list = Account.objects.all()
     page = request.POST.get('per_page')
@@ -32,7 +27,7 @@ def accounts_list(request):
     if industry:
         accounts_list = accounts_list.filter(industry__icontains=industry)
 
-    return render(request, "accounts/accounts.html", {
+    return render(request, "accounts.html", {
         'accounts_list': accounts_list,
         'industries': INDCHOICES,
         'per_page': page
@@ -40,7 +35,6 @@ def accounts_list(request):
 
 
 @login_required
-@csrf_exempt
 def add_account(request):
     users = User.objects.filter(is_active=True).order_by('email')
     account_form = AccountForm(assigned_to=users)
@@ -68,7 +62,7 @@ def add_account(request):
             else:
                 return redirect("accounts:list")
         else:
-            return render(request, 'accounts/create_account.html', {
+            return render(request, 'create_account.html', {
                 'account_form': account_form,
                 'billing_form': billing_form,
                 'shipping_form': shipping_form,
@@ -81,7 +75,7 @@ def add_account(request):
             })
 
     else:
-        return render(request, 'accounts/create_account.html', {
+        return render(request, 'create_account.html', {
             'account_form': account_form,
             'billing_form': billing_form,
             'shipping_form': shipping_form,
@@ -95,7 +89,6 @@ def add_account(request):
 
 
 @login_required
-@csrf_exempt
 def view_account(request, account_id):
     account_record = get_object_or_404(Account, id=account_id)
     comments = account_record.accounts_comments.all()
@@ -104,7 +97,7 @@ def view_account(request, account_id):
     users = User.objects.filter(is_active=True).order_by('email')
     cases = Case.objects.filter(account=account_record)
     teams = Team.objects.all()
-    return render(request, "accounts/view_account.html", {
+    return render(request, "view_account.html", {
         'account_record': account_record,
         'opportunity_list': opportunity_list,
         'stages': STAGES,
@@ -123,7 +116,6 @@ def view_account(request, account_id):
 
 
 @login_required
-@csrf_exempt
 def edit_account(request, edid):
     account_instance = get_object_or_404(Account, id=edid)
     account_billing_address = account_instance.billing_address
@@ -153,7 +145,7 @@ def edit_account(request, edid):
             account_object.teams.add(*teams_list)
             return redirect("accounts:list")
         else:
-            return render(request, 'accounts/create_account.html', {
+            return render(request, 'create_account.html', {
                 'account_form': account_form,
                 'billing_form': billing_form,
                 'shipping_form': shipping_form,
@@ -168,7 +160,7 @@ def edit_account(request, edid):
                 'teams_list': teams_list
             })
     else:
-        return render(request, 'accounts/create_account.html', {
+        return render(request, 'create_account.html', {
             'account_form': account_form,
             'billing_form': billing_form,
             'shipping_form': shipping_form,
@@ -185,14 +177,10 @@ def edit_account(request, edid):
 
 
 @login_required
-@csrf_exempt
 def remove_account(request, aid):
     account_record = get_object_or_404(Account, id=aid)
     account_record.delete()
     return redirect("accounts:list")
-
-# CRUD Operations Ends
-# Comments Section Starts
 
 
 @login_required
@@ -260,9 +248,9 @@ def remove_comment(request):
 @login_required
 def get_accounts(request):
     if request.method == 'GET':
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             accounts = Account.objects.all()
-            return render(request, 'accounts/accounts_list.html', {
+            return render(request, 'accounts_list.html', {
                 'accounts': accounts})
         else:
             return HttpResponseRedirect('accounts/login')
