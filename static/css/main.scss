@@ -7,7 +7,7 @@ body {
   padding-top:60px; 
 }
 .login_register_body {
-  background: $body_bg;
+  
 }
 
 *{
@@ -23,11 +23,8 @@ body {
 .login_row {
 }
 .login_block {
-  margin-top: 75px;
-  background: $login_bg;
-  -webkit-box-shadow: 10px 10px 0px -4px rgba(0,0,0,0.19);
--moz-box-shadow: 10px 10px 0px -4px rgba(0,0,0,0.19);
-box-shadow: 10px 10px 0px -4px rgba(0,0,0,0.19);
+  margin-top: 0px;
+
   .welcome {
     text-transform: uppercase;
     font-size: 14px;
