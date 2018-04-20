@@ -30,19 +30,19 @@
             <div class="row marl">
               <div class="filter_col col-md-4">
                 <div class="form-group">
-                  <label for="exampleInputEmail1">NAME</label>
+                  <label for="exampleInputEmail1">Name</label>
                   <input type="text" class="form-control" placeholder="Account Name" name="name" {% if request.POST %} value="{{request.POST.name}}" {%endif%}/>
                 </div>
               </div>
               <div class="filter_col col-md-4">
                 <div class="form-group">
-                  <label for="exampleInputEmail1">CITY</label>
+                  <label for="exampleInputEmail1">City</label>
                   <input type="text" class="form-control" placeholder="City" name="city" {% if request.POST %} value="{{request.POST.city}}" {%endif%}/>
                 </div>
               </div>
               <div class="filter_col col-md-4">
                 <div class="form-group">
-                  <label for="exampleInputEmail1">INDUSTRY</label>
+                  <label for="exampleInputEmail1">Industry</label>
                   <select class="form-control" id="id_industry" name="industry" >
                     <option value="">--Select Type of Industry--</option>
                     {% for each_industry in industries %}
@@ -60,7 +60,6 @@
             </div>
           </div>
         </form>
-        <br clear="all">
       </div>
     </div>
   </div>
@@ -75,7 +74,7 @@
           <span class="float-right total_count">{% if show_pageitems %} {% show_pageitems %}{% else %}Total Accounts {{accounts_list|length}}{% endif %}</span>
         </div>
           <div class="table-responsive">
-          <table class="table table-bordered table-striped table-condensed">
+          <table class="table ">
             <thead>
               <tr>
                 <th width="5%" style="text-align:center;">S.no</th>
