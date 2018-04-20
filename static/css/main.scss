@@ -437,7 +437,7 @@ $color_2: #000;
 }
 /* main_container ends here */
  .table_container_row{
-    margin-top: 10px;
+    margin-top: 0px;
     .card{
       .card-title{
         padding:5px 10px !important;
@@ -500,7 +500,11 @@ $color_2: #000;
                 font-size:1rem;
               }
               a{
-                color: #454545;
+                color: lighten($dark_sky,5%);
+                &:hover{
+                  color:$dark_sky;
+                  text-decoration: underline;
+                }
               }
               .dropdown{
                 .dropdown-toggle{
