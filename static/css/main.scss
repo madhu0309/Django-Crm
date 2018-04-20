@@ -5,9 +5,13 @@ body {
   font-weight: 500;
   margin: 0;
   padding-top:60px; 
+  font-size: 14px;
+  @media(min-width:$large){
+    font-size:16px;
+  }
 }
 .login_register_body {
-  background: $body_bg;
+  
 }
 
 *{
@@ -23,16 +27,11 @@ body {
 .login_row {
 }
 .login_block {
-  margin-top: 75px;
-  background: $login_bg;
-  -webkit-box-shadow: 10px 10px 0px -4px rgba(0,0,0,0.19);
--moz-box-shadow: 10px 10px 0px -4px rgba(0,0,0,0.19);
-box-shadow: 10px 10px 0px -4px rgba(0,0,0,0.19);
+  margin-top: 0px;
+
   .welcome {
-    text-transform: uppercase;
-    font-size: 14px;
+    font-size: 1.6rem;
     font-weight: 600;
-    letter-spacing: 1px;
     color: #333;
     span {
       color: $color_cyan_aqua_approx;
@@ -49,7 +48,17 @@ box-shadow: 10px 10px 0px -4px rgba(0,0,0,0.19);
       margin-bottom: 20px;
       text-align: center;
     }
-
+    .forgot{
+      font-size: 13px;
+      display: block;
+      color: darken($text_color2, 15%);
+      a{
+        display: inline-block;
+        color: $dark_sky;
+        margin-bottom: 10px;
+        font-size: 13px;
+      }
+    }
   .form-group {
     margin-bottom: 15px;
   }
@@ -59,26 +68,22 @@ box-shadow: 10px 10px 0px -4px rgba(0,0,0,0.19);
     font-weight:500;
   }
   .form-control {
-    background: #dcdcdc;
     color: $text_color;
     min-height: 40px;
     font-size: 13px;
     letter-spacing: 0.5px;
+    border:1px solid #ddd;
     //Instead of the line below you could use @include box-shadow($shadow-1, $shadow-2, $shadow-3, $shadow-4, $shadow-5, $shadow-6, $shadow-7, $shadow-8, $shadow-9, $shadow-10)
     box-shadow: none;
-    border: none;
     //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
     border-radius: 3px;
   }
   .btn {
-    background: $login_btn_bg;
     //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
     border-radius: 3px;
     border: none;
-    text-transform: uppercase;
-    font-size: 13px;
-    letter-spacing: 1px;
-    font-weight: 500;
+    font-size: 1rem;
+    font-weight: 600;
     color: $white;
     width: 100%;
     outline:none;
