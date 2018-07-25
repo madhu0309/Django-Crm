@@ -1,6 +1,9 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import CreateView, UpdateView, DetailView, ListView, TemplateView, View
+
 from accounts.models import Account
 from common.models import User, Address, Team, Comment
 from common.utils import INDCHOICES, COUNTRIES, CURRENCY_CODES, CASE_TYPE, PRIORITY_CHOICE, STATUS_CHOICE
@@ -11,81 +14,112 @@ from accounts.forms import AccountForm, AccountCommentForm
 from common.forms import BillingAddressForm, ShippingAddressForm
 
 
-@login_required
-def accounts_list(request):
-    accounts_list = Account.objects.all()
-    page = request.POST.get('per_page')
-    name = request.POST.get('name')
-    city = request.POST.get('city')
-    industry = request.POST.get('industry')
+class AccountsListView(LoginRequiredMixin, TemplateView):
+    model = Account
+    context_object_name = "accounts_list"
+    template_name = "accounts.html"
 
-    if name:
-        accounts_list = accounts_list.filter(name__icontains=name)
-    if city:
-        accounts_list = accounts_list.filter(
-            billing_address__in=[i.id for i in Address.objects.filter(city__contains=city)])
-    if industry:
-        accounts_list = accounts_list.filter(industry__icontains=industry)
+    def get_queryset(self):
+        queryset = self.model.objects.all().select_related("billing_address")
+        request_post = self.request.POST
+        if request_post:
+            if request_post.get('name'):
+                queryset = queryset.filter(name__icontains=request_post.get('name'))
+            if request_post.get('city'):
+                queryset = queryset.filter(
+                    billing_address__in=[i.id for i in Address.objects.filter(
+                        city__contains=request_post.get('city'))])
+            if request_post.get('industry'):
+                queryset = queryset.filter(industry__icontains=request_post.get('industry'))
+        return queryset
 
-    return render(request, "accounts.html", {
-        'accounts_list': accounts_list,
-        'industries': INDCHOICES,
-        'per_page': page
-    })
+    def get_context_data(self, **kwargs):
+        context = super(AccountsListView, self).get_context_data(**kwargs)
+        context["accounts_list"] = self.get_queryset()
+        context["industries"] = INDCHOICES
+        context["per_page"] = self.request.POST.get('per_page')
+        return context
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
 
 
-@login_required
-def add_account(request):
-    users = User.objects.filter(is_active=True).order_by('email')
-    account_form = AccountForm(assigned_to=users)
-    billing_form = BillingAddressForm()
-    shipping_form = ShippingAddressForm(prefix='ship')
-    teams = Team.objects.all()
-    assignedto_list = request.POST.getlist('assigned_to')
-    teams_list = request.POST.getlist('teams')
-    if request.method == 'POST':
-        account_form = AccountForm(request.POST, assigned_to=users)
+class CreateAccountView(LoginRequiredMixin, CreateView):
+    model = Account
+    form_class = AccountForm
+    template_name = "create_account.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.users = User.objects.filter(is_active=True).order_by('email')
+        return super(CreateAccountView, self).dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super(CreateAccountView, self).get_form_kwargs()
+        kwargs.update({'assigned_to': self.users})
+        return kwargs
+
+    def post(self, request, *args, **kwargs):
+        self.object = None
+        form = self.get_form()
         billing_form = BillingAddressForm(request.POST)
         shipping_form = ShippingAddressForm(request.POST, prefix='ship')
-        if account_form.is_valid() and billing_form.is_valid() and shipping_form.is_valid():
-            billing_object = billing_form.save()
-            shipping_object = shipping_form.save()
-            account_object = account_form.save(commit=False)
-            account_object.billing_address = billing_object
-            account_object.shipping_address = shipping_object
-            account_object.created_by = request.user
-            account_object.save()
-            account_object.assigned_to.add(*assignedto_list)
-            account_object.teams.add(*teams_list)
-            if request.POST.get("savenewform"):
-                return redirect("accounts:new_account")
-            else:
-                return redirect("accounts:list")
+        if form.is_valid() and billing_form.is_valid() and shipping_form.is_valid():
+            return self.form_valid(form, billing_form, shipping_form)
         else:
-            return render(request, 'create_account.html', {
-                'account_form': account_form,
-                'billing_form': billing_form,
-                'shipping_form': shipping_form,
-                'industries': INDCHOICES,
-                'countries': COUNTRIES,
-                'users': users,
-                'teams': teams,
-                'assignedto_list': [int(user_id) for user_id in assignedto_list],
-                'teams_list': teams_list
-            })
+            return self.form_invalid(form, billing_form, shipping_form)
 
-    else:
-        return render(request, 'create_account.html', {
-            'account_form': account_form,
-            'billing_form': billing_form,
-            'shipping_form': shipping_form,
-            'industries': INDCHOICES,
-            'countries': COUNTRIES,
-            'users': users,
-            'teams': teams,
-            'assignedto_list': assignedto_list,
-            'teams_list': teams_list
-        })
+    def form_valid(self, form, billing_form, shipping_form):
+        # Save Billing & Shipping Address
+        billing_address_object = billing_form.save()
+        shipping_address_object = shipping_form.save()
+        # Save Account
+        account_object = form.save(commit=False)
+        account_object.billing_address = billing_address_object
+        account_object.shipping_address = shipping_address_object
+        account_object.created_by = self.request.user
+        account_object.save()
+        if self.request.POST.getlist('assigned_to', []):
+            account_object.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+        if self.request.POST.getlist('teams', []):
+            account_object.teams.add(*self.request.POST.getlist('teams'))
+        if self.request.POST.get("savenewform"):
+            return redirect("accounts:new_account")
+        else:
+            return redirect("accounts:list")
+
+    def form_invalid(self, form, billing_form, shipping_form):
+        return self.render_to_response(
+            self.get_context_data(
+                form=form, billing_form=billing_form, shipping_form=shipping_form)
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super(CreateAccountView, self).get_context_data(**kwargs)
+        context["account_form"] = context["form"]
+        context["users"] = self.users
+        context["industries"] = INDCHOICES
+        context["countries"] = COUNTRIES
+        context["teams"] = Team.objects.all()
+        if "billing_form" in kwargs and "shipping_form" in kwargs:
+            context["billing_form"] = kwargs["billing_form"]
+            context["shipping_form"] = kwargs["shipping_form"]
+        else:
+            if self.request.POST:
+                context["billing_form"] = BillingAddressForm(self.request.POST)
+                context["shipping_form"] = ShippingAddressForm(self.request.POST, prefix='ship')
+            else:
+                context["billing_form"] = BillingAddressForm()
+                context["shipping_form"] = ShippingAddressForm(prefix='ship')
+        context["assignedto_list"] = [
+            int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
+        context["teams_list"] = [
+            int(i) for i in self.request.POST.getlist('teams', []) if i]
+        return context
 
 
 @login_required

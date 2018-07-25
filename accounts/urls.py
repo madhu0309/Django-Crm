@@ -1,12 +1,14 @@
 from django.conf.urls import url
+from django.urls import path
 from accounts import views
+from accounts.views import AccountsListView, CreateAccountView
 
 app_name = 'accounts'
 
-
 urlpatterns = [
-    url(r'^list/$', views.accounts_list, name='list'),
-    url(r'^create/$', views.add_account, name='new_account'),
+	path('list/', AccountsListView.as_view(), name='list'),
+	path('create/', CreateAccountView.as_view(), name='new_account'),
+
     url(r'^(?P<account_id>\d*)/view/$', views.view_account, name="view_account"),
     url(r'^(?P<edid>\d*)/edit/$', views.edit_account, name="edit_account"),
     url(r'^(?P<aid>\d*)/delete/$', views.remove_account, name="remove_account"),
