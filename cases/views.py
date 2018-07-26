@@ -1,7 +1,11 @@
-from django.shortcuts import render, get_object_or_404, redirect, HttpResponseRedirect, reverse
-from django.http import JsonResponse, HttpResponse
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
+from django.views.generic import (
+    CreateView, UpdateView, DetailView, ListView, TemplateView, View, DeleteView)
 
 from cases.models import Case
 from cases.forms import CaseForm, CaseCommentForm
@@ -10,164 +14,189 @@ from accounts.models import Account
 from contacts.models import Contact
 from common.utils import PRIORITY_CHOICE, STATUS_CHOICE, CASE_TYPE
 
-# CRUD Operations Start
+
+class CasesListView(LoginRequiredMixin, TemplateView):
+    model = Case
+    context_object_name = "cases"
+    template_name = "cases.html"
+
+    def get_queryset(self):
+        queryset = self.model.objects.all().select_related("account")
+        request_post = self.request.POST
+        if request_post:
+            if request_post.get('name'):
+                queryset = queryset.filter(name__icontains=request_post.get('name'))
+            if request_post.get('account'):
+                queryset = queryset.filter(account_id=request_post.get('account'))
+            if request_post.get('status'):
+                queryset = queryset.filter(status=request_post.get('status'))
+            if request_post.get('priority'):
+                queryset = queryset.filter(priority=request_post.get('priority'))
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super(CasesListView, self).get_context_data(**kwargs)
+        context["cases"] = self.get_queryset()
+        context["accounts"] = Account.objects.all()
+        context["per_page"] = self.request.POST.get('per_page')
+        context["acc"] = int(self.request.POST.get("account")) if self.request.POST.get("account") else None
+        context["case_priority"] = PRIORITY_CHOICE
+        context["case_status"] = STATUS_CHOICE
+        return context
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
 
 
-@login_required
-def cases_list(request):
-    cases = Case.objects.all().select_related("account")
-    accounts = Account.objects.all()
-    page = request.POST.get('per_page')
-    name = request.POST.get('name')
-    status = request.POST.get('status')
-    priority = request.POST.get('priority')
-    account = request.POST.get('account')
-    if not account:
-        account = 0
-    if name:
-        cases = cases.filter(name__contains=name)
-    if account:
-        cases = cases.filter(account=account)
-    if status:
-        cases = cases.filter(status=status)
-    if priority:
-        cases = cases.filter(priority=priority)
-    return render(request, "cases.html", {
-        'cases': cases,
-        'accounts': accounts,
-        'acc': int(account),
-        'per_page': page,
-        'case_priority': PRIORITY_CHOICE,
-        'case_status': STATUS_CHOICE
-    })
+class CreateCaseView(LoginRequiredMixin, CreateView):
+    model = Case
+    form_class = CaseForm
+    template_name = "create_cases.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        self.users = User.objects.filter(is_active=True).order_by('email')
+        self.accounts = Account.objects.all()
+        self.contacts = Contact.objects.all()
+        return super(CreateCaseView, self).dispatch(request, *args, **kwargs)
 
-@login_required
-def add_case(request):
-    accounts = Account.objects.all()
-    contacts = Contact.objects.all()
-    users = User.objects.filter(is_active=True).order_by('email')
-    form = CaseForm(assigned_to=users, account=accounts, contacts=contacts)
-    teams = Team.objects.all()
-    teams_list = request.POST.getlist("teams")
-    assignedto_list = request.POST.getlist("assigned_to")
-    contacts_list = request.POST.getlist("contacts")
-    if request.method == 'POST':
-        form = CaseForm(request.POST, assigned_to=users, account=accounts, contacts=contacts)
+    def get_form_kwargs(self):
+        kwargs = super(CreateCaseView, self).get_form_kwargs()
+        kwargs.update({"assigned_to": self.users, "account": self.accounts,
+                       "contacts": self.contacts})
+        return kwargs
+
+    def post(self, request, *args, **kwargs):
+        self.object = None
+        form = self.get_form()
         if form.is_valid():
-            case = form.save(commit=False)
-            case.created_by = request.user
-            case.save()
-            case.assigned_to.add(*assignedto_list)
-            case.teams.add(*teams_list)
-            case.contacts.add(*contacts_list)
-            if request.is_ajax():
-                return JsonResponse({'error': False})
-            if request.POST.get("savenewform"):
-                return redirect("cases:case_add")
-            else:
-                return HttpResponseRedirect(reverse('cases:list'))
+            return self.form_valid(form)
         else:
-            if request.is_ajax():
-                return JsonResponse({'error': True, 'case_errors': form.errors})
-            return render(request, "create_cases.html", {
-                'case_form': form,
-                'accounts': accounts,
-                'users': users,
-                'teams': teams,
-                'case_types': CASE_TYPE,
-                'case_priority': PRIORITY_CHOICE,
-                'case_status': STATUS_CHOICE,
-                'teams_list': teams_list,
-                'assignedto_list': [int(user_id) for user_id in assignedto_list],
-                'contacts_list': contacts_list
-            })
-    return render(request, "create_cases.html", {
-        'case_form': form,
-        'accounts': accounts,
-        'users': users,
-        'teams': teams,
-        'teams_list': teams_list,
-        'assignedto_list': assignedto_list,
-        'contacts_list': contacts_list,
-        'case_types': CASE_TYPE,
-        'case_priority': PRIORITY_CHOICE,
-        'case_status': STATUS_CHOICE
-    })
+            return self.form_invalid(form)
+
+    def form_valid(self, form):
+        case = form.save(commit=False)
+        case.created_by = self.request.user
+        case.save()
+        if self.request.POST.getlist('assigned_to', []):
+            case.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+        if self.request.POST.getlist('teams', []):
+            case.teams.add(*self.request.POST.getlist('teams'))
+        if self.request.POST.getlist('contacts', []):
+            case.contacts.add(*self.request.POST.getlist('contacts'))
+        if self.request.is_ajax():
+            return JsonResponse({'error': False})
+        if self.request.POST.get("savenewform"):
+            return redirect("cases:add_case")
+        else:
+            return redirect('cases:list')
+
+    def form_invalid(self, form):
+        if self.request.is_ajax():
+            return JsonResponse({'error': True, 'case_errors': form.errors})
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def get_context_data(self, **kwargs):
+        context = super(CreateCaseView, self).get_context_data(**kwargs)
+        context["teams"] = Team.objects.all()
+        context["case_form"] = context["form"]
+        context["accounts"] = self.accounts
+        context["contacts"] = self.contacts
+        context["users"] = self.users
+        context["case_types"] = CASE_TYPE
+        context["case_priority"] = PRIORITY_CHOICE
+        context["case_status"] = STATUS_CHOICE
+        context["assignedto_list"] = [
+            int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
+        context["teams_list"] = [
+            int(i) for i in self.request.POST.getlist('teams', []) if i]
+        context["contacts_list"] = [
+            int(i) for i in self.request.POST.getlist('contacts', []) if i]
+        return context
 
 
-@login_required
-def view_case(request, case_id):
-    case_record = get_object_or_404(
-        Case.objects.prefetch_related("contacts", "account"), id=case_id)
-    comments = case_record.cases.all()
-    return render(request, "view_case.html", {
-        'case_record': case_record,
-        'comments': comments
-    })
+class CaseDetailView(LoginRequiredMixin, DetailView):
+    model = Case
+    context_object_name = "case_record"
+    template_name = "view_case.html"
+
+    def get_queryset(self):
+        queryset = super(CaseDetailView, self).get_queryset()
+        return queryset.prefetch_related("contacts", "account")
+
+    def get_context_data(self, **kwargs):
+        context = super(CaseDetailView, self).get_context_data(**kwargs)
+        context.update({"comments": context["case_record"].cases.all()})
+        return context
 
 
-@login_required
-def edit_case(request, case_id):
-    case_object = get_object_or_404(Case, id=case_id)
-    users = User.objects.filter(is_active=True).order_by('email')
-    accounts = Account.objects.all()
-    contacts = Contact.objects.all()
-    form = CaseForm(instance=case_object, assigned_to=users, account=accounts, contacts=contacts)
-    teams = Team.objects.all()
-    teams_list = request.POST.getlist("teams")
-    assignedto_list = request.POST.getlist("assigned_to")
-    contacts_list = request.POST.getlist("contacts")
-    if request.method == 'POST':
-        form = CaseForm(
-            request.POST, instance=case_object, assigned_to=users, account=accounts,
-            contacts=contacts
-        )
+class UpdateCaseView(LoginRequiredMixin, UpdateView):
+    model = Case
+    form_class = CaseForm
+    template_name = "create_cases.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.users = User.objects.filter(is_active=True).order_by('email')
+        self.accounts = Account.objects.all()
+        self.contacts = Contact.objects.all()
+        return super(UpdateCaseView, self).dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super(UpdateCaseView, self).get_form_kwargs()
+        kwargs.update({"assigned_to": self.users, "account": self.accounts,
+                       "contacts": self.contacts})
+        return kwargs
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
         if form.is_valid():
-            case_obj = form.save(commit=False)
-            if request.POST.get("account"):
-                case_obj.account = Account.objects.get(id=request.POST.get("account"))
-            case_obj.created_by = request.user
-            case_obj.save()
-            case_obj.assigned_to.clear()
-            case_obj.assigned_to.add(*assignedto_list)
-            case_obj.teams.clear()
-            case_obj.teams.add(*teams_list)
-            case_obj.contacts.clear()
-            case_obj.contacts.add(*contacts_list)
-            if request.is_ajax():
-                return JsonResponse({'error': False})
-            return HttpResponseRedirect(reverse('cases:list'))
+            return self.form_valid(form)
         else:
-            if request.is_ajax():
-                return JsonResponse({'error': True, 'case_errors': form.errors})
-            return render(request, "create_cases.html", {
-                'case_obj': case_object,
-                'case_form': form,
-                'accounts': accounts,
-                'users': users,
-                'teams': teams,
-                'case_types': CASE_TYPE,
-                'case_priority': PRIORITY_CHOICE,
-                'case_status': STATUS_CHOICE,
-                'teams_list': teams_list,
-                'assignedto_list': [int(user_id) for user_id in assignedto_list],
-                'contacts_list': contacts_list
-            })
+            return self.form_invalid(form)
 
-    return render(request, "create_cases.html", {
-        'case_form': form,
-        'case_obj': case_object,
-        'accounts': accounts,
-        'users': users,
-        'teams': teams,
-        'case_types': CASE_TYPE,
-        'case_priority': PRIORITY_CHOICE,
-        'case_status': STATUS_CHOICE,
-        'assignedto_list': assignedto_list,
-        'teams_list': teams_list,
-        'contacts_list': contacts_list
-    })
+    def form_valid(self, form):
+        case_obj = form.save()
+        case_obj.assigned_to.clear()
+        case_obj.teams.clear()
+        case_obj.contacts.clear()
+        if self.request.POST.getlist('assigned_to', []):
+            case_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+        if self.request.POST.getlist('teams', []):
+            case_obj.teams.add(*self.request.POST.getlist('teams'))
+        if self.request.POST.getlist('contacts', []):
+            case_obj.contacts.add(*self.request.POST.getlist('contacts'))
+        if self.request.is_ajax():
+            return JsonResponse({'error': False})
+        return redirect("cases:list")
+
+    def form_invalid(self, form):
+        if self.request.is_ajax():
+            return JsonResponse({'error': True, 'case_errors': form.errors})
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def get_context_data(self, **kwargs):
+        context = super(UpdateCaseView, self).get_context_data(**kwargs)
+        context["case_obj"] = self.object
+        context["teams"] = Team.objects.all()
+        context["case_form"] = context["form"]
+        context["accounts"] = self.accounts
+        context["contacts"] = self.contacts
+        context["users"] = self.users
+        context["case_types"] = CASE_TYPE
+        context["case_priority"] = PRIORITY_CHOICE
+        context["case_status"] = STATUS_CHOICE
+        context["assignedto_list"] = [
+            int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
+        context["teams_list"] = [
+            int(i) for i in self.request.POST.getlist('teams', []) if i]
+        context["contacts_list"] = [
+            int(i) for i in self.request.POST.getlist('contacts', []) if i]
+        return context
 
 
 @login_required
