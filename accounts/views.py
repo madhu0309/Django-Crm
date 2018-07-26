@@ -259,7 +259,7 @@ class AddCommentView(LoginRequiredMixin, CreateView):
             else:
                 return self.form_invalid(form)
         else:
-            data = {'error': "You Dont Have permissions to Comment"}
+            data = {'error': "You don't have permission to comment for this account."}
             return JsonResponse(data)
 
     def form_valid(self, form):
@@ -277,37 +277,41 @@ class AddCommentView(LoginRequiredMixin, CreateView):
         return JsonResponse({"error": form['comment'].errors})
 
 
-@login_required
-def edit_comment(request):
-    if request.method == "POST":
-        comment = request.POST.get('comment')
-        comment_id = request.POST.get("commentid")
-        com = get_object_or_404(Comment, id=comment_id)
-        form = AccountCommentForm(request.POST)
-        if request.user == com.commented_by:
+class UpdateCommentView(LoginRequiredMixin, View):
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        self.comment_obj = get_object_or_404(Comment, id=request.POST.get("commentid"))
+        if request.user == self.comment_obj.commented_by:
+            form = AccountCommentForm(request.POST, instance=self.comment_obj)
             if form.is_valid():
-                com.comment = comment
-                com.save()
-                data = {"comment": com.comment, "commentid": comment_id}
-                return JsonResponse(data)
+                return self.form_valid(form)
             else:
-                return JsonResponse({"error": form['comment'].errors})
+                return self.form_invalid(form)
         else:
-            return JsonResponse({"error": "You dont have authentication to edit"})
-    else:
-        return render(request, "404.html")
+            data = {'error': "You don't have permission to edit this comment."}
+            return JsonResponse(data)
+
+    def form_valid(self, form):
+        self.comment_obj.comment = form.cleaned_data.get("comment")
+        self.comment_obj.save(update_fields=["comment"])
+        return JsonResponse({
+            "comment_id": self.comment_obj.id,
+            "comment": self.comment_obj.comment,
+        })
+
+    def form_invalid(self, form):
+        return JsonResponse({"error": form['comment'].errors})
 
 
-@login_required
-def remove_comment(request):
-    if request.method == 'POST':
-        comment_id = request.POST.get('comment_id')
-        comment = get_object_or_404(Comment, id=comment_id)
-        if request.user == comment.commented_by:
-            comment.delete()
-            data = {"cid": comment_id}
+class DeleteCommentView(LoginRequiredMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        self.object = get_object_or_404(Comment, id=request.POST.get("comment_id"))
+        if request.user == self.object.commented_by:
+            self.object.delete()
+            data = {"cid": request.POST.get("comment_id")}
             return JsonResponse(data)
         else:
-            return JsonResponse({"error": "You Dont have permisions to delete"})
-    else:
-        return HttpResponse("Something Went Wrong")
+            data = {'error': "You don't have permission to delete this comment."}
+            return JsonResponse(data)
