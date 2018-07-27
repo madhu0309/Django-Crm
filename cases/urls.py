@@ -1,5 +1,3 @@
-from django.conf.urls import url
-from cases import views
 from django.urls import path
 from cases.views import (
     CasesListView, CreateCaseView, CaseDetailView, UpdateCaseView, RemoveCaseView,

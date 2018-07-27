@@ -2,14 +2,24 @@ from django.conf.urls import url
 from common import views
 from django.contrib.auth import views as auth_views
 
+from django.urls import path
+from common.views import (
+    HomeView, LoginView, ForgotPasswordView, LogoutView)
+
+
 app_name = 'common'
 
 
 urlpatterns = [
-    url(r'^$', views.home, name="home"),
-    url(r'^login/$', views.login_crm, name="login"),
-    url(r'^forgot-password/$', views.forgot_password, name="forgot_password"),
-    url(r'^logout/$', views.logout_crm, name="logout"),
+    path('', HomeView.as_view(), name='home'),
+    path('login/', LoginView.as_view(), name='login'),
+    path('forgot-password/', ForgotPasswordView.as_view(), name='forgot_password'),
+    path('logout/', LogoutView.as_view(), name='logout'),
+
+    # url(r'^$', views.home, name="home"),
+    # url(r'^login/$', views.login_crm, name="login"),
+    # url(r'^forgot-password/$', views.forgot_password, name="forgot_password"),
+    # url(r'^logout/$', views.logout_crm, name="logout"),
     url(r'^change-password/$', views.change_pass, name="change_pass"),
     url(r'^profile/$', views.profile, name="profile"),
     url(r'^users/list$', views.users_list, name="users_list"),

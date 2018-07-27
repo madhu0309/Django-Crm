@@ -5,6 +5,15 @@ from django.http.response import Http404
 from django.contrib.auth import logout, authenticate, login
 from django.contrib.auth.hashers import check_password
 
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
+from django.http import JsonResponse
+# from django.shortcuts import get_object_or_404, redirect
+# from django.urls import reverse
+from django.views.generic import (
+    CreateView, UpdateView, DetailView, ListView, TemplateView, View, DeleteView)
+
+
 from common.models import User
 from common.forms import UserForm, LoginForm, ChangePasswordForm
 
@@ -23,9 +32,8 @@ def admin_required(function):
     return wrapper
 
 
-@login_required
-def home(request):
-    return render(request, 'index.html')
+class HomeView(LoginRequiredMixin, TemplateView):
+    template_name = "index.html"
 
 
 @login_required
@@ -56,10 +64,15 @@ def profile(request):
     return render(request, "profile.html", {'user_obj': user_obj})
 
 
-def login_crm(request):
-    if request.user.is_authenticated:
-        return HttpResponseRedirect('/')
-    if request.method == 'POST':
+class LoginView(TemplateView):
+    template_name = "login.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return HttpResponseRedirect('/')
+        return super(LoginView, self).dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
         form = LoginForm(request.POST, request=request)
         if form.is_valid():
             user = authenticate(username=request.POST.get('email'), password=request.POST.get('password'))
@@ -68,22 +81,32 @@ def login_crm(request):
                     login(request, user)
                     return HttpResponseRedirect('/')
                 else:
-                    return render(request, "login.html", {"error": True, "message": "Your Account is InActive. Please Contact Administrator"})
+                    return render(request, "login.html", {
+                        "error": True,
+                        "message": "Your Account is InActive. Please Contact Administrator"
+                    })
             else:
-                return render(request, "login.html", {"error": True, "message": "Your Account is not Found. Please Contact Administrator"})
+                return render(request, "login.html", {
+                    "error": True,
+                    "message": "Your Account is not Found. Please Contact Administrator"
+                })
         else:
-            return render(request, "login.html", {"error": True, "message": "Your username and password didn't match. Please try again."})
-    return render(request, 'login.html')
+            return render(request, "login.html", {
+                "error": True,
+                "message": "Your username and password didn't match. Please try again."
+            })
 
 
-def forgot_password(request):
-    return render(request, 'forgot_password.html')
+class ForgotPasswordView(TemplateView):
+    template_name = "forgot_password.html"
 
 
-def logout_crm(request):
-    logout(request)
-    request.session.flush()
-    return redirect("common:login")
+class LogoutView(LoginRequiredMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        logout(request)
+        request.session.flush()
+        return redirect("common:login")
 
 
 @admin_required
