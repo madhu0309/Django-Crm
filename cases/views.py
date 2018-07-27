@@ -199,115 +199,127 @@ class UpdateCaseView(LoginRequiredMixin, UpdateView):
         return context
 
 
-@login_required
-def remove_case(request, case_id):
-    if request.method == 'POST':
-        get_object_or_404(Case, id=case_id).delete()
+class RemoveCaseView(LoginRequiredMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        case_id = kwargs.get("case_id")
+        self.object = get_object_or_404(Case, id=case_id)
+        self.object.delete()
+        return redirect("cases:list")
+
+    def post(self, request, *args, **kwargs):
+        case_id = kwargs.get("case_id")
+        self.object = get_object_or_404(Case, id=case_id)
+        self.object.delete()
         if request.is_ajax():
             return JsonResponse({'error': False})
-        count = Case.objects.filter(Q(assigned_to=request.user) | Q(created_by=request.user)).count()
+        count = Case.objects.filter(
+            Q(assigned_to=request.user) | Q(created_by=request.user)).distinct().count()
         data = {"case_id": case_id, "count": count}
         return JsonResponse(data)
-    else:
-        Case.objects.filter(id=case_id).delete()
-        return HttpResponseRedirect(reverse('cases:list'))
 
 
-@login_required
-def close_case(request):
-    cid = request.POST['case_id']
-    case = get_object_or_404(Case, id=cid)
-    case.status = "Closed"
-    case.save()
-    data = {'status': "Closed", "cid": cid}
-    return JsonResponse(data)
+class CloseCaseView(LoginRequiredMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        case_id = request.POST.get("case_id")
+        self.object = get_object_or_404(Case, id=case_id)
+        self.object.status = "Closed"
+        self.object.save()
+        data = {'status': "Closed", "cid": case_id}
+        return JsonResponse(data)
 
 
-def selectContacts(request):
-    contact_account = request.GET.get("account")
-    if contact_account:
-        account = get_object_or_404(Account, id=contact_account)
-        contacts = Contact.objects.filter(account=account)
-    else:
-        contacts = Contact.objects.all()
-    data = {}
-    for i in contacts:
-        new = {i.pk: i.first_name}
-        data.update(new)
-    return JsonResponse(data)
+class SelectContactsView(LoginRequiredMixin, View):
 
-
-# CRUD Operations End
-# Comments Section Start
-
-
-@login_required
-def add_comment(request):
-    if request.method == 'POST':
-        case = get_object_or_404(Case, id=request.POST.get('caseid'))
-        if request.user in case.assigned_to.all() or request.user == case.created_by:
-            form = CaseCommentForm(request.POST)
-            if form.is_valid():
-                case_comment = form.save(commit=False)
-                case_comment.comment = request.POST.get('comment')
-                case_comment.commented_by = request.user
-                case_comment.case = case
-                case_comment.save()
-                data = {"comment_id": case_comment.id, "comment": case_comment.comment,
-                        "commented_on": case_comment.commented_on,
-                        "commented_by": case_comment.commented_by.email}
-                return JsonResponse(data)
-            else:
-                return JsonResponse({"error": form['comment'].errors})
+    def get(self, request, *args, **kwargs):
+        contact_account = request.GET.get("account")
+        if contact_account:
+            account = get_object_or_404(Account, id=contact_account)
+            contacts = Contact.objects.filter(account=account)
         else:
-            data = {'error': "You Dont Have permissions to Comment"}
+            contacts = Contact.objects.all()
+        data = {i.pk: i.first_name for i in contacts.distinct()}
+        return JsonResponse(data)
+
+
+class GetCasesView(LoginRequiredMixin, ListView):
+    model = Case
+    context_object_name = "cases"
+    template_name = "cases_list.html"
+
+
+class AddCommentView(LoginRequiredMixin, CreateView):
+    model = Comment
+    form_class = CaseCommentForm
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        self.object = None
+        self.case = get_object_or_404(Case, id=request.POST.get('caseid'))
+        if (
+            request.user in self.case.assigned_to.all() or
+            request.user == self.case.created_by
+        ):
+            form = self.get_form()
+            if form.is_valid():
+                return self.form_valid(form)
+            else:
+                return self.form_invalid(form)
+        else:
+            data = {'error': "You don't have permission to comment."}
             return JsonResponse(data)
 
+    def form_valid(self, form):
+        comment = form.save(commit=False)
+        comment.commented_by = self.request.user
+        comment.case = self.case
+        comment.save()
+        return JsonResponse({
+            "comment_id": comment.id, "comment": comment.comment,
+            "commented_on": comment.commented_on,
+            "commented_by": comment.commented_by.email
+        })
 
-@login_required
-def edit_comment(request):
-    if request.method == "POST":
-        comment = request.POST.get('comment')
-        comment_id = request.POST.get("commentid")
-        comment_obj = get_object_or_404(Comment, id=comment_id)
-        form = CaseCommentForm(request.POST)
-        if request.user == comment_obj.commented_by:
+    def form_invalid(self, form):
+        return JsonResponse({"error": form['comment'].errors})
+
+
+class UpdateCommentView(LoginRequiredMixin, View):
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        self.comment_obj = get_object_or_404(Comment, id=request.POST.get("commentid"))
+        if request.user == self.comment_obj.commented_by:
+            form = CaseCommentForm(request.POST, instance=self.comment_obj)
             if form.is_valid():
-                comment_obj.comment = comment
-                comment_obj.save()
-                data = {"comment": comment_obj.comment, "commentid": comment_id}
-                return JsonResponse(data)
+                return self.form_valid(form)
             else:
-                return JsonResponse({"error": form['comment'].errors})
+                return self.form_invalid(form)
         else:
-            return JsonResponse({"error": "You dont have authentication to edit"})
-    else:
-        return render(request, "404.html")
+            data = {'error': "You don't have permission to edit this comment."}
+            return JsonResponse(data)
+
+    def form_valid(self, form):
+        self.comment_obj.comment = form.cleaned_data.get("comment")
+        self.comment_obj.save(update_fields=["comment"])
+        return JsonResponse({
+            "comment_id": self.comment_obj.id,
+            "comment": self.comment_obj.comment,
+        })
+
+    def form_invalid(self, form):
+        return JsonResponse({"error": form['comment'].errors})
 
 
-@login_required
-def remove_comment(request):
-    if request.method == 'POST':
-        comment_id = request.POST.get('comment_id')
-        comment = get_object_or_404(Comment, id=comment_id)
-        if request.user == comment.commented_by:
-            comment.delete()
-            data = {"cid": comment_id}
+class DeleteCommentView(LoginRequiredMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        self.object = get_object_or_404(Comment, id=request.POST.get("comment_id"))
+        if request.user == self.object.commented_by:
+            self.object.delete()
+            data = {"cid": request.POST.get("comment_id")}
             return JsonResponse(data)
         else:
-            return JsonResponse({"error": "You Dont have permisions to delete"})
-    else:
-        return HttpResponse("Something Went Wrong")
-
-
-# Comments Section End
-# Other Views
-
-
-@login_required
-def get_cases(request):
-    if request.method == 'GET':
-        cases = Case.objects.all()
-        return render(request, 'cases_list.html', {'cases': cases})
-    else:
-        return HttpResponse('Oops!! Something Went Wrong..  in load_calls')
+            data = {'error': "You don't have permission to delete this comment."}
+            return JsonResponse(data)
