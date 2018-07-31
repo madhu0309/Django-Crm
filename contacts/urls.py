@@ -1,5 +1,3 @@
-# from django.conf.urls import url
-# from contacts import views
 from django.urls import path
 from contacts.views import (
     ContactsListView, CreateContactView, ContactDetailView, UpdateContactView, RemoveContactView,
