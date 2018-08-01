@@ -205,7 +205,7 @@ class UpdateContactView(LoginRequiredMixin, UpdateView):
 class RemoveContactView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
-        return self.post(self, request, *args, **kwargs)
+        return self.post(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         contact_id = kwargs.get("pk")

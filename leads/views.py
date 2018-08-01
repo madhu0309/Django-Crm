@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import (
-    CreateView, UpdateView, DetailView, ListView, TemplateView, View, DeleteView)
+    CreateView, UpdateView, DetailView, ListView, TemplateView, View)
 
 from accounts.models import Account
 from common.forms import BillingAddressForm
@@ -263,7 +263,7 @@ class UpdateLeadView(LoginRequiredMixin, UpdateView):
 class DeleteLeadView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
-        return self.post(self, request, *args, **kwargs)
+        return self.post(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         self.object = get_object_or_404(Lead, id=kwargs.get("pk"))
@@ -371,7 +371,7 @@ class DeleteCommentView(LoginRequiredMixin, View):
             return JsonResponse(data)
 
 
-class GetLeadsView(LoginRequiredMixin, TemplateView):
+class GetLeadsView(LoginRequiredMixin, ListView):
     model = Lead
     context_object_name = "leads"
     template_name = "leads_list.html"
