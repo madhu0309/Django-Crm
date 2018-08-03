@@ -14,7 +14,7 @@ def admin_required(function):
     def wrapper(request, *args, **kwargs):
         user = request.user
         if user.is_authenticated:
-            if user.role == "ADMIN":
+            if user.role == "ADMIN" or user.is_superuser:
                 return function(request, *args, **kwargs)
             else:
                 raise Http404
