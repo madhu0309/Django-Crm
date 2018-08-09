@@ -16,9 +16,9 @@ class AdminRequiredMixin(AccessMixin):
             return self.handle_no_permission()
         self.raise_exception = True
         if not request.user.role == "ADMIN":
-            return self.handle_no_permission()
+            if not request.user.is_superuser:
+                return self.handle_no_permission()
         return super().dispatch(request, *args, **kwargs)
-
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "index.html"
