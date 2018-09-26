@@ -52,7 +52,7 @@
           <b class="caret"></b></a>
           {% endwith %}
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-          {% if not request.user.role == "ADMIN" and not request.user.is_superuser %}
+          {% if request.user.email != "admin@micropyramid.com" %}
           <a class="dropdown-item" href="/change-password/"><i class="fas fa-key"></i> Change Password</a>
           {% endif %}
           <a class="dropdown-item" href="{% url 'common:profile' %}"><i class="fas fa-user"></i> Profile</a>
