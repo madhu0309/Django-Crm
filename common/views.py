@@ -18,7 +18,7 @@ class AdminRequiredMixin(AccessMixin):
         if not request.user.role == "ADMIN":
             if not request.user.is_superuser:
                 return self.handle_no_permission()
-        return super().dispatch(request, *args, **kwargs)
+        return super(AdminRequiredMixin, self).dispatch(request, *args, **kwargs)
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "index.html"
@@ -176,8 +176,11 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
     template_name = "create.html"
 
     def form_valid(self, form):
-        form.save()
-        if self.request.user.role == "ADMIN":
+        user = form.save(commit=False)
+        if user.role == "USER":
+            user.is_superuser = False
+        user.save()
+        if self.request.user.role == "ADMIN" or self.request.user.is_superuser:
             return redirect("common:users_list")
         return redirect("common:profile")
 

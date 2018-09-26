@@ -132,6 +132,13 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super(AccountDetailView, self).get_context_data(**kwargs)
         account_record = context["account_record"]
+        if (
+            self.request.user in account_record.assigned_to.all() or
+            self.request.user == account_record.created_by
+        ):
+            comment_permission = True
+        else:
+            comment_permission = False
         context.update({
             "comments": account_record.accounts_comments.all(),
             "opportunity_list": Opportunity.objects.filter(account=account_record),
@@ -146,6 +153,7 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
             "case_types": CASE_TYPE,
             "case_priority": PRIORITY_CHOICE,
             "case_status": STATUS_CHOICE,
+            'comment_permission': comment_permission,
         })
         return context
 
@@ -214,9 +222,9 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         else:
             if self.request.POST:
                 context["billing_form"] = BillingAddressForm(
-                    request.POST, instance=self.object.billing_address)
+                    self.request.POST, instance=self.object.billing_address)
                 context["shipping_form"] = ShippingAddressForm(
-                    request.POST, instance=self.object.shipping_address, prefix='ship')
+                    self.request.POST, instance=self.object.shipping_address, prefix='ship')
             else:
                 context["billing_form"] = BillingAddressForm(
                     instance=self.object.billing_address)
