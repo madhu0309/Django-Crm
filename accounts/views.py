@@ -1,10 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse
-from django.views.generic import (
-    CreateView, UpdateView, DetailView, ListView, TemplateView, View, DeleteView)
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect
+from django.views.generic import CreateView, UpdateView, DetailView, TemplateView, View, DeleteView
 
 from accounts.models import Account
 from common.models import User, Address, Team, Comment
@@ -132,13 +129,6 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super(AccountDetailView, self).get_context_data(**kwargs)
         account_record = context["account_record"]
-        if (
-            self.request.user in account_record.assigned_to.all() or
-            self.request.user == account_record.created_by
-        ):
-            comment_permission = True
-        else:
-            comment_permission = False
         context.update({
             "comments": account_record.accounts_comments.all(),
             "opportunity_list": Opportunity.objects.filter(account=account_record),
@@ -153,7 +143,6 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
             "case_types": CASE_TYPE,
             "case_priority": PRIORITY_CHOICE,
             "case_status": STATUS_CHOICE,
-            'comment_permission': comment_permission,
         })
         return context
 
@@ -222,9 +211,9 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         else:
             if self.request.POST:
                 context["billing_form"] = BillingAddressForm(
-                    self.request.POST, instance=self.object.billing_address)
+                    request.POST, instance=self.object.billing_address)
                 context["shipping_form"] = ShippingAddressForm(
-                    self.request.POST, instance=self.object.shipping_address, prefix='ship')
+                    request.POST, instance=self.object.shipping_address, prefix='ship')
             else:
                 context["billing_form"] = BillingAddressForm(
                     instance=self.object.billing_address)
