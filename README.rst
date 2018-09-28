@@ -3,36 +3,51 @@ Django-CRM
 
 Django CRM is opensourse CRM developed on django framework. It has all the basic features of CRM to start with. We welcome code contributions and feature requests via github.
 
-
-.. image:: https://landscape.io/github/MicroPyramid/Django-CRM/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/MicroPyramid/Django-CRM/master
-   :alt: Code Health
-
-.. image:: https://img.shields.io/github/license/MicroPyramid/Django-CRM.svg
-    :target: https://pypi.python.org/pypi/Django-CRM/
-
 .. list-table::
    :header-rows: 1
-   :widths: 7 7 60
+   :widths: 50 50 150 90
    :stub-columns: 1
 
    *  -  Build Status
       -  Codacy
+      -  Docker
       -  Support
-   *  -  .. image:: https://travis-ci.org/MicroPyramid/Django-CRM.svg?branch=master
-            :target: https://travis-ci.org/MicroPyramid/Django-CRM
+   *  -   .. image:: https://travis-ci.org/MicroPyramid/Django-CRM.svg?branch=master
+             :target: https://travis-ci.org/MicroPyramid/Django-CRM
+             :alt: Travis
+
+          .. image:: https://landscape.io/github/MicroPyramid/Django-CRM/master/landscape.svg?style=flat
+             :target: https://landscape.io/github/MicroPyramid/Django-CRM/master
+             :alt: Code Health
+
       -  .. image:: https://api.codacy.com/project/badge/Grade/b11da5f09dd542479fd3bd53944595d2
             :target: https://app.codacy.com/project/ashwin/Django-CRM/dashboard
             :alt: Codacy Dashboard
          .. image:: https://api.codacy.com/project/badge/Coverage/b11da5f09dd542479fd3bd53944595d2
             :target: https://app.codacy.com/project/ashwin/Django-CRM/dashboard
             :alt: Codacy Coverage
+
+      -  .. image:: https://img.shields.io/docker/automated/micropyramid/django-crm.svg
+            :target: https://github.com/MicroPyramid/Django-CRM
+            :alt: Docker Automated
+         .. image:: https://img.shields.io/docker/build/micropyramid/django-crm.svg
+            :target: https://github.com/MicroPyramid/Django-CRM
+            :alt: Docker Build Passing
+         .. image:: https://img.shields.io/docker/stars/micropyramid/django-crm.svg
+            :target: https://hub.docker.com/r/micropyramid/django-crm/
+            :alt: Docker Stars
+         .. image:: https://img.shields.io/docker/pulls/micropyramid/django-crm.svg
+            :target: https://hub.docker.com/r/micropyramid/django-crm/
+            :alt: Docker Pulls
+
       -  .. image:: https://badges.gitter.im/Micropyramid/Django-CRM.png
             :target: https://gitter.im/MicroPyramid/Django-CRM
             :alt: Gitter
          .. image:: https://www.codetriage.com/micropyramid/django-crm/badges/users.svg
             :target: https://www.codetriage.com/micropyramid/django-crm
             :alt: Code Helpers
+         .. image:: https://img.shields.io/github/license/MicroPyramid/Django-CRM.svg
+            :target: https://pypi.python.org/pypi/Django-CRM/
 
 
 http://django-crm.readthedocs.io for latest documentation
