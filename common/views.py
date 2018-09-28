@@ -2,9 +2,8 @@ from django.contrib.auth import logout, authenticate, login
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
 from django.http import HttpResponseRedirect
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import (
-    CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
+from django.shortcuts import render, redirect
+from django.views.generic import CreateView, UpdateView, DetailView, TemplateView, View, DeleteView
 from common.models import User
 from common.forms import UserForm, LoginForm, ChangePasswordForm
 
@@ -16,9 +15,9 @@ class AdminRequiredMixin(AccessMixin):
             return self.handle_no_permission()
         self.raise_exception = True
         if not request.user.role == "ADMIN":
-            if not request.user.is_superuser:
-                return self.handle_no_permission()
-        return super(AdminRequiredMixin, self).dispatch(request, *args, **kwargs)
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "index.html"
@@ -176,11 +175,8 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
     template_name = "create.html"
 
     def form_valid(self, form):
-        user = form.save(commit=False)
-        if user.role == "USER":
-            user.is_superuser = False
-        user.save()
-        if self.request.user.role == "ADMIN" or self.request.user.is_superuser:
+        form.save()
+        if self.request.user.role == "ADMIN":
             return redirect("common:users_list")
         return redirect("common:profile")
 
