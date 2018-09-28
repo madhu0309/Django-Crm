@@ -21,6 +21,3 @@ class Contact(models.Model):
 
     def __str__(self):
         return self.first_name
-
-    class Meta:
-        unique_together = (("email", ),)
