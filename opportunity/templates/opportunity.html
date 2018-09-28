@@ -94,6 +94,7 @@
         <div class="table-responsive">
           <table class="table ">
             <thead>
+              {% if opportunity_list|length > 0 %}
               <tr>
                 <th width="5%">S.No</th>
                 <th width="15%">Name</th>
@@ -103,6 +104,7 @@
                 <th width="10%">Lead Source</th>
                 <th width="15%">Actions</th>
               </tr>
+              {% endif %}
             </thead>
             <tbody>
               {% if per_page %}

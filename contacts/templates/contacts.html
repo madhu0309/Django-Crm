@@ -78,6 +78,7 @@
         <div class="table-responsive">
           <table class="table">
             <thead>
+             {% if contact_obj_list|length > 0 %}
               <tr>
                 <th width="5%" >S.no</th>
                 <th width="20%" >Name</th>
@@ -86,6 +87,7 @@
                 <th width="15%" >State</th>
                 <th width="15%" >Actions</th>
               </tr>
+              {% endif %}
             </thead>
             <tbody>
               {% if per_page %}
