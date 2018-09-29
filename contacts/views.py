@@ -66,9 +66,9 @@ class CreateContactView(LoginRequiredMixin, CreateView):
         form = self.get_form()
         address_form = BillingAddressForm(request.POST)
         if form.is_valid() and address_form.is_valid():
-            address_obj = address_form.save()
+            ddress_obj = address_form.save()
             contact_obj = form.save(commit=False)
-            contact_obj.address = address_obj
+            contact_obj.address = ddress_obj
             contact_obj.created_by = self.request.user
             contact_obj.save()
             return self.form_valid(form)
