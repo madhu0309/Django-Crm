@@ -6,7 +6,6 @@ from django.contrib.contenttypes.models import ContentType
 from accounts.models import Account
 from contacts.models import Contact
 from common.models import User, Team
-from planner.models import Event
 from common.utils import CASE_TYPE, PRIORITY_CHOICE, STATUS_CHOICE
 
 
