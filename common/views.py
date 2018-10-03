@@ -9,6 +9,14 @@ from common.models import User
 from common.forms import UserForm, LoginForm, ChangePasswordForm
 
 
+def handler404(request, exception):
+    return render(request, '404.html', status=404)
+
+
+def handler500(request):
+    return render(request, '500.html', status=500)
+
+
 class AdminRequiredMixin(AccessMixin):
 
     def dispatch(self, request, *args, **kwargs):
@@ -19,6 +27,7 @@ class AdminRequiredMixin(AccessMixin):
             if not request.user.is_superuser:
                 return self.handle_no_permission()
         return super(AdminRequiredMixin, self).dispatch(request, *args, **kwargs)
+
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "index.html"
