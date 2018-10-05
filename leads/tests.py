@@ -139,7 +139,7 @@ class LeadsViewTestCase(TestLeadModel, TestCase):
                             account=self.account,
                             address=self.address,
                             website="www.gmail.com",
-                            status='converted',
+                            status='convert',
                             source="Call",
                             opportunity_amount="900",
                             description="Iam an Opportunity",
