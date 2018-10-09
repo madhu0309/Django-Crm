@@ -8,6 +8,7 @@ from django.views.generic import (
 from common.models import User
 from common.forms import UserForm, LoginForm, ChangePasswordForm
 from django.urls import reverse_lazy
+from django.conf import settings
 
 
 def handler404(request, exception):
@@ -133,6 +134,7 @@ class UsersListView(AdminRequiredMixin, TemplateView):
         context["active_users"] = self.get_queryset().filter(is_active=True)
         context["inactive_users"] = self.get_queryset().filter(is_active=False)
         context["per_page"] = self.request.POST.get('per_page')
+        context['admin_email'] = settings.ADMIN_EMAIL
         return context
 
     def post(self, request, *args, **kwargs):
