@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'leads',
     'opportunity',
     'planner',
+    'sorl.thumbnail',
 ]
 
 
