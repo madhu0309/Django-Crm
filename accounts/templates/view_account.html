@@ -1,3 +1,5 @@
+
+
 {% extends 'base.html' %}
 {% load staticfiles %}
 {% block breadcrumb %}
@@ -81,24 +83,7 @@
                   <div class="form-group">
                     <label class="acc_field_label" for="id_billing_address" data-name="name">Billing Address</label>
                     <div class="account_field" id="account_billing_address" data-name="name">
-                      {% if account_record.billing_address.address_line %}
-                        Address Line:{{account_record.billing_address.address_line}}</br>
-                      {% endif %}
-                      {% if account_record.billing_address.street %}
-                        Street:{{ account_record.billing_address.street }}</br>
-                      {% endif %}
-                      {% if account_record.billing_address.city %}
-                        City: {{ account_record.billing_address.city }}</br>
-                      {% endif %}
-                      {% if account_record.billing_address.state %}
-                        State:{{ account_record.billing_address.state }}</br>
-                      {% endif %}
-                      {% if account_record.billing_address.postcode %}
-                        Post Code:{{ account_record.billing_address.postcode }}</br>
-                      {% endif %}
-                      {% if account_record.billing_address.country %}
-                        Country: {{ account_record.billing_address.get_country_display }}
-                      {% endif %}
+                      {{account_record.billing_address.get_complete_address}}
                     </div>
                   </div>
                 </div>
@@ -196,8 +181,8 @@
               <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                   <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
                     <h4 class="modal-title">Update Your Comment</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
                   </div>
                   <form id="comment_edit_form" method="POST" >
                     <div class="modal-body">
@@ -232,10 +217,11 @@
           <div class="card-body">
           <div class="panel-heading-list card-title view-pad">
             Contacts
-            <span class="pull-right glyphicon glyphicon-plus" data-toggle="modal" data-dismiss="modal_con" data-target="#myModal2"></span>
+            <span class="fa fa-plus pull-right" data-toggle="modal" data-dismiss="modal_con" data-target="#myModal2"></span>
           </div>
             <div class="table-responsive">
             <table class="table table-bordered table-striped table-condensed">
+              {% if contacts|length > 0 %}
               <thead>
                 <tr>
                   <th width="5%" style="text-align:center;">S.No</th>
@@ -245,6 +231,7 @@
                   <th width="25%" style="text-align:center;">Actions</th>
                 </tr>
               </thead>
+              {% endif %}
               <tbody>
                 {% for contact in contacts %}
                 <tr id="contacts_details{{contact.id}}" class="text-center">
@@ -262,6 +249,9 @@
               </tbody>
             </table>
             </div>
+            {% ifequal contacts|length 0 %}
+              <h6 class="text-center">No Contact Records Found</h6>
+            {% endifequal %}
           </div>
         </div>
         <br clear="all">
@@ -433,7 +423,7 @@
           </h5>
         </div>
         <div class="modal-body">
-          <div class="col-md-7">
+          <div class="col-md-12">
             <div class="panel panel-default">
               <div class="panel-heading view_pad">
                 OverView
@@ -476,24 +466,7 @@
                         {% if contact.address.address_line or contact.address.street or contact.address.city or  contact.address.state or contact.address.postcode or contact.address.country %}
                         <label class="acc_field_label" for="id_name" data-name="name" >Address</label>
                         <div class="account_field" id="account_account" data-name="name">
-                          {% if contact.address.address_line %}
-                            Address Line: {{ contact.address.address_line }}</br>
-                          {% endif %}
-                          {% if contact.address.street %}
-                            Street: {{ contact.address.street }}</br>
-                          {% endif %}
-                          {% if contact.address.city %}
-                            City: {{ contact.address.city }}</br>
-                          {% endif %}
-                          {% if contact.address.state %}
-                            State: {{ contact.address.state }}</br>
-                          {% endif %}
-                          {% if contact.address.postcode %}
-                            Post Code: {{ contact.address.postcode }}</br>
-                          {% endif %}
-                          {% if contact.address.country %}
-                            Country: {{ contact.address.get_country_display }}
-                          {% endif %}
+                          {{contact.address.get_complete_address}}
                         </div>
                         {% endif %}
                       </div>
@@ -709,9 +682,8 @@
                       <div class="col-md-12">
                         <div class="filter_col col-md-12">
                           <div class="form-group">
-                            <label for="exampleInputEmail1" >Description</label>
+                            <label for="exampleInputEmail1" >Description</label>EAD
                             <textarea class="form-control" rows="3"  id="id_description" name="description" placeholder="Description">{% if contact.description %}{{ contact.description}}{% else %}{{request.POST.description }}{%endif%}</textarea>
-                            {{ contact_form.description.errors }}
                           </div>
                         </div>
                       </div>
@@ -744,10 +716,11 @@
           <div class="card-body">
            <div class="panel-heading-list card-title view-pad ">
           Opportunities
-            <span class="pull-right glyphicon glyphicon-plus" data-toggle="modal" data-dismiss="modal" data-target="#myModal"></span>
+            <span class="pull-right fa fa-plus" data-toggle="modal" data-dismiss="modal" data-target="#myModal"></span>
           </div>
           <div class="table-responsive">
             <table class="table table-bordered table-striped table-condensed">
+              {% if opportunity_list|length > 0 %}
               <thead>
                 <tr>
                   <th width="5%" style="text-align:center;">S.No</th>
@@ -757,6 +730,7 @@
                   <th width="25%" style="text-align:center;">Actions </th>
                 </tr>
               </thead>
+              {% endif %}
               <tbody>
                 {% for opportunity in opportunity_list %}
                 <tr id="opp_details{{opportunity.id}}" class="text-center">
@@ -774,6 +748,9 @@
               </tbody>
             </table>
           </div>
+          `{% ifequal contacts|length 0 %}
+              <h6 class="text-center">No Opportunity Records Found</h6>
+           {% endifequal %}
           </div>
         </div>
         <br clear="all">
@@ -926,7 +903,7 @@
                         </div>
                         <div class="form-group col-md-12">
                           <label for="exampleInputEmail1" >Description</label>
-                          <textarea class="form-control" rows="5"  id="id_description" name="description" class="Description">{{request.POST.description}}</textarea>
+                          <textarea class="form-control" rows="5"  id="id_description" name="description" placeholder="Description">{{request.POST.description}}</textarea>
                           {{ opportunity_form.description.errors }}
                         </div>
                       </div>
@@ -1302,10 +1279,11 @@
           <div class="card-body">
            <div class="panel-heading-list card-title view-pad ">
             Cases
-            <span class="pull-right glyphicon glyphicon-plus" data-toggle="modal" data-dismiss="modal_case" data-target="#myModal3"></span>
+            <span class="pull-right fa fa-plus" data-toggle="modal" data-dismiss="modal_case" data-target="#myModal3"></span>
           </div>
           <div class="table-responsive">
             <table class="table table-bordered table-striped table-condensed">
+              {% if cases|length > 0 %}
               <thead>
                 <tr>
                   <th width="5%" style="text-align:center;">S.No</th>
@@ -1315,6 +1293,7 @@
                   <th width="25%" style="text-align:center;">Actions</th>
                 </tr>
               </thead>
+              {% endif %}
               <tbody>
                 {% for case in cases %}
                 <tr id="cases_details{{case.id}}" class="text-center">
@@ -1333,6 +1312,9 @@
               </tbody>
             </table>
             </div>
+            {% ifequal cases|length 0 %}
+            <h6 class="text-center">No Case Records Found</h6>
+            {% endifequal %}
           </div>
         </div>
         <br clear="all">
@@ -2103,7 +2085,6 @@
           minDate: today
       })
   });
-
   /*Comment Remove Js Ends*/
   </script>
 {% endblock js_block %}
