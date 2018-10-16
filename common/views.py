@@ -6,7 +6,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import (
     CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
 from common.models import User
-from common.forms import UserForm, LoginForm, ChangePasswordForm
+from common.forms import UserForm, LoginForm, ChangePasswordForm, PasswordResetEmailForm
+from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy
 from django.conf import settings
 
@@ -123,9 +124,9 @@ class UsersListView(AdminRequiredMixin, TemplateView):
             if request_post.get('last_name'):
                 queryset = queryset.filter(last_name_id=request_post.get('last_name'))
             if request_post.get('username'):
-                queryset = queryset.filter(username=request_post.get('username'))
+                queryset = queryset.filter(username__icontains=request_post.get('username'))
             if request_post.get('email'):
-                queryset = queryset.filter(email=request_post.get('email'))
+                queryset = queryset.filter(email__icontains=request_post.get('email'))
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -230,3 +231,9 @@ class UserDeleteView(AdminRequiredMixin, DeleteView):
         self.object = self.get_object()
         self.object.delete()
         return redirect("common:users_list")
+
+
+class PasswordResetView(PasswordResetView):
+    template_name = 'registration/password_reset_form.html'
+    form_class = PasswordResetEmailForm
+    email_template_name = 'registration/password_reset_email.html'
