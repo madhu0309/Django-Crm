@@ -199,13 +199,13 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
         if user.role == "USER":
             user.is_superuser = False
         user.save()
-        if self.request.user.role == "ADMIN" or self.request.user.is_superuser:
-            if self.request.is_ajax():
+        if self.request.is_ajax():
+            if self.request.user == user:
+                data = {'success_url': reverse_lazy('common:profile'), 'error': False}
+                return JsonResponse(data)
+            else:
                 data = {'success_url': reverse_lazy('common:users_list'), 'error': False}
                 return JsonResponse(data)
-        if self.request.is_ajax():
-            data = {'success_url': reverse_lazy('common:profile'), 'error': False}
-            return JsonResponse(data)
         return super(UpdateUserView, self).form_valid(form)
 
 
