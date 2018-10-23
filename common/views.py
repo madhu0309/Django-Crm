@@ -168,6 +168,7 @@ class CreateUserView(AdminRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(CreateUserView, self).get_context_data(**kwargs)
         context["user_form"] = context["form"]
+        context['admin_email'] = settings.ADMIN_EMAIL
         if "errors" in kwargs:
             context["errors"] = kwargs["errors"]
         return context
@@ -219,6 +220,7 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
         context = super(UpdateUserView, self).get_context_data(**kwargs)
         context["user_obj"] = self.object
         context["user_form"] = context["form"]
+        context['admin_email'] = settings.ADMIN_EMAIL
         if "errors" in kwargs:
             context["errors"] = kwargs["errors"]
         return context
