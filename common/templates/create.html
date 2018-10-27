@@ -30,7 +30,7 @@
               <div class="filter_col col-md-12">
                 <div class="form-group">
                   <label for="id_lastname">Last Name{% if user_form.last_name.field.required %}<span class="error">*</span>{% endif %}</label>
-                  <input type="text" class="form-control" name="last_name" value="{% if user_obj %}{{ user_obj.last_name }}{% else %}{{request.POST.last_name}} {% endif %}" placeholder="Last Name">
+                  <input type="text" class="form-control" name="last_name" value="{% if user_obj %}{{ user_obj.last_name }}{% else %}{{request.POST.last_name}}{% endif %}" placeholder="Last Name">
                 </div>
                 <span class="error" id="id_last_name">{{ errors.last_name }}</span>
               </div>
