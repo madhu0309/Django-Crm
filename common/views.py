@@ -41,16 +41,16 @@ class ChangePasswordView(LoginRequiredMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         error, errors = "", ""
+        user = request.user
+        if request.POST.get('CurrentPassword'):
+            if not check_password(request.POST.get('CurrentPassword'), user.password):
+                    error = "Invalid old password"
         form = ChangePasswordForm(request.POST)
         if form.is_valid():
-            user = request.user
-            if not check_password(request.POST.get('CurrentPassword'), user.password):
-                error = "Invalid old password"
-            else:
-                user.set_password(request.POST.get('Newpassword'))
-                user.is_active = True
-                user.save()
-                return HttpResponseRedirect('/')
+            user.set_password(request.POST.get('Newpassword'))
+            user.is_active = True
+            user.save()
+            return HttpResponseRedirect('/')
         else:
             errors = form.errors
         return render(request, "change_password.html", {'error': error, 'errors': errors})
