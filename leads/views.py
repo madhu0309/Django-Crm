@@ -23,7 +23,7 @@ class LeadListView(LoginRequiredMixin, TemplateView):
     template_name = "leads.html"
 
     def get_queryset(self):
-        queryset = self.model.objects.all().exclude(status='converted')
+        queryset = self.model.objects.all().exclude(status='convert')
         request_post = self.request.POST
         if request_post:
             if request_post.get('first_name'):
@@ -84,7 +84,7 @@ class CreateLeadView(LoginRequiredMixin, CreateView):
         if self.request.POST.getlist('teams', []):
             lead_obj.teams.add(*self.request.POST.getlist('teams'))
 
-        if self.request.POST.get('status') == "converted":
+        if self.request.POST.get('status') == "convert":
             account_object = Account.objects.create(
                 created_by=self.request.user, name=lead_obj.account_name,
                 email=lead_obj.email, phone=lead_obj.phone,
@@ -181,7 +181,7 @@ class UpdateLeadView(LoginRequiredMixin, UpdateView):
         status = request.GET.get('status', None)
         if status:
             self.error = "This field is required."
-            self.object.status = "converted"
+            self.object.status = "convert"
         return super(UpdateLeadView, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -189,7 +189,7 @@ class UpdateLeadView(LoginRequiredMixin, UpdateView):
         address_obj = self.object.address
         form = self.get_form()
         address_form = BillingAddressForm(request.POST, instance=address_obj)
-        if request.POST.get('status') == "converted":
+        if request.POST.get('status') == "convert":
             form.fields['account_name'].required = True
         else:
             form.fields['account_name'].required = False
@@ -209,7 +209,7 @@ class UpdateLeadView(LoginRequiredMixin, UpdateView):
             lead_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
         if self.request.POST.getlist('teams', []):
             lead_obj.teams.add(*self.request.POST.getlist('teams'))
-        if self.request.POST.get('status') == "converted":
+        if self.request.POST.get('status') == "convert":
             account_object = Account.objects.create(
                 created_by=self.request.user, name=lead_obj.account_name,
                 email=lead_obj.email, phone=lead_obj.phone,
@@ -278,7 +278,7 @@ class ConvertLeadView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         lead_obj = get_object_or_404(Lead, id=kwargs.get("pk"))
         if lead_obj.account_name:
-            lead_obj.status = 'converted'
+            lead_obj.status = 'convert'
             lead_obj.save()
             account_object = Account.objects.create(
                 created_by=request.user, name=lead_obj.account_name,
@@ -292,7 +292,7 @@ class ConvertLeadView(LoginRequiredMixin, View):
             return redirect("accounts:list")
         else:
             return HttpResponseRedirect(
-                reverse('leads:edit_lead', kwargs={'pk': lead_obj.id}) + '?status=converted')
+                reverse('leads:edit_lead', kwargs={'pk': lead_obj.id}) + '?status=convert')
 
 
 class AddCommentView(LoginRequiredMixin, CreateView):

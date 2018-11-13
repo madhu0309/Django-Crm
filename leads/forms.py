@@ -10,7 +10,7 @@ class LeadForm(forms.ModelForm):
         super(LeadForm, self).__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs = {"class": "form-control"}
-        if self.data.get('status') == 'converted':
+        if self.data.get('status') == 'convert':
             self.fields['account_name'].required = True
         self.fields['assigned_to'].queryset = assigned_users
         self.fields['assigned_to'].required = False
