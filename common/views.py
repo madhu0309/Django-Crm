@@ -203,6 +203,7 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
         if self.request.is_ajax():
             if self.request.user == user:
                 data = {'success_url': reverse_lazy('common:profile'), 'error': False}
+                print(user)
                 return JsonResponse(data)
             else:
                 data = {'success_url': reverse_lazy('common:users_list'), 'error': False}
@@ -224,6 +225,7 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
         if "errors" in kwargs:
             context["errors"] = kwargs["errors"]
         return context
+
 
 
 class UserDeleteView(AdminRequiredMixin, DeleteView):
