@@ -158,8 +158,9 @@
                     <div class="float-right right-container">
                       <div class="list-row-buttons btn-group float-right">
                         <button class="btn btn-link btn-sm dropdown-toggle" data-toggle="dropdown" type="button"><span class="caret"></span></button>
-                        <button class="btn" onclick="remove_comment({{comment.id}})" ><i class="fa fa-trash"></i></button>
-                        <button class="btn" onclick="edit_comment({{comment.id}})"><i class="fa fa-edit"></i></button>
+                        
+                        <button type="button" class="btn" onclick="remove_comment({{comment.id}})" ><i class="fa fa-trash"></i></button>
+                        <button type="button" class="btn" onclick="edit_comment({{comment.id}})"><i class="fa fa-edit"></i></button>
                       </div>
                     </div>
                     <div class="stream-post-container" id="comment_name{{comment.id}}"><pre>{{ comment.comment }}</pre></div>

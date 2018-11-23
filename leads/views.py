@@ -58,7 +58,6 @@ class LeadListView(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        print("hiii")
         context = self.get_context_data(**kwargs)
 
 
@@ -246,7 +245,8 @@ class UpdateLeadView(LoginRequiredMixin, UpdateView):
         lead_obj.address = address_obj
         lead_obj.save()
         lead_obj.assigned_to.clear()
-        lead_obj.teams.clear()
+        lead_
+        obj.teams.clear()
         if self.request.POST.getlist('assigned_to', []):
             lead_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
         if self.request.POST.getlist('teams', []):
