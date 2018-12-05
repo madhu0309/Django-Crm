@@ -1,6 +1,5 @@
 from django.shortcuts import render
 from django.conf import settings
-import OpenSSL
 from django.contrib import messages
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
