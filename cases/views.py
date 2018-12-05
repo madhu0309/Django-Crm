@@ -3,7 +3,9 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import CreateView, UpdateView, DetailView, ListView, TemplateView, View
-
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.core.mail import send_mail
 from cases.models import Case
 from cases.forms import CaseForm, CaseCommentForm
 from common.models import Team, User, Comment
@@ -49,6 +51,10 @@ class CasesListView(LoginRequiredMixin, TemplateView):
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
 
+def get_rendered_html(template_name, context={}):
+    html_content = render_to_string(template_name, context)
+    return html_content
+
 
 class CreateCaseView(LoginRequiredMixin, CreateView):
     model = Case
@@ -85,12 +91,32 @@ class CreateCaseView(LoginRequiredMixin, CreateView):
             case.teams.add(*self.request.POST.getlist('teams'))
         if self.request.POST.getlist('contacts', []):
             case.contacts.add(*self.request.POST.getlist('contacts'))
+        to_email =self.request.POST.getlist('assigned_to','')
+        from_email = settings.EMAIL_FROM
+        template_name = "cases_email.html"
+        error = 'please enter a exist email id'
+        associated_users = User.objects.filter(id__in=to_email)
+        if  associated_users:
+            for user in associated_users:
+                context = {
+                    'user': user,
+                    "case_object":case
+                    }   
+                subject = "Cases"
+
+                text_content ="122"
+                email = get_rendered_html(template_name, context)
+                recipients= [user.email]
+
+                send_mail(subject, text_content, from_email, recipients, fail_silently=False, html_message=email)
+
         if self.request.is_ajax():
             return JsonResponse({'error': False})
         if self.request.POST.get("savenewform"):
             return redirect("cases:add_case")
         else:
             return redirect('cases:list')
+
 
     def form_invalid(self, form):
         if self.request.is_ajax():

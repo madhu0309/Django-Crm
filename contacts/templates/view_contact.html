@@ -135,12 +135,12 @@
                 <div class="modal-content">
                   <div class="modal-header">
                     <h4 class="modal-title">Update Your Comment</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+                    <button type="button" class="close" onclick = "resetForm()" data-dismiss="modal" aria-label="Close">&times;</button>
                   </div>
                   <form id="comment_edit_form" method="POST" >
                     <div class="modal-body">
                       <div class="form-group">
-                        <textarea class="form-control" textarea cols="40" rows="3" id="id_editcomment" name="comment" placeholder="Submit Your Comments"></textarea>
+                        <textarea class="form-control" textarea cols="40" rows="3" id="id_editcomment" name="comment" placeholder="Submit Your Comments"></textarea><span><i id="CommentEditError" style="display:none; color:red"></i></span>
                         <input type="hidden" value="{{ contact.id }}" name="contactid">
                         <input type="hidden" value="" name="commentid" id="commentid">
                       </div>
@@ -163,6 +163,13 @@
 {% endblock%}
 {% block js_block %}
   <script type="text/javascript">
+
+function resetForm() {
+    $('#CommentEditError').hide()
+    document.getElementById("CommentEditError").reset();
+    }
+
+
 $("#comment_form").submit(function (e) {
   e.preventDefault()
   var formData = new FormData($("#comment_form")[0]);

@@ -8,6 +8,9 @@ from common.utils import STAGES, SOURCES, CURRENCY_CODES
 from contacts.models import Contact
 from opportunity.forms import OpportunityForm, OpportunityCommentForm
 from opportunity.models import Opportunity
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.core.mail import send_mail
 
 
 class OpportunityListView(LoginRequiredMixin, TemplateView):
@@ -46,6 +49,12 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
         return self.render_to_response(context)
 
 
+def get_rendered_html(template_name, context={}):
+    html_content = render_to_string(template_name, context)
+    return html_content
+
+
+
 class CreateOpportunityView(LoginRequiredMixin, CreateView):
     model = Opportunity
     form_class = OpportunityForm
@@ -72,6 +81,7 @@ class CreateOpportunityView(LoginRequiredMixin, CreateView):
             return self.form_invalid(form)
 
     def form_valid(self, form):
+        print("hiii")
         opportunity_obj = form.save(commit=False)
         opportunity_obj.created_by = self.request.user
         if self.request.POST.get('stage') in ['CLOSED WON', 'CLOSED LOST']:
@@ -83,12 +93,34 @@ class CreateOpportunityView(LoginRequiredMixin, CreateView):
             opportunity_obj.teams.add(*self.request.POST.getlist('teams'))
         if self.request.POST.getlist('contacts', []):
             opportunity_obj.contacts.add(*self.request.POST.getlist('contacts'))
+        to_email =self.request.POST.getlist('assigned_to','')
+        from_email = settings.EMAIL_FROM
+        template_name = "opportunities_email.html"
+        error = 'please enter a exist email id'
+        associated_users = User.objects.filter(id__in=to_email)
+        if  associated_users:
+            for user in associated_users:
+                print(user)
+                context = {
+                    'user': user,
+                    "opportunity_obj":opportunity_obj
+                    }   
+                subject = "opportunities"
+
+                text_content ="122"
+                email = get_rendered_html(template_name, context)
+                recipients= [user.email]
+
+                send_mail(subject, text_content, from_email, recipients, fail_silently=False, html_message=email)
         if self.request.is_ajax():
             return JsonResponse({'error': False})
         if self.request.POST.get("savenewform"):
             return redirect("opportunities:save")
         else:
             return redirect('opportunities:list')
+       
+
+
 
     def form_invalid(self, form):
         if self.request.is_ajax():

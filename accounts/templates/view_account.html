@@ -1,5 +1,5 @@
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
 {% extends 'base.html' %}
 {% load staticfiles %}
 {% block breadcrumb %}
@@ -118,8 +118,6 @@
                 {% if account_record.description %}
                 <div class="filter_col col-md-12">
                   <div class="form-group">
-
-
                     <label class="acc_field_label" for="id_description" data-name="name">Description</label>
                     <div class="account_field" id="account_description" data-name="name">{{ account_record.description }}</div>
                   </div>
@@ -158,9 +156,14 @@
                     <div class="float-right right-container">
                       <div class="list-row-buttons btn-group float-right">
                         <button class="btn btn-link btn-sm dropdown-toggle" data-toggle="dropdown" type="button"><span class="caret"></span></button>
-                        
-                        <button type="button" class="btn" onclick="remove_comment({{comment.id}})" ><i class="fa fa-trash"></i></button>
-                        <button type="button" class="btn" onclick="edit_comment({{comment.id}})"><i class="fa fa-edit"></i></button>
+                        <ul class="dropdown-menu text-center">
+                          <li>
+                            <a class="action" onclick="edit_comment({{comment.id}})">Edit</a>
+                          </li>
+                          <li>
+                            <a class="action" onclick="remove_comment({{comment.id}})">Remove</a>
+                          </li>
+                        </ul>
                       </div>
                     </div>
                     <div class="stream-post-container" id="comment_name{{comment.id}}"><pre>{{ comment.comment }}</pre></div>
@@ -178,7 +181,7 @@
                 <div class="modal-content">
                   <div class="modal-header">
                     <h4 class="modal-title">Update Your Comment</h4>
-                    <button type="button" id="reset" class="close" onclick = "resetForm()" data-dismiss="modal" aria-label="Close">&times;</button>
+                    <button type="button" class="close" onclick = "resetForm()" data-dismiss="modal" aria-label="Close">&times;</button>
                   </div>
                   <form id="comment_edit_form" method="POST" >
                     <div class="modal-body">
@@ -1959,9 +1962,10 @@
       $('.error').hide()
       document.getElementById("form_con").reset();
     }
+
     function resetForm() {
-      $('#CommentEditError').hide()
-      document.getElementById("CommentEditError").reset();
+    $('#CommentEditError').hide()
+    document.getElementById("CommentEditError").reset();
     }
 
     function caseForm() {
@@ -1981,10 +1985,9 @@
              }
         });
     });
-
   </script>
   <script type="text/javascript">
-  
+    /*Comment Add Js Start*/
   $("#comment_form").submit(function(e){
     e.preventDefault()
     var formData = new FormData($("#comment_form")[0]);
@@ -2011,7 +2014,7 @@
                                "<div class='stream-container'><pre class='float-left'>"+data.commented_by+"</pre><pre class='float-right'>"+d.toGMTString()+"</pre></div>"
                                )
           $("#id_comments").val("")
-          alert("Comment Submitted  successfully")
+          alert("Comment Submitted")
           $("#CommentError").html("")
         }
       }
@@ -2047,9 +2050,8 @@
           console.log($("#comment_name" + data.comment_id))
           $("#comment_name" + data.comment_id).html('<pre>' + data.comment + '</pre>')
           $('#Comments_Accounts_Modal').modal('hide');
-          $("#id_editcomment").val("r");
-          $("#CommentEditError").html('').hide();
-          $("#CommentEditError").reset();
+          $("#id_editcomment").val("")
+          $("#CommentEditError").html('')
         }
       }
     })
@@ -2059,7 +2061,7 @@
 
   function HideError(e) {
     $("#CommentError").hide()
-/*    $("#CommentEditError").hide()*/
+    $("#CommentEditError").hide()
   }
 
   /*Comment Remove Js Start*/

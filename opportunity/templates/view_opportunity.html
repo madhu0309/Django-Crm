@@ -200,13 +200,14 @@
       $('#datetimepicker1').datetimepicker({
           'format': 'YYYY-MM-DD',
       });
-  });
+  });$
   $('#remove_opportunity').click(function(e){
         var result = confirm("Are You Sure You Want to delete?");
         if (result==false) {
           e.preventDefault()
         }
   });
+
 
 
   $("#comment_form").submit(function (e) {
@@ -268,6 +269,8 @@
           $('#Comments_Opportunity_Modal').modal('hide');
           $("#id_editcomment").val("")
           $("#CommentEditError").val("")
+          $("#CommentEditError").html('').hide();
+          $("#CommentEditError").
         }
       }
     })

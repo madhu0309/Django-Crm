@@ -130,7 +130,7 @@ class CreateLeadView(LoginRequiredMixin, CreateView):
                     'user': user,
                     "lead_obj":lead_obj
                     }   
-                subject = "project"
+                subject = "Leads"
 
                 text_content ="122"
                 email = get_rendered_html(template_name, context)
