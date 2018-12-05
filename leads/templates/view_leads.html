@@ -168,7 +168,7 @@
               <div class="modal-content">
                 <div class="modal-header">
                   <h4 class="modal-title">Update Your Comment</h4>
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+                  <button type="button" class="close" onclick = "resetForm()"  data-dismiss="modal" aria-label="Close">&times;</button>
 
                 </div>
                 <form id="comment_edit_form" method="POST" >
@@ -199,6 +199,13 @@
  <script src="{% static 'js/calls.js' %}"></script>
  <script src="{% static 'js/meetings.js' %}"></script>
  <script type="text/javascript">
+
+function resetForm() {
+    $('#CommentEditError').hide()
+    document.getElementById("CommentEditError").reset();
+    }
+
+
 $("#comment_form").submit(function (e) {
   e.preventDefault()
   var formData = new FormData($("#comment_form")[0]);
@@ -258,7 +265,8 @@ $("#comment_edit").click(function (e) {
         $("#comment_name" + data.commentid).html('<pre>' + data.comment + '</pre>')
         $('#Comments_Leads_Modal').modal('hide');
         $("#id_editcomment").val("")
-        $("#CommentEditError").html("")
+        $("#CommentEditError").html('').hide();
+        $("#CommentEditError").reset();
       }
     }
   })

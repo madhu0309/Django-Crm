@@ -83,7 +83,7 @@
                   <label for="exampleInputEmail1">Upload Profile Picture{% if user_form.profile_pic.field.required %}<span class="error">*</span>{% endif %}</label>
                   {% if user_obj.profile_pic %}
                   <div class="form-group">
-                    {% thumbnail request.user.profile_pic "125x125" as im %}
+                    {% thumbnail user_obj.profile_pic "125x125" as im %}
                     <img src="{{ im.url }}">
                     {% endthumbnail %}
                   </div>

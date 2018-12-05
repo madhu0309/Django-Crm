@@ -6,6 +6,9 @@ from django.urls import reverse
 from django.views.generic import (
     CreateView, UpdateView, DetailView, ListView, TemplateView, View, DeleteView)
 
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.core.mail import send_mail
 from accounts.models import Account
 from common.models import User, Address, Team, Comment
 from common.utils import INDCHOICES, COUNTRIES, CURRENCY_CODES, CASE_TYPE, PRIORITY_CHOICE, STATUS_CHOICE
@@ -50,6 +53,10 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
 
+def get_rendered_html(template_name, context={}):
+    html_content = render_to_string(template_name, context)
+    return html_content
+
 
 class CreateAccountView(LoginRequiredMixin, CreateView):
     model = Account
@@ -89,10 +96,29 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
             account_object.assigned_to.add(*self.request.POST.getlist('assigned_to'))
         if self.request.POST.getlist('teams', []):
             account_object.teams.add(*self.request.POST.getlist('teams'))
+        to_email =self.request.POST.getlist('assigned_to','')
+        from_email = settings.EMAIL_FROM
+        template_name = "accounts_email.html"
+        error = 'please enter a exist email id'
+        associated_users = User.objects.filter(id__in=to_email)
+        if  associated_users:
+            for user in associated_users:
+                context = {
+                    'user': user,
+                    "account_object":account_object
+                    }   
+                subject = "project"
+
+                text_content ="122"
+                email = get_rendered_html(template_name, context)
+                recipients= [user.email]
+
+                send_mail(subject, text_content, from_email, recipients, fail_silently=False, html_message=email)
         if self.request.POST.get("savenewform"):
             return redirect("accounts:new_account")
         else:
             return redirect("accounts:list")
+
 
     def form_invalid(self, form, billing_form, shipping_form):
         return self.render_to_response(

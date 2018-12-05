@@ -1,4 +1,5 @@
 from django.urls import path
+from . import views
 from leads.views import (
     LeadListView, CreateLeadView, LeadDetailView, UpdateLeadView, DeleteLeadView, ConvertLeadView,
     GetLeadsView, AddCommentView, UpdateCommentView, DeleteCommentView)

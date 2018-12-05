@@ -125,14 +125,17 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # EMAIL_HOST = 'localhost'
 # EMAIL_PORT = 25
-# AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend', )
+AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend', )
 
-
-EMAIL_HOST = 'smtp.sendgrid.net'
-EMAIL_HOST_USER = os.getenv('SG_USER', '')
-EMAIL_HOST_PASSWORD = os.getenv('SG_PWD', '')
-EMAIL_PORT = 587
+EMAIL_HOST = 'smtp.sendgrid.com'
 EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_PASSWORD = 'kf05hc9w9bj69vks'
+EMAIL_FROM = "meghana@micropyramid.com"
+EMAIL_HOST_USER = 'micropyramid'
+
+
+
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
@@ -181,6 +184,7 @@ MGUN_API_KEY = os.getenv('MGUN_API_KEY', '')
 
 SG_USER = os.getenv('SG_USER', '')
 SG_PWD = os.getenv('SG_PWD', '')
+
 
 MANDRILL_API_KEY = os.getenv('MANDRILL_API_KEY', '')
 

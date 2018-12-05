@@ -11,6 +11,10 @@ from common.forms import BillingAddressForm
 from common.utils import COUNTRIES
 from contacts.models import Contact
 from contacts.forms import ContactForm, ContactCommentForm
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.core.mail import send_mail
+
 
 
 class ContactsListView(LoginRequiredMixin, TemplateView):
@@ -44,6 +48,11 @@ class ContactsListView(LoginRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
+
+
+def get_rendered_html(template_name, context={}):
+    html_content = render_to_string(template_name, context)
+    return html_content
 
 
 class CreateContactView(LoginRequiredMixin, CreateView):
@@ -81,6 +90,25 @@ class CreateContactView(LoginRequiredMixin, CreateView):
             contact_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
         if self.request.POST.getlist('teams', []):
             contact_obj.teams.add(*self.request.POST.getlist('teams'))
+        to_email =self.request.POST.getlist('assigned_to','')
+        from_email = settings.EMAIL_FROM
+        template_name = "contacts_email.html"
+        error = 'please enter a exist email id'
+        associated_users = User.objects.filter(id__in=to_email)
+        if  associated_users:
+            for user in associated_users:
+                context = {
+                    'user': user,
+                    "contact_obj":contact_obj
+                    }   
+                subject = "Contact"
+
+                text_content ="122"
+                email = get_rendered_html(template_name, context)
+                recipients= [user.email]
+
+                send_mail(subject, text_content, from_email, recipients, fail_silently=False, html_message=email)
+
         if self.request.is_ajax():
             return JsonResponse({'error': False})
         if self.request.POST.get("savenewform"):
