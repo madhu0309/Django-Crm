@@ -63,31 +63,18 @@ This project contains the following modules.
    * Planner
 
 
-Installation - Requirements
-===========================
-
-
-Ubuntu 64bit - 16.04
---------------------
-$ sudo apt-get update && apt-get upgrade -y
-
-$ sudo apt-get install -y curl wget libpq-dev python3-dev gem ruby ruby-dev build-essential libssl-dev libffi-dev python-dev python-virtualenv python-pip git redis-server libtiff5-dev libjpeg8-dev zlib1g-dev libfreetype6-dev liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev tcl8.6-dev tk8.6-dev python-tk
-
-$ sudo gem install sass
-
-
-If you cloned the package from git use virtualenv to install requirements::
-
-    pip install -r requirements.txt
-
-Visit our Django web development page [Here](https://micropyramid.com/django-ecommerce-development/)
-
+Try
+===
 Demo Available `here`_.
 
 Demo credentials for Django CRM:
 
   * **Email:** admin@micropyramid.com
   * **Password:** admin
+
+Contribution
+============
+We need contributions in UI development and documentation.
 
 Feature requests and bug reports
 ================================
