@@ -16,7 +16,7 @@
                     <button class="btn btn-primary dropdown-toggle save" type="button" data-toggle="dropdown">Actions
                     <span class="caret"></span></button>
                     <ul class="dropdown-menu">
-                       <li><a href="{% url 'cases:edit_case' case_record.id %}" >Edit</a></li>
+
                     </ul>
                   </div>
                 </span>
@@ -147,12 +147,12 @@
                   <div class="modal-content">
                     <div class="modal-header">
                       <h4 class="modal-title">Update Your Comment</h4>
-                      <button type="button" class="close" onclick = "resetForm()" data-dismiss="modal" aria-label="Close">&times;</button>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
                     </div>
                     <form id="comment_edit_form" method="POST" >
                       <div class="modal-body">
                         <div class="form-group">
-                          <textarea class="form-control" textarea cols="40" rows="3" id="id_editcomment" name="comment" placeholder="Submit Your Comments"></textarea><span><i id="CommentEditError" style="display:none; color:red"></i></span>
+                          <textarea class="form-control" textarea cols="40" rows="3" id="id_editcomment" name="comment" placeholder="Submit Your Comments"></textarea>
                           <input type="hidden" value="{{ case.id }}" name="caseid">
                           <input type="hidden" value="" name="commentid" id="commentid">
                         </div>
@@ -307,11 +307,6 @@
   <script src="{% static 'js/cases/view_case.js' %}"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
   <script type="text/javascript">
-    function resetForm() {
-    $('#CommentEditError').hide()
-    document.getElementById("CommentEditError").reset();
-    }
-
     $('#remove_case').click(function(e){
       var result = confirm("Are You Sure You Want to delete?");
       if (result==false) {
