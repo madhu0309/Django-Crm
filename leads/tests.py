@@ -106,23 +106,6 @@ class LeadsCreateUrlTestCase(TestLeadModel, TestCase):
         self.assertTemplateUsed(response, 'create_lead.html')
 
 
-class LeadsEditTestCase(TestLeadModel, TestCase):
-    def test_lead_edit(self):
-        response = self.client.get('/leads/'+ str(self.lead.id) +'/edit/', {
-                                   'title': 'LeadCreation',
-                                   'first_name': "kotha",
-                                   'email': "fathimakotha1993@gmail.com",
-                                   'account': self.account,
-                                   'address': self.address,
-                                   'website': "www.gmail.com",
-                                   "status ": "assigned",
-                                   "source": "Call",
-                                   'opportunity_amount': "700",
-                                   'description': "Iam an Lead",
-                                   'created_by': self.user})
-        self.assertEqual(response.status_code, 200)
-
-
 class LeadsEditUrlTestCase(TestLeadModel, TestCase):
     def test_leads_editurl(self):
         response = self.client.get('/leads/'+ str(self.lead.id) +'/edit/')
@@ -139,7 +122,7 @@ class LeadsViewTestCase(TestLeadModel, TestCase):
                             account=self.account,
                             address=self.address,
                             website="www.gmail.com",
-                            status='convert',
+                            status='converted',
                             source="Call",
                             opportunity_amount="900",
                             description="Iam an Opportunity",

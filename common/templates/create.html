@@ -1,12 +1,11 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
 {% block breadcrumb %}
-{% load thumbnail %}
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
     {% if request.user != user_obj %}
-    <li class="breadcrumb-item"><a href="{% url 'common:users_list' %}">Users</a></li>
-    <li class="breadcrumb-item">{% if user_obj %}Edit{% else %}Create{% endif %}</li>
+      <li class="breadcrumb-item"><a href="{% url 'common:users_list' %}">Users</a></li>
+      <li class="breadcrumb-item">{% if user_obj %}Edit{% else %}Create{% endif %}</li>
     {% endif %}
   </ol>
 </nav>
@@ -81,15 +80,9 @@
               <div class="filter_col col-md-12">
                 <div class="form-group">
                   <label for="exampleInputEmail1">Upload Profile Picture{% if user_form.profile_pic.field.required %}<span class="error">*</span>{% endif %}</label>
-                  {% if user_obj.profile_pic %}
-                  <div class="form-group">
-                    {% thumbnail user_obj.profile_pic "125x125" as im %}
-                    <img src="{{ im.url }}">
-                    {% endthumbnail %}
-                  </div>
-                  {% endif %}
                   <input type="file" name="profile_pic" accept="image/*" class="form-control" />
                 </div>
+                {% if user_obj %}<span>{{user_obj.profile_pic }}</span>{% endif %}
                 <span class="error" id="id_profile_pic">{{ errors.profile_pic }}</span>
               </div>
             </div>

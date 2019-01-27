@@ -1,21 +1,18 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse
-from django.views.generic import (
-    CreateView, UpdateView, DetailView, ListView, TemplateView, View, DeleteView)
-
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import EmailMessage
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
-from django.conf import settings
-from django.core.mail import send_mail
+from django.views.generic import (
+    CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
+from accounts.forms import AccountForm, AccountCommentForm, AccountAttachmentForm
 from accounts.models import Account
-from common.models import User, Address, Team, Comment
+from common.models import User, Address, Team, Comment, Attachments
 from common.utils import INDCHOICES, COUNTRIES, CURRENCY_CODES, CASE_TYPE, PRIORITY_CHOICE, STATUS_CHOICE
-from opportunity.models import Opportunity, STAGES, SOURCES
 from contacts.models import Contact
+from opportunity.models import Opportunity, STAGES, SOURCES
 from cases.models import Case
-from accounts.forms import AccountForm, AccountCommentForm
 from common.forms import BillingAddressForm, ShippingAddressForm
 
 
@@ -52,10 +49,6 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
-
-def get_rendered_html(template_name, context={}):
-    html_content = render_to_string(template_name, context)
-    return html_content
 
 
 class CreateAccountView(LoginRequiredMixin, CreateView):
@@ -94,31 +87,25 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
         account_object.save()
         if self.request.POST.getlist('assigned_to', []):
             account_object.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+            assigned_to_list = self.request.POST.getlist('assigned_to')
+            current_site = get_current_site(self.request)
+            for assigned_to_user in assigned_to_list:
+                user = get_object_or_404(User, pk=assigned_to_user)
+                mail_subject = 'Assigned to account.'
+                message = render_to_string('assigned_to/account_assigned.html', {
+                    'user': user,
+                    'domain': current_site.domain,
+                    'protocol': self.request.scheme,
+                    'account': account_object
+                })
+                email = EmailMessage(mail_subject, message, to=[user.email])
+                email.send()
         if self.request.POST.getlist('teams', []):
             account_object.teams.add(*self.request.POST.getlist('teams'))
-        to_email =self.request.POST.getlist('assigned_to','')
-        from_email = settings.EMAIL_FROM
-        template_name = "accounts_email.html"
-        error = 'please enter a exist email id'
-        associated_users = User.objects.filter(id__in=to_email)
-        if  associated_users:
-            for user in associated_users:
-                context = {
-                    'user': user,
-                    "account_object":account_object
-                    }   
-                subject = "project"
-
-                text_content ="122"
-                email = get_rendered_html(template_name, context)
-                recipients= [user.email]
-
-                send_mail(subject, text_content, from_email, recipients, fail_silently=False, html_message=email)
         if self.request.POST.get("savenewform"):
             return redirect("accounts:new_account")
         else:
             return redirect("accounts:list")
-
 
     def form_invalid(self, form, billing_form, shipping_form):
         return self.render_to_response(
@@ -167,6 +154,7 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
             comment_permission = False
         context.update({
             "comments": account_record.accounts_comments.all(),
+            "attachments": account_record.account_attachment.all(),
             "opportunity_list": Opportunity.objects.filter(account=account_record),
             "contacts": Contact.objects.filter(account=account_record),
             "users": User.objects.filter(is_active=True).order_by('email'),
@@ -222,6 +210,19 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         account_object.teams.clear()
         if self.request.POST.getlist('assigned_to', []):
             account_object.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+            assigned_to_list = self.request.POST.getlist('assigned_to')
+            current_site = get_current_site(self.request)
+            for assigned_to_user in assigned_to_list:
+                user = get_object_or_404(User, pk=assigned_to_user)
+                mail_subject = 'Assigned to account.'
+                message = render_to_string('assigned_to/account_assigned.html', {
+                    'user': user,
+                    'domain': current_site.domain,
+                    'protocol': self.request.scheme,
+                    'account': account_object
+                })
+                email = EmailMessage(mail_subject, message, to=[user.email])
+                email.send()
         if self.request.POST.getlist('teams', []):
             account_object.teams.add(*self.request.POST.getlist('teams'))
         return redirect("accounts:list")
@@ -350,4 +351,55 @@ class DeleteCommentView(LoginRequiredMixin, View):
             return JsonResponse(data)
         else:
             data = {'error': "You don't have permission to delete this comment."}
+            return JsonResponse(data)
+
+
+class AddAttachmentView(LoginRequiredMixin, CreateView):
+    model = Attachments
+    form_class = AccountAttachmentForm
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        self.object = None
+        self.account = get_object_or_404(Account, id=request.POST.get('accountid'))
+        if (
+            request.user in self.account.assigned_to.all() or
+            request.user == self.account.created_by
+        ):
+            form = self.get_form()
+            if form.is_valid():
+                return self.form_valid(form)
+            else:
+                return self.form_invalid(form)
+        else:
+            data = {'error': "You don't have permission to add attachment for this account."}
+            return JsonResponse(data)
+
+    def form_valid(self, form):
+        attachment = form.save(commit=False)
+        attachment.created_by = self.request.user
+        attachment.file_name = attachment.attachment.name
+        attachment.account = self.account
+        attachment.save()
+        return JsonResponse({
+            "attachment_id": attachment.id,
+            "attachment": attachment.attachment,
+            "created_on": attachment.created_on,
+            "created_by": attachment.created_by.email
+        })
+
+    def form_invalid(self, form):
+        return JsonResponse({"error": form['attachment'].errors})
+
+
+class DeleteAttachmentsView(LoginRequiredMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        self.object = get_object_or_404(Attachments, id=request.POST.get("attachment_id"))
+        if request.user == self.object.created_by:
+            self.object.delete()
+            data = {"acd": request.POST.get("attachment_id")}
+            return JsonResponse(data)
+        else:
+            data = {'error': "You don't have permission to delete this attachment."}
             return JsonResponse(data)

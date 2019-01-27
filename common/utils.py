@@ -49,7 +49,7 @@ ROLES = (
 LEAD_STATUS = (
     ('assigned', 'Assigned'),
     ('in process', 'In Process'),
-    ('convert', 'Convert'),
+    ('converted', 'Converted'),
     ('recycled', 'Recycled'),
     ('dead', 'Dead')
 )

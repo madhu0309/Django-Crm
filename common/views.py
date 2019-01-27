@@ -41,16 +41,16 @@ class ChangePasswordView(LoginRequiredMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         error, errors = "", ""
-        user = request.user
-        if request.POST.get('CurrentPassword'):
-            if not check_password(request.POST.get('CurrentPassword'), user.password):
-                    error = "Invalid old password"
         form = ChangePasswordForm(request.POST)
         if form.is_valid():
-            user.set_password(request.POST.get('Newpassword'))
-            user.is_active = True
-            user.save()
-            return HttpResponseRedirect('/')
+            user = request.user
+            if not check_password(request.POST.get('CurrentPassword'), user.password):
+                error = "Invalid old password"
+            else:
+                user.set_password(request.POST.get('Newpassword'))
+                user.is_active = True
+                user.save()
+                return HttpResponseRedirect('/')
         else:
             errors = form.errors
         return render(request, "change_password.html", {'error': error, 'errors': errors})
@@ -168,7 +168,6 @@ class CreateUserView(AdminRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(CreateUserView, self).get_context_data(**kwargs)
         context["user_form"] = context["form"]
-        context['admin_email'] = settings.ADMIN_EMAIL
         if "errors" in kwargs:
             context["errors"] = kwargs["errors"]
         return context
@@ -200,14 +199,13 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
         if user.role == "USER":
             user.is_superuser = False
         user.save()
-        if self.request.is_ajax():
-            if self.request.user == user:
-                data = {'success_url': reverse_lazy('common:profile'), 'error': False}
-                print(user)
-                return JsonResponse(data)
-            else:
+        if self.request.user.role == "ADMIN" or self.request.user.is_superuser:
+            if self.request.is_ajax():
                 data = {'success_url': reverse_lazy('common:users_list'), 'error': False}
                 return JsonResponse(data)
+        if self.request.is_ajax():
+            data = {'success_url': reverse_lazy('common:profile'), 'error': False}
+            return JsonResponse(data)
         return super(UpdateUserView, self).form_valid(form)
 
 
@@ -221,11 +219,9 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
         context = super(UpdateUserView, self).get_context_data(**kwargs)
         context["user_obj"] = self.object
         context["user_form"] = context["form"]
-        context['admin_email'] = settings.ADMIN_EMAIL
         if "errors" in kwargs:
             context["errors"] = kwargs["errors"]
         return context
-
 
 
 class UserDeleteView(AdminRequiredMixin, DeleteView):

@@ -11,7 +11,6 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
 LOGIN_REDIRECT_URL = '/'
@@ -35,8 +34,8 @@ INSTALLED_APPS = [
     'opportunity',
     'planner',
     'sorl.thumbnail',
+    'phonenumber_field',
 ]
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -83,7 +82,6 @@ DATABASES = {
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static"), ]
 
-
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
 
@@ -122,20 +120,18 @@ STATIC_URL = '/static/'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # EMAIL_HOST = 'localhost'
 # EMAIL_PORT = 25
-AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend', )
+# AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend', )
 
-EMAIL_HOST = 'smtp.sendgrid.com'
-EMAIL_USE_TLS = True
+
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_HOST_USER = os.getenv('SG_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('SG_PWD', '')
 EMAIL_PORT = 587
-EMAIL_HOST_PASSWORD = 'kf05hc9w9bj69vks'
-EMAIL_FROM = "meghana@micropyramid.com"
-EMAIL_HOST_USER = 'micropyramid'
-
-
-
+EMAIL_USE_TLS = True
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
@@ -155,7 +151,6 @@ COMPRESS_ENABLED = True
 
 COMPRESS_CSS_FILTERS = ['compressor.filters.css_default.CssAbsoluteFilter', 'compressor.filters.cssmin.CSSMinFilter']
 COMPRESS_REBUILD_TIMEOUT = 5400
-
 
 COMPRESS_OUTPUT_DIR = 'CACHE'
 COMPRESS_URL = STATIC_URL
@@ -185,7 +180,11 @@ MGUN_API_KEY = os.getenv('MGUN_API_KEY', '')
 SG_USER = os.getenv('SG_USER', '')
 SG_PWD = os.getenv('SG_PWD', '')
 
-
 MANDRILL_API_KEY = os.getenv('MANDRILL_API_KEY', '')
 
 ADMIN_EMAIL = "admin@micropyramid.com"
+
+try:
+    from .dev_settings import *
+except ImportError:
+    pass

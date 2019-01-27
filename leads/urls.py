@@ -1,8 +1,9 @@
 from django.urls import path
-from . import views
 from leads.views import (
     LeadListView, CreateLeadView, LeadDetailView, UpdateLeadView, DeleteLeadView, ConvertLeadView,
-    GetLeadsView, AddCommentView, UpdateCommentView, DeleteCommentView)
+    GetLeadsView, AddCommentView, UpdateCommentView, DeleteCommentView,
+    AddAttachmentsView,DeleteAttachmentsView
+)
 
 
 app_name = 'leads'
@@ -21,4 +22,7 @@ urlpatterns = [
     path('comment/add/', AddCommentView.as_view(), name="add_comment"),
     path('comment/edit/', UpdateCommentView.as_view(), name="edit_comment"),
     path('comment/remove/', DeleteCommentView.as_view(), name="remove_comment"),
+
+    path('attachment/add/', AddAttachmentsView.as_view(), name="add_attachment"),
+    path('attachment/remove/', DeleteAttachmentsView.as_view(), name="remove_attachment"),
 ]

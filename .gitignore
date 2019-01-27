@@ -14,4 +14,4 @@ main.css.map
 ref.css
 ref.css.map
 .coverage
-env
+crm/dev_settings\.py
