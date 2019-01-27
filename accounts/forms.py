@@ -1,6 +1,6 @@
 from django import forms
 from .models import Account
-from common.models import Comment
+from common.models import Comment, Attachments
 
 
 class AccountForm(forms.ModelForm):
@@ -22,17 +22,6 @@ class AccountForm(forms.ModelForm):
         fields = ('assigned_to', 'teams', 'name', 'phone', 'email', 'website', 'industry',
                   'billing_address', 'shipping_address', 'description')
 
-    def clean_phone(self):
-        client_phone = self.cleaned_data.get('phone', None)
-        try:
-            if int(client_phone) and not client_phone.isalpha():
-                ph_length = str(client_phone)
-                if len(ph_length) < 10 or len(ph_length) > 13:
-                    raise forms.ValidationError('Phone number must be minimum 10 Digits and maximum of 13 Digits')
-        except (ValueError, TypeError):
-            raise forms.ValidationError('Phone Number should contain only Numbers')
-        return client_phone
-
 
 class AccountCommentForm(forms.ModelForm):
     comment = forms.CharField(max_length=64, required=True)
@@ -40,3 +29,11 @@ class AccountCommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ('comment', 'account', 'commented_by')
+
+
+class AccountAttachmentForm(forms.ModelForm):
+    attachment = forms.FileField(max_length=1001, required=True)
+
+    class Meta:
+        model = Attachments
+        fields = ('attachment', 'account')
