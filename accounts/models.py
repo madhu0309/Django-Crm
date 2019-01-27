@@ -8,8 +8,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 
 class Account(models.Model):
-    name = models.CharField(pgettext_lazy(
-        "Name of Account", "Name"), max_length=64)
+    name = models.CharField(pgettext_lazy("Name of Account", "Name"), max_length=64)
     email = models.EmailField()
     phone = PhoneNumberField(null=True)
     industry = models.CharField(_("Industry Type"), max_length=255, choices=INDCHOICES, blank=True, null=True)
