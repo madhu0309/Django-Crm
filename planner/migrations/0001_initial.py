@@ -14,7 +14,6 @@ class Migration(migrations.Migration):
         ('contacts', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('leads', '0001_initial'),
-        ('common', '0002_auto_20190108_1530'),
     ]
 
     operations = [
