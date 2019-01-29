@@ -1,5 +1,75 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
+{% block extra_css %}
+<style>
+.mention-wrapper {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.mention-wrapper textarea { color: rgba(0, 0, 0, 0.1); }
+
+.mention-display {
+  color: rgba(0, 0, 0, 0.9);
+  position: absolute;
+  display: inline-block;
+  box-sizing: border-box;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  top: 0px;
+  left: 0px;
+  border-radius: 4px;
+  word-break: break-word;
+  -moz-appearance: textfield-multiline;
+  -webkit-appearance: textarea;
+  font: medium -moz-fixed;
+  font: -webkit-small-control;
+  border: 3px solid transparent;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.mention-options {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  color: rgba(0, 0, 0, 0.9);
+  width: 100%;
+  border: 3px solid transparent;
+  box-sizing: border-box;
+}
+
+.mention-options.show {
+  pointer-events: initial;
+  opacity: 1;
+}
+
+.mention-options .mention-option {
+  padding: 5px 10px;
+  background: #FFF;
+  position: relative;
+  cursor: pointer;
+  display: none;
+}
+
+.mention-options .mention-option:hover:after, .mention-options .mention-option.active:after {
+  content: '';
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  cursor: pointer;
+}
+
+.mention-options .mention-option.show { display: block; }
+</style>
+{% endblock %}
 {% block content %}
   <!-- CASE VIEW STARTS -->
     <div class="main_container" id="maincontainer">
@@ -149,7 +219,7 @@
                       <textarea class="form-control" textarea cols="40" rows="3" id="id_comments" name="comment" placeholder="Submit Your Comments Here"></textarea><div><i id="CommentError" style="display:none; color:red"></i></div>
                       </br>
                       <div class="buttons_row">
-                      <button class="btn btn-default save" style="text-align: center;" id="comment_submit" type="submit">Submit</button>
+                      <button class="btn btn-default save" style="float:right; margin-bottom:13px;" id="comment_submit" type="submit">Submit</button>
                       </div>
                     </div>
                     <input type="hidden" value="{{case_record.id}}" name="caseid">
@@ -196,7 +266,7 @@
                         </div>
                       </div>
                       <div class="modal-footer">
-                        <button class="btn btn-default save" id="comment_edit" type="submit">Update</button>
+                        <button class="btn btn-default save" style="float:right" id="comment_edit" type="submit">Update</button>
                       </div>
                     </form>
                   </div>
@@ -343,6 +413,7 @@
 {% endblock %}
 {% block js_block %}
   <script src="{% static 'js/cases/view_case.js' %}"></script>
+  <script src="{% static 'js/mention.js' %}"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
   <script type="text/javascript">
     $('#remove_case').click(function(e){
@@ -424,7 +495,31 @@ $("#attachment_form").submit(function (e) {
     }
   })
 })
-   
 
-  </script>
+// assigned_to_list =  "{{assigned_data|safe}}"
+var assigned_to_list = "{{ assigned_data }}";
+console.log("assigned_to_list", assigned_to_list)
+assigned_to_list = JSON.parse(assigned_to_list.replace(/&(l|g|quo)t;/g, function(a,b){
+          return {
+              l   : '<',
+              g   : '>',
+              quo : '"'
+          }[b];
+      }));
+
+var myMention = new Mention({
+input: document.querySelector('#id_comments'),
+options: assigned_to_list,
+
+match: function(word, option) {
+   return option.name.startsWith(word)
+      || option.description.toLowerCase().indexOf(word.toLowerCase()) >= 0
+},
+template: function(option) {
+  return '@' + option.name
+}
+})
+
+
+</script>
 {% endblock js_block %}
