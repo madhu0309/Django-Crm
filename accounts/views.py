@@ -383,7 +383,8 @@ class AddAttachmentView(LoginRequiredMixin, CreateView):
         attachment.save()
         return JsonResponse({
             "attachment_id": attachment.id,
-            "attachment": attachment.attachment,
+            "attachment": attachment.file_name,
+            "attachment_url": attachment.attachment.url,
             "created_on": attachment.created_on,
             "created_by": attachment.created_by.email
         })
