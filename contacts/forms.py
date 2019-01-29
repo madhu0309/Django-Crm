@@ -17,10 +17,12 @@ class ContactForm(forms.ModelForm):
         self.fields['account'].queryset = contact_account
         self.fields['assigned_to'].required = False
         self.fields['teams'].required = False
+
         for key, value in self.fields.items():
-            value.widget.attrs['placeholder'] = value.label
-            if key == "phone":
+            if key == 'phone':
                 value.widget.attrs['placeholder'] = "+91-123-456-7890"
+            else:
+                value.widget.attrs['placeholder'] = value.label
 
     class Meta:
         model = Contact
