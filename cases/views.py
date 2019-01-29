@@ -8,8 +8,8 @@ from django.template.loader import render_to_string
 from django.views.generic import CreateView, UpdateView, DetailView, ListView, TemplateView, View
 
 from cases.models import Case
-from cases.forms import CaseForm, CaseCommentForm
-from common.models import Team, User, Comment
+from cases.forms import CaseForm, CaseCommentForm, CaseAttachmentForm
+from common.models import Team, User, Comment, Attachments
 from accounts.models import Account
 from contacts.models import Contact
 from common.utils import PRIORITY_CHOICE, STATUS_CHOICE, CASE_TYPE
@@ -143,7 +143,8 @@ class CaseDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(CaseDetailView, self).get_context_data(**kwargs)
-        context.update({"comments": context["case_record"].cases.all()})
+        context.update({"comments": context["case_record"].cases.all(), 
+            "attachments": context['case_record'].case_attachment.all()})
         return context
 
 
@@ -348,4 +349,52 @@ class DeleteCommentView(LoginRequiredMixin, View):
             return JsonResponse(data)
         else:
             data = {'error': "You don't have permission to delete this comment."}
+            return JsonResponse(data)
+
+
+class AddAttachmentView(LoginRequiredMixin, CreateView):
+    model = Attachments
+    form_class = CaseAttachmentForm
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        self.object = None
+        self.case = get_object_or_404(Case, id=request.POST.get('caseid'))
+        if (
+            request.user in self.case.assigned_to.all() or
+            request.user == self.case.created_by
+        ):
+            form = self.get_form()
+            if form.is_valid():
+                return self.form_valid(form)
+            else:
+                return self.form_invalid(form)
+        else:
+            data = {'error': "You don't have permission to add attachment for this case."}
+            return JsonResponse(data)
+
+    def form_valid(self, form):
+        attachment = form.save(commit=False)
+        attachment.created_by = self.request.user
+        attachment.file_name = attachment.attachment.name
+        attachment.case = self.case
+        attachment.save()
+        return JsonResponse({
+              "message": "Attachment Saved"
+        })
+
+    def form_invalid(self, form):
+        return JsonResponse({"error": form['attachment'].errors})
+
+
+class DeleteAttachmentsView(LoginRequiredMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        self.object = get_object_or_404(Attachments, id=request.POST.get("attachment_id"))
+        if request.user == self.object.created_by:
+            self.object.delete()
+            data = {"acd": request.POST.get("attachment_id")}
+            return JsonResponse(data)
+        else:
+            data = {'error': "You don't have permission to delete this attachment."}
             return JsonResponse(data)
