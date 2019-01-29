@@ -15,7 +15,10 @@ class AccountForm(forms.ModelForm):
         self.fields['assigned_to'].required = False
         self.fields['teams'].required = False
         for key, value in self.fields.items():
-            value.widget.attrs['placeholder'] = value.label
+            if key == 'phone':
+                value.widget.attrs['placeholder'] = 'Enter phone number with country code'
+            else:
+                value.widget.attrs['placeholder'] = value.label
 
     class Meta:
         model = Account

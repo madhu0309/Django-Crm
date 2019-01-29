@@ -17,7 +17,11 @@ class LeadForm(forms.ModelForm):
         self.fields['teams'].required = False
         self.fields['phone'].required = True
         for key, value in self.fields.items():
-            value.widget.attrs['placeholder'] = value.label
+            if key == 'phone':
+                value.widget.attrs['placeholder'] = 'Enter phone number with country code'
+            else:
+                value.widget.attrs['placeholder'] = value.label
+
         self.fields['first_name'].widget.attrs.update({
             'placeholder': 'First Name'})
         self.fields['last_name'].widget.attrs.update({
