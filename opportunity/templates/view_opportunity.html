@@ -358,10 +358,8 @@ $("#attachment_form").submit(function (e) {
     contentType: false,
     processData: false,
     success: function (data) {
-        alert("Attachment Saved")
       if (data.error) {
         $("#AttachmentError").html(data.error).show()
-      alert("Attachment Saved")
       } else {
         $("#attachment_div").prepend(
             "<li class='list-group-item list-row' id='attachment" + data.attachment_id + "'>" +
