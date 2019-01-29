@@ -413,7 +413,7 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
         if (request.user == self.object.created_by or request.user.is_superuser or
             request.user.role == 'admin'):
             self.object.delete()
-            data = {"acd": request.POST.get("attachment_id"), "error": False}
+            data = {"attachment_object": request.POST.get("attachment_id"), "error": False}
             return JsonResponse(data)
         else:
             data = {"error":True, "errors": "You don't have permission to delete this attachment."}

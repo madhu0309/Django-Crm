@@ -391,7 +391,7 @@ function remove_attachment(x) {
       if (data.error) {
         alert(data.errors)
       } else {
-        $("#attachment" + data.acd).remove()
+        $("#attachment" + data.attachment_object).remove()
       }
     })
   }
