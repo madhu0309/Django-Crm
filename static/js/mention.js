@@ -279,3 +279,28 @@ class Mention {
 }
 
 if(typeof module != 'undefined') module.exports = Mention
+
+
+var myMention = new Mention({
+   input: document.querySelector('#id_comments'),
+   options: assigned_to_list,
+
+
+   template: function(option) {
+     return '@' + option.name
+   }
+})
+
+
+var myMention = new Mention({
+   input: document.querySelector('#id_editcomment'),
+   options: assigned_to_list,
+
+   // match: function(word, option) {
+   //    return option.name.startsWith(word)
+   //       || option.description.toLowerCase().indexOf(word.toLowerCase()) >= 0
+   // },
+   template: function(option) {
+     return '@' + option.name
+   }
+})

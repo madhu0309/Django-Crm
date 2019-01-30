@@ -1,3 +1,4 @@
+import json
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
@@ -150,7 +151,6 @@ class CaseDetailView(LoginRequiredMixin, DetailView):
             assigned_dict['name'] =  each.email
             assigned_data.append(assigned_dict)
 
-        import json
         context.update({"comments": context["case_record"].cases.all(), 
             "attachments": context['case_record'].case_attachment.all(), 
             "assigned_data": json.dumps(assigned_data)})
