@@ -41,7 +41,11 @@
 .mention-options.show {
   pointer-events: initial;
   opacity: 1;
+  z-index: 9999;
+  border: 2px solid #ddd;
+  background: #ddd;
 }
+
 
 .mention-options .mention-option {
   padding: 5px 10px;
