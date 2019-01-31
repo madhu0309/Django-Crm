@@ -1,5 +1,8 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
+{% block extralinks %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
 {% block breadcrumb %}
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -79,6 +82,16 @@
               {% endif %}
               <div class="filter_col col-md-12">
                 <div class="form-group">
+                  <label for="exampleInputEmail1">Teams</label>
+                   <select class="teams form-control" name="teams" multiple="multiple">
+                    {% for team in teams %}
+                      <option value="{{team.id}}" {% if user in team.members.all %} selected="" {% endif %}>{{team.name}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="filter_col col-md-12">
+                <div class="form-group">
                   <label for="exampleInputEmail1">Upload Profile Picture{% if user_form.profile_pic.field.required %}<span class="error">*</span>{% endif %}</label>
                   <input type="file" name="profile_pic" accept="image/*" class="form-control" />
                 </div>
@@ -98,6 +111,7 @@
 </form>
 {% endblock content %}
 {% block js_block %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 <script src="https://malsup.github.io/jquery.form.js"></script>
 <script type="text/javascript">
  $('form#add_form').ajaxForm({
@@ -117,6 +131,8 @@
         }
     }
   });
-
+ $(document).ready(function() {
+      $('.teams').select2();
+  });
 </script>
 {% endblock js_block %}
