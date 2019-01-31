@@ -293,7 +293,7 @@ class AddCommentView(LoginRequiredMixin, CreateView):
         if (
             request.user in self.case.assigned_to.all() or
             request.user == self.case.created_by or request.user.is_superuser or
-            request.user.role == 'admin'
+            request.user.role == 'ADMIN'
         ):
             form = self.get_form()
             if form.is_valid():
@@ -325,7 +325,7 @@ class UpdateCommentView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         self.comment_obj = get_object_or_404(Comment, id=request.POST.get("commentid"))
         if (request.user == self.comment_obj.commented_by or request.user.is_superuser or
-            request.user.role == 'admin'):
+            request.user.role == 'ADMIN'):
             form = CaseCommentForm(request.POST, instance=self.comment_obj)
             if form.is_valid():
                 return self.form_valid(form)
@@ -352,7 +352,7 @@ class DeleteCommentView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         self.object = get_object_or_404(Comment, id=request.POST.get("comment_id"))
         if (request.user == self.object.commented_by or request.user.is_superuser or
-            request.user.role == 'admin'):
+            request.user.role == 'ADMIN'):
             self.object.delete()
             data = {"cid": request.POST.get("comment_id")}
             return JsonResponse(data)
@@ -372,7 +372,7 @@ class AddAttachmentView(LoginRequiredMixin, CreateView):
         if (
             request.user in self.case.assigned_to.all() or
             request.user == self.case.created_by or request.user.is_superuser or
-            request.user.role == 'admin'
+            request.user.role == 'ADMIN'
         ):
             form = self.get_form()
             if form.is_valid():
@@ -411,7 +411,7 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
         self.object = get_object_or_404(Attachments, id=request.POST.get("attachment_id"))
         print(request.POST)
         if (request.user == self.object.created_by or request.user.is_superuser or
-            request.user.role == 'admin'):
+            request.user.role == 'ADMIN'):
             self.object.delete()
             data = {"attachment_object": request.POST.get("attachment_id"), "error": False}
             return JsonResponse(data)

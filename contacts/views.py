@@ -273,7 +273,8 @@ class AddCommentView(LoginRequiredMixin, CreateView):
         self.contact = get_object_or_404(Contact, id=request.POST.get('contactid'))
         if (
             request.user in self.contact.assigned_to.all() or
-            request.user == self.contact.created_by
+            request.user == self.contact.created_by or request.user.is_superuser or
+            request.user.role == 'ADMIN'
         ):
             form = self.get_form()
             if form.is_valid():
@@ -360,7 +361,8 @@ class AddAttachmentsView(LoginRequiredMixin, CreateView):
         self.contact = get_object_or_404(Contact, id=request.POST.get('contactid'))
         if (
                 request.user in self.contact.assigned_to.all() or
-                request.user == self.contact.created_by
+                request.user == self.contact.created_by or request.user.is_superuser or
+                request.user.role == 'ADMIN'
         ):
             form = self.get_form()
             if form.is_valid():
@@ -393,7 +395,8 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         self.object = get_object_or_404(Attachments, id=request.POST.get("attachment_id"))
-        if request.user == self.object.created_by:
+        if (request.user == self.object.created_by or request.user.is_superuser or
+            request.user.role == 'ADMIN'):
             self.object.delete()
             data = {"aid": request.POST.get("attachment_id")}
             return JsonResponse(data)
