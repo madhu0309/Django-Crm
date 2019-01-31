@@ -409,7 +409,6 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         self.object = get_object_or_404(Attachments, id=request.POST.get("attachment_id"))
-        print(request.POST)
         if (request.user == self.object.created_by or request.user.is_superuser or
             request.user.role == 'admin'):
             self.object.delete()
