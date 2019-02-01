@@ -6,18 +6,15 @@ from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http40
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import (
     CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
-from common.models import User, Document, Team
-from common.forms import UserForm, LoginForm, ChangePasswordForm, PasswordResetEmailForm,DocumentForm,TeamForm
+from common.models import User, Document
+from common.forms import UserForm, LoginForm, ChangePasswordForm, PasswordResetEmailForm,DocumentForm
 from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy
 from django.conf import settings
-from django.db.models import Q
 from opportunity.models import Opportunity
 from cases.models import Case
 from contacts.models import Contact
 from accounts.models import Account
-from common.utils import ROLES
-
 
 
 def handler404(request, exception):
@@ -161,12 +158,6 @@ class CreateUserView(AdminRequiredMixin, CreateView):
         if form.cleaned_data.get("password"):
             user.set_password(form.cleaned_data.get("password"))
         user.save()
-        teams_list = Team.objects.all()
-        if self.request.POST.getlist('teams', []):
-            for team in self.request.POST.getlist('teams', []):
-                team = teams_list.get(id=team)
-                team.members.add(user)
-                team.save()
         if self.request.is_ajax():
             data = {'success_url': reverse_lazy('common:users_list'), 'error': False}
             return JsonResponse(data)
@@ -182,7 +173,6 @@ class CreateUserView(AdminRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(CreateUserView, self).get_context_data(**kwargs)
         context["user_form"] = context["form"]
-        context['teams'] = Team.objects.all()
         if "errors" in kwargs:
             context["errors"] = kwargs["errors"]
         return context
@@ -216,16 +206,6 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
         if user.role == "USER":
             user.is_superuser = False
         user.save()
-        teams_list = Team.objects.all()
-        existed_team_list = teams_list.filter(members=user)
-        for team in existed_team_list:
-            if team.id not in self.request.POST.getlist('teams', []):
-                team.members.remove(user)
-        if self.request.POST.getlist('teams', []):
-            for team in self.request.POST.getlist('teams', []):
-                team = teams_list.get(id=team)
-                team.members.add(user)
-                team.save()
         if self.request.user.role == "ADMIN" or self.request.user.is_superuser:
             if self.request.is_ajax():
                 data = {'success_url': reverse_lazy('common:users_list'), 'error': False}
@@ -246,7 +226,6 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
         context = super(UpdateUserView, self).get_context_data(**kwargs)
         context["user_obj"] = self.object
         context["user_form"] = context["form"]
-        context['teams'] = Team.objects.all()
         if "errors" in kwargs:
             context["errors"] = kwargs["errors"]
         return context
@@ -387,109 +366,3 @@ def download_document(request, pk):
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
             return response
     raise Http404
-
-
-class CreateTeamView(AdminRequiredMixin, CreateView):
-    model = Team
-    form_class = TeamForm
-    template_name = "create_team.html"
-
-    def form_valid(self, form):
-        team = form.save()
-        if self.request.POST.get('role'):
-            team.role = self.request.POST.get('role')
-            users_list = User.objects.filter(
-                role=self.request.POST.get('role'), is_active=True).values_list(
-                'id', flat=True)
-            team.members.add(*users_list)
-        team.save()
-        if self.request.is_ajax():
-            data = {'success_url': reverse_lazy('common:teams_list'), 'error': False}
-            return JsonResponse(data)
-        return super(CreateTeamView, self).form_valid(form)
-
-
-    def form_invalid(self, form):
-        response = super(CreateTeamView, self).form_invalid(form)
-        if self.request.is_ajax():
-            return JsonResponse({'error': True, 'errors': form.errors})
-        return response
-
-    def get_context_data(self, **kwargs):
-        context = super(CreateTeamView, self).get_context_data(**kwargs)
-        context["roles"] = ROLES
-        return context
-
-
-
-class TeamsListView(LoginRequiredMixin, TemplateView):
-    model = Team
-    context_object_name = "teams"
-    template_name = "team_list.html"
-
-    def get_queryset(self):
-        queryset = self.model.objects.all()
-        request_post = self.request.POST
-        if request_post:
-            if request_post.get('name'):
-                queryset = queryset.filter(name__icontains=request_post.get('name'))
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super(TeamsListView, self).get_context_data(**kwargs)
-        context["teams"] = self.get_queryset()
-        context["per_page"] = self.request.POST.get('per_page')
-        return context
-
-    def post(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        return self.render_to_response(context)
-
-
-class UpdateTeamView(LoginRequiredMixin, UpdateView):
-    model = Team
-    form_class = TeamForm
-    template_name = "create_team.html"
-
-    def form_valid(self, form):
-        team = form.save()
-        team.members.clear()
-        if self.request.POST.get('role'):
-            team.role = self.request.POST.get('role')
-            users_list = User.objects.filter(
-                role=self.request.POST.get('role'), is_active=True).values_list(
-                'id', flat=True)
-            team.members.add(*users_list)
-        team.save()
-        if self.request.is_ajax():
-            data = {'success_url': reverse_lazy('common:teams_list'), 'error': False}
-            return JsonResponse(data)
-        return super(UpdateTeamView, self).form_valid(form)
-
-
-    def form_invalid(self, form):
-        response = super(UpdateTeamView, self).form_invalid(form)
-        if self.request.is_ajax():
-            return JsonResponse({'error': True, 'errors': form.errors})
-        return response
-
-    def get_context_data(self, **kwargs):
-        context = super(UpdateTeamView, self).get_context_data(**kwargs)
-        context["team_obj"] = self.object
-        context["roles"] = ROLES
-        if "errors" in kwargs:
-            context["errors"] = kwargs["errors"]
-        return context
-
-
-class TeamDetailView(LoginRequiredMixin, DetailView):
-    model = Team
-    template_name = "team_detail.html"
-
-    def get_context_data(self, **kwargs):
-        context = super(TeamDetailView, self).get_context_data(**kwargs)
-        context.update({
-            "team_obj": self.object,
-            "users_list": self.object.members.all()
-        })
-        return context

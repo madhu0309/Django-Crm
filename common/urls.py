@@ -5,7 +5,7 @@ from common.views import (
     HomeView, LoginView, ForgotPasswordView, LogoutView, ChangePasswordView, ProfileView,
     UsersListView, CreateUserView, UpdateUserView, UserDetailView, UserDeleteView, PasswordResetView,
     DocumentListView, DocumentCreateView, UpdateDocumentView, DocumentDetailView, DocumentDeleteView, 
-    download_document, CreateTeamView, TeamsListView, UpdateTeamView, TeamDetailView)
+    download_document)
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -45,9 +45,4 @@ urlpatterns = [
     # download
     path('documents/<int:pk>/download/', download_document, name='download_document'),
 
-
-    path('teams/create/', CreateTeamView.as_view(), name='create_team'),
-    path('teams/list/', TeamsListView.as_view(), name='teams_list'),
-    path('teams/<int:pk>/edit/', UpdateTeamView.as_view(), name="edit_team"),
-    path('teams/<int:pk>/view/', TeamDetailView.as_view(), name='view_team'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

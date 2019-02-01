@@ -37,9 +37,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __unicode__(self):
         return self.email
 
-    def get_team_name(self):
-        return Team.objects.filter(members=self).first().name
-
 
 class Address(models.Model):
     address_line = models.CharField(_("Address"), max_length=255, blank=True, null=True)
@@ -87,7 +84,6 @@ class Address(models.Model):
 class Team(models.Model):
     name = models.CharField(max_length=55)
     members = models.ManyToManyField(User)
-    role = models.CharField(max_length=50, choices=ROLES)
 
     def __str__(self):
         return self.name
