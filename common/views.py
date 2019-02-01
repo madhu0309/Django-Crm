@@ -16,6 +16,7 @@ from opportunity.models import Opportunity
 from cases.models import Case
 from contacts.models import Contact
 from accounts.models import Account
+from common.utils import ROLES
 
 
 
@@ -216,6 +217,10 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
             user.is_superuser = False
         user.save()
         teams_list = Team.objects.all()
+        existed_team_list = teams_list.filter(members=user)
+        for team in existed_team_list:
+            if team.id not in self.request.POST.getlist('teams', []):
+                team.members.remove(user)
         if self.request.POST.getlist('teams', []):
             for team in self.request.POST.getlist('teams', []):
                 team = teams_list.get(id=team)
@@ -391,10 +396,9 @@ class CreateTeamView(AdminRequiredMixin, CreateView):
 
     def form_valid(self, form):
         team = form.save()
-        if form.cleaned_data.get("role"):
-            users_list = User.objects.filter(Q(
-                role=self.request.POST.get('role')) | Q(
-                is_superuser=True), is_active=True).values_list(
+        if self.request.POST.getlist('role', []):
+            users_list = User.objects.filter(
+                role__in=self.request.POST.getlist('role', []), is_active=True).values_list(
                 'id', flat=True)
             team.members.add(*users_list)
         if self.request.is_ajax():
@@ -408,6 +412,11 @@ class CreateTeamView(AdminRequiredMixin, CreateView):
         if self.request.is_ajax():
             return JsonResponse({'error': True, 'errors': form.errors})
         return response
+
+    def get_context_data(self, **kwargs):
+        context = super(CreateTeamView, self).get_context_data(**kwargs)
+        context["roles"] = ROLES
+        return context
 
 
 
@@ -443,10 +452,9 @@ class UpdateTeamView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         team = form.save()
         team.members.clear()
-        if self.request.POST.get('role'):
-            users_list = User.objects.filter(Q(
-                role=self.request.POST.get('role')) | Q(
-                is_superuser=True), is_active=True).values_list(
+        if self.request.POST.getlist('role', []):
+            users_list = User.objects.filter(
+                role__in=self.request.POST.getlist('role', []), is_active=True).values_list(
                 'id', flat=True)
             team.members.add(*users_list)
         if self.request.is_ajax():
@@ -464,6 +472,7 @@ class UpdateTeamView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super(UpdateTeamView, self).get_context_data(**kwargs)
         context["team_obj"] = self.object
+        context["roles"] = ROLES
         if "errors" in kwargs:
             context["errors"] = kwargs["errors"]
         return context

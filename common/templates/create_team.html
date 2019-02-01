@@ -34,7 +34,7 @@
                   <div class="form-group">
                     <label for="id_role">Role{% if form.role.field.required %}<span class="errors">*</span>{% endif %}</label>
                       <select name="role" class="form-control role" multiple="multiple">
-                      {% for key, value in form.role.field.choices %}
+                      {% for key, value in roles %}
                       <option value="{{key}}" {% if value == team_obj.role %}selected="selected"{% endif %}>{{value}}</option>
                       {% endfor %}
                       </select>
