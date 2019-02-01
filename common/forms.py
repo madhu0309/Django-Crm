@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.contrib.auth.forms import PasswordResetForm
-from common.models import Address, User, Document, Team
+from common.models import Address, User, Document
 
 
 class BillingAddressForm(forms.ModelForm):
