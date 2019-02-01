@@ -174,24 +174,22 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
             return self.form_invalid(form)
 
     def form_valid(self, form):
+        assigned_to_ids = self.get_object().assigned_to.all().values_list('id', flat=True)
         opportunity_obj = form.save(commit=False)
         if self.request.POST.get('stage') in ['CLOSED WON', 'CLOSED LOST']:
             opportunity_obj.closed_by = self.request.user
         opportunity_obj.save()
-        assigned_to_ids = opportunity_obj.assigned_to.all().values_list('id', flat=True)
-        opportunity_obj.assigned_to.clear()
         opportunity_obj.teams.clear()
         opportunity_obj.contacts.clear()
         all_members_list = []
         if self.request.POST.getlist('assigned_to', []):
-            opportunity_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
-            assigned_to_list = self.request.POST.getlist('assigned_to')
             current_site = get_current_site(self.request)
+            print(assigned_to_ids, 'aasiigned to ids')
 
             assigned_form_users = form.cleaned_data.get('assigned_to').values_list('id', flat=True)
             all_members_list = list(set(list(assigned_form_users)) - set(list(assigned_to_ids)))
             if len(all_members_list):
-                for assigned_to_user in assigned_to_list:
+                for assigned_to_user in all_members_list:
                     user = get_object_or_404(User, pk=assigned_to_user)
                     mail_subject = 'Assigned to opportunity.'
                     message = render_to_string('assigned_to/opportunity_assigned.html', {
@@ -202,6 +200,10 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
                     })
                     email = EmailMessage(mail_subject, message, to=[user.email])
                     email.send()
+
+            opportunity_obj.assigned_to.clear()
+            opportunity_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+
         if self.request.POST.getlist('teams', []):
             opportunity_obj.teams.add(*self.request.POST.getlist('teams'))
         if self.request.POST.getlist('contacts', []):
