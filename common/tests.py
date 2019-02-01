@@ -166,7 +166,7 @@ class UserUpdateTestCase(ObjectsCreation,TestCase):
         response = self.client.get('/users/' + str(self.user.id) + '/edit/')
         self.assertEqual(response.status_code, 200)
 
-    def tst_accounts_update_html(self):
+    def test_accounts_update_html(self):
         response = self.client.get('/users/' + str(self.user.id) + '/edit/')
         self.assertTemplateUsed(response, 'create.html')
 

@@ -345,7 +345,6 @@ class GetContactsView(LoginRequiredMixin, TemplateView):
     template_name = "contacts_list.html"
 
     def get_context_data(self, **kwargs):
-        print("get")
         context = super(GetContactsView, self).get_context_data(**kwargs)
         context["contacts"] = self.get_queryset()
         return context
