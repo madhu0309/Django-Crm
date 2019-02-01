@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
+
 {% block content %}
   <!-- CASE VIEW STARTS -->
     <div class="main_container" id="maincontainer">
@@ -149,7 +150,7 @@
                       <textarea class="form-control" textarea cols="40" rows="3" id="id_comments" name="comment" placeholder="Submit Your Comments Here"></textarea><div><i id="CommentError" style="display:none; color:red"></i></div>
                       </br>
                       <div class="buttons_row">
-                      <button class="btn btn-default save" style="text-align: center;" id="comment_submit" type="submit">Submit</button>
+                      <button class="btn btn-default save" id="comment_submit" type="submit">Submit</button>
                       </div>
                     </div>
                     <input type="hidden" value="{{case_record.id}}" name="caseid">
@@ -345,6 +346,17 @@
   <script src="{% static 'js/cases/view_case.js' %}"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
   <script type="text/javascript">
+
+    var assigned_to_list = "{{ assigned_data }}";
+    assigned_to_list = JSON.parse(assigned_to_list.replace(/&(l|g|quo)t;/g, function(a,b){
+         return {
+              l   : '<',
+              g   : '>',
+              quo : '"'
+          }[b];
+      }));
+
+
     $('#remove_case').click(function(e){
       var result = confirm("Are You Sure You Want to delete?");
       if (result==false) {
@@ -424,7 +436,8 @@ $("#attachment_form").submit(function (e) {
     }
   })
 })
-   
 
-  </script>
+</script>
+<script src="{% static 'js/mention.js' %}"></script>
+
 {% endblock js_block %}
