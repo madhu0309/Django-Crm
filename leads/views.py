@@ -11,7 +11,7 @@ from django.urls import reverse
 from django.views.generic import (
     CreateView, UpdateView, DetailView, ListView, TemplateView, View)
 
-from accounts.models import Account
+from accounts.models import Account, Tags
 from common.forms import BillingAddressForm
 from common.models import User, Comment, Team, Attachments
 from common.utils import LEAD_STATUS, LEAD_SOURCE, COUNTRIES
@@ -83,6 +83,16 @@ class CreateLeadView(LoginRequiredMixin, CreateView):
         lead_obj.address = address_object
         lead_obj.created_by = self.request.user
         lead_obj.save()
+        if self.request.POST.get('tags', ''):
+                tags = self.request.POST.get("tags")
+                splitted_tags = tags.split(",")
+                for t in splitted_tags:
+                    tag = Tags.objects.filter(name=t)
+                    if tag:
+                        tag = tag[0]
+                    else:
+                        tag = Tags.objects.create(name=t)
+                    lead_obj.tags.add(tag)
         if self.request.POST.getlist('assigned_to', []):
             lead_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
             assigned_to_list = self.request.POST.getlist('assigned_to')
@@ -245,7 +255,18 @@ class UpdateLeadView(LoginRequiredMixin, UpdateView):
         lead_obj.save()
         lead_obj.assigned_to.clear()
         lead_obj.teams.clear()
+        lead_obj.tags.clear()
         all_members_list = []
+        if self.request.POST.get('tags', ''):
+                tags = self.request.POST.get("tags")
+                splitted_tags = tags.split(",")
+                for t in splitted_tags:
+                    tag = Tags.objects.filter(name=t)
+                    if tag:
+                        tag = tag[0]
+                    else:
+                        tag = Tags.objects.create(name=t)
+                    lead_obj.tags.add(tag)
         if self.request.POST.getlist('assigned_to', []):
             lead_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
             if self.request.POST.get('status') != "converted":

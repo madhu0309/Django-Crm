@@ -8,7 +8,7 @@ from django.template.loader import render_to_string
 from django.views.generic import (
     CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
 from accounts.forms import AccountForm, AccountCommentForm, AccountAttachmentForm
-from accounts.models import Account
+from accounts.models import Account, Tags
 from common.models import User, Address, Team, Comment, Attachments
 from common.utils import INDCHOICES, COUNTRIES, CURRENCY_CODES, CASE_TYPE, PRIORITY_CHOICE, STATUS_CHOICE
 from contacts.models import Contact
@@ -103,6 +103,16 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
                 email.send()
         if self.request.POST.getlist('teams', []):
             account_object.teams.add(*self.request.POST.getlist('teams'))
+        if self.request.POST.get('tags', ''):
+                tags = self.request.POST.get("tags")
+                splitted_tags = tags.split(",")
+                for t in splitted_tags:
+                    tag = Tags.objects.filter(name=t)
+                    if tag:
+                        tag = tag[0]
+                    else:
+                        tag = Tags.objects.create(name=t)
+                    account_object.tags.add(tag)
         if self.request.POST.get("savenewform"):
             return redirect("accounts:new_account")
         else:
@@ -245,6 +255,17 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
                     email.send()
         if self.request.POST.getlist('teams', []):
             account_object.teams.add(*self.request.POST.getlist('teams'))
+        account_object.tags.clear()
+        if self.request.POST.get('tags', ''):
+            tags = self.request.POST.get("tags")
+            splitted_tags = tags.split(",")
+            for t in splitted_tags:
+                tag = Tags.objects.filter(name=t)
+                if tag:
+                    tag = tag[0]
+                else:
+                    tag = Tags.objects.create(name=t)
+                account_object.tags.add(tag)
         return redirect("accounts:list")
 
     def form_invalid(self, form, billing_form, shipping_form):
