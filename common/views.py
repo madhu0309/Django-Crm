@@ -396,11 +396,13 @@ class CreateTeamView(AdminRequiredMixin, CreateView):
 
     def form_valid(self, form):
         team = form.save()
-        if self.request.POST.getlist('role', []):
+        if self.request.POST.get('role'):
+            team.role = self.request.POST.get('role')
             users_list = User.objects.filter(
-                role__in=self.request.POST.getlist('role', []), is_active=True).values_list(
+                role=self.request.POST.get('role'), is_active=True).values_list(
                 'id', flat=True)
             team.members.add(*users_list)
+        team.save()
         if self.request.is_ajax():
             data = {'success_url': reverse_lazy('common:teams_list'), 'error': False}
             return JsonResponse(data)
@@ -452,11 +454,13 @@ class UpdateTeamView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         team = form.save()
         team.members.clear()
-        if self.request.POST.getlist('role', []):
+        if self.request.POST.get('role'):
+            team.role = self.request.POST.get('role')
             users_list = User.objects.filter(
-                role__in=self.request.POST.getlist('role', []), is_active=True).values_list(
+                role=self.request.POST.get('role'), is_active=True).values_list(
                 'id', flat=True)
             team.members.add(*users_list)
+        team.save()
         if self.request.is_ajax():
             data = {'success_url': reverse_lazy('common:teams_list'), 'error': False}
             return JsonResponse(data)
