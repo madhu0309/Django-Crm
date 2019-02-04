@@ -1,3 +1,4 @@
+import json
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
@@ -143,8 +144,16 @@ class CaseDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(CaseDetailView, self).get_context_data(**kwargs)
+        assigned_data = []
+        for each in context['case_record'].assigned_to.all():
+            assigned_dict = {}
+            assigned_dict['id'] = each.id
+            assigned_dict['name'] =  each.email
+            assigned_data.append(assigned_dict)
+
         context.update({"comments": context["case_record"].cases.all(), 
-            "attachments": context['case_record'].case_attachment.all()})
+            "attachments": context['case_record'].case_attachment.all(), 
+            "assigned_data": json.dumps(assigned_data)})
         return context
 
 
@@ -409,7 +418,6 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         self.object = get_object_or_404(Attachments, id=request.POST.get("attachment_id"))
-        print(request.POST)
         if (request.user == self.object.created_by or request.user.is_superuser or
             request.user.role == 'admin'):
             self.object.delete()
