@@ -134,7 +134,6 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
         context["users"] = self.users
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
-        context['status_choices'] = Account.ACCOUNT_STATUS_CHOICE
         context["teams"] = Team.objects.all()
         if "billing_form" in kwargs and "shipping_form" in kwargs:
             context["billing_form"] = kwargs["billing_form"]
@@ -193,7 +192,6 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
             "case_status": STATUS_CHOICE,
             'comment_permission': comment_permission,
             "assigned_data": json.dumps(assigned_data),
-            "account_status_choices": Account.ACCOUNT_STATUS_CHOICE
         })
         return context
 
@@ -288,7 +286,6 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         context["users"] = self.users
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
-        context['status_choices'] = Account.ACCOUNT_STATUS_CHOICE
         context["teams"] = Team.objects.all()
         if "billing_form" in kwargs and "shipping_form" in kwargs:
             context["billing_form"] = kwargs["billing_form"]
