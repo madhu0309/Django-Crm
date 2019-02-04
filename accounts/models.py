@@ -17,6 +17,7 @@ class Tags(models.Model):
         super(Tags, self).save(*args, **kwargs)
 
 
+
 class Account(models.Model):
 
     ACCOUNT_STATUS_CHOICE = (
