@@ -65,6 +65,17 @@
                   </select>
                 </div>
               </div>
+              <div class="filter_col col-md-12">
+                <div class="form-group">
+                  <label for="exampleInputEmail1">Tags</label>
+                  <select class="form-control" id="id_tag" name="tag" >
+                    <option value="">--Select Tags--</option>
+                    {% for tag in tags %}
+                    <option value="{{tag.id}}" {% if request.POST.tag %} {% ifequal tag.id request.POST.tag|add:"0" %}selected{% endifequal %}{% endif %} >{{ tag.name }} </option>
+                    {% endfor%}
+                  </select>
+                </div>
+              </div>
               <div class="filter_col text-center col-12">
                 <div class="form-group buttons_row">
                   <button class="btn btn-primary save" type="submit">Search</button>
