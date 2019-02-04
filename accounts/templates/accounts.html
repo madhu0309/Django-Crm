@@ -109,11 +109,11 @@
                 <td>{% if each_account.billing_address.city %}{{ each_account.billing_address.city }} {% else %} Not specified {% endif %}</td>
                 <td>{% if each_account.billing_address.state %}{{ each_account.billing_address.state }} {% else %} Not specified {% endif %}</td>
                 <td>{% if each_account.industry %}{{ each_account.industry }} {% else %} Not specified {% endif %}</td>
-                <td>
+                <td style="display: block;">
                   {% with tags=each_account.tags.all %}
                     {% if tags %}
                       {% for tag in tags %}
-                        <span class="text-left">{{ tag.name }}</span><br>
+                        <span class="text-left" id="list_tag">{{ tag.name }}</span>
                       {% endfor %}
                     {% else %}
                       No Tags
