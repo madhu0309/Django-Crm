@@ -141,18 +141,18 @@
                       <input type="hidden" value="{{lead_record.id}}" name="leadid">
                   </form>
                   <ul class="list-group" id="attachment_div">
-                      {% for attachemnt in attachments %}
-                          <li class="list-group-item list-row" id="attachment{{attachemnt.id}}">
+                      {% for attachment in attachments %}
+                          <li class="list-group-item list-row" id="attachment{{attachment.id}}">
                               <div class="float-right right-container">
                                 <div class="list-row-buttons btn-group float-right">
-                                  <button  class="action btn btn-danger" onclick="remove_attachment({{attachemnt.id}})">Remove</button>
+                                  <button  class="action btn btn-danger" onclick="remove_attachment({{attachment.id}})">Remove</button>
                                 </div>
                               </div>
-                                <i class="{{attachemnt.get_file_type_display}}" aria-hidden="true" style="font-size:3rem;"></i>
-                                <span><a style="display:block;" href="{% url 'common:download_attachment' attachemnt.id %}">Download</a></span>
+                                <i class="{{attachment.get_file_type_display}}" aria-hidden="true" style="font-size:3rem;"></i>
+                                <span><a style="display:block;" href="{% url 'common:download_attachment' attachment.id %}">Download</a></span>
                               <div class="stream-container">
-                                <pre class="float-left">{{ attachemnt.created_by }}</pre>
-                                <pre class="float-right">{{ attachemnt.created_on|date:'m/d/Y,  H:i:s A' }}</pre>
+                                <pre class="float-left">{{ attachment.created_by }}</pre>
+                                <pre class="float-right">{{ attachment.created_on|date:'m/d/Y,  H:i:s A' }}</pre>
                               </div>
                           </li>
                       {% endfor %}
