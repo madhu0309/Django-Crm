@@ -14,15 +14,15 @@
 {% endblock %}
 {% block content %}
   <form id="formid" action='' method="POST" novalidate>
-    <div class="overview_form_block row marl ">
-      <div class="col-md-12">
+    <div class="overview_form_block row marl justify-content-center">
+      <div class="col-md-9">
         <div class="card">
           <div class="card-body">
           <div class="card-title text-center">
             {% if account_obj %}EDIT{% else %}CREATE{% endif %} ACCOUNT
           </div>
             <div class="row marl">
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1" class="required">Name{% if account_form.name.field.required %}<span class="error">*</span>{% endif %}</label>
@@ -51,22 +51,9 @@
                     <span class="error">{{ account_form.email.errors }}</span>
                   </div>
                 </div>
-                <div class="filter_col col-md-12">
-                  <div class="form-group">
-                    <label for="exampleInputEmail1">Industry{% if account_form.industry.field.required %}<span class="error">*</span>{% endif %}</label>
-                    {{ account_form.industry }}
-                    <span class="error">{{ account_form.industry.errors }}</span>
-                  </div>
-                </div>
-                <div class="filter_col col-md-12">
-                  <div class="form-group">
-                    <label for="exampleInputEmail1">Description{% if account_form.description.field.required %}<span class="error">*</span>{% endif %}</label>
-                    {{ account_form.description }}
-                    <span class="error">{{ account_form.description.errors }}</span>
-                  </div>
-                </div>
+               
               </div>
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <div class="filter_col col-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Assigned Users</label>
@@ -79,7 +66,6 @@
                     {{ account_form.assigned_to.errors }}
                   </div>
                 </div>
-                <br>
                 <div class="filter_col billing_block col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Billing Address</label>
@@ -111,26 +97,43 @@
                   <h6 style="color:white;">Copy Address</h6>
                 </div>
               </div>
+              <div class="col-md-4">
+                <div class="filter_col col-md-12">
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">Industry{% if account_form.industry.field.required %}<span class="error">*</span>{% endif %}</label>
+                    {{ account_form.industry }}
+                    <span class="error">{{ account_form.industry.errors }}</span>
+                  </div>
+                </div>
+                <div class="filter_col col-md-12">
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">Description{% if account_form.description.field.required %}<span class="error">*</span>{% endif %}</label>
+                    {{ account_form.description }}
+                    <span class="error">{{ account_form.description.errors }}</span>
+                  </div>
+                </div>
+              </div>
+              <br>
+              <div class="col-md-12 buttons_row text-center form_btn_row">
+                <button class="btn btn-default save" type="submit">Save</button>
+                {% if not account_obj %}
+                  <button class="btn btn-default save savenew" type="submit">Save & New</button>
+                {% endif %}
+                <a href="{% url 'accounts:list' %}" class="btn btn-default clear">CANCEL</a>
+              </div>
+
             </div>
-            <br clear="all">
+            
           </div>
         </div>
       </div>
-      <br clear="all">
       <input type="hidden" id="save_new_form" name="savenewform">
     </div>
     <!-- overview ends here -->
-    <div class="row marl buttons_row text-center form_btn_row">
-      <button class="btn btn-default save" type="submit">Save</button>
-      {% if not account_obj %}
-        <button class="btn btn-default save savenew" type="submit">Save & New</button>
-      {% endif %}
-      <a href="{% url 'accounts:list' %}" class="btn btn-default clear">CANCEL</a>
-    </div>
+    
   </form>
 {% endblock %}
 {% block js_block %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
   <script type="text/javascript">
     $("#copy_billing_btn").click(function(){
       var address_line = $("#id_address_line").val()
