@@ -17,6 +17,7 @@ class Tags(models.Model):
         super(Tags, self).save(*args, **kwargs)
 
 
+
 class Account(models.Model):
     name = models.CharField(pgettext_lazy("Name of Account", "Name"), max_length=64)
     email = models.EmailField()

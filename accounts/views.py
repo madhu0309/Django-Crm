@@ -34,6 +34,8 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
                         city__contains=request_post.get('city'))])
             if request_post.get('industry'):
                 queryset = queryset.filter(industry__icontains=request_post.get('industry'))
+            if request_post.get('tag'):
+                queryset = queryset.filter(tags__in=request_post.get('tag'))
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -41,6 +43,7 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
         context["accounts_list"] = self.get_queryset()
         context["industries"] = INDCHOICES
         context["per_page"] = self.request.POST.get('per_page')
+        context['tags'] = Tags.objects.all()
         return context
 
     def get(self, request, *args, **kwargs):
@@ -107,11 +110,11 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
                 tags = self.request.POST.get("tags")
                 splitted_tags = tags.split(",")
                 for t in splitted_tags:
-                    tag = Tags.objects.filter(name=t)
+                    tag = Tags.objects.filter(name=t.lower())
                     if tag:
                         tag = tag[0]
                     else:
-                        tag = Tags.objects.create(name=t)
+                        tag = Tags.objects.create(name=t.lower())
                     account_object.tags.add(tag)
         if self.request.POST.get("savenewform"):
             return redirect("accounts:new_account")
@@ -259,11 +262,11 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
             tags = self.request.POST.get("tags")
             splitted_tags = tags.split(",")
             for t in splitted_tags:
-                tag = Tags.objects.filter(name=t)
+                tag = Tags.objects.filter(name=t.lower())
                 if tag:
                     tag = tag[0]
                 else:
-                    tag = Tags.objects.create(name=t)
+                    tag = Tags.objects.create(name=t.lower())
                 account_object.tags.add(tag)
         return redirect("accounts:list")
 
