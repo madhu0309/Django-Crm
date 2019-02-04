@@ -27,22 +27,31 @@
           <div class="card-title">Filters</div>
           <form id="users_filter" action="" method="POST">
             <div class="row marl">
-              <div class="filter_col col-4">
+              <div class="filter_col col-3">
                 <div class="form-group">
                   <label for="exampleInputEmail1">User Name</label>
                   <input type="text" class="form-control" placeholder="Username" name="username" value="{{request.POST.username}}">
                 </div>
               </div> 
-              <div class="filter_col col-4">
+              <div class="filter_col col-3">
                 <div class="form-group">
                   <label for="exampleInputEmail1">First Name</label>
                   <input type="text" class="form-control" placeholder="First Name" name="first_name" value="{{request.POST.first_name}}">
                 </div>
               </div>
-              <div class="filter_col col-4">
+              <div class="filter_col col-3">
                 <div class="form-group">
                   <label for="exampleInputEmail1">Email</label>
                   <input type="text" class="form-control" placeholder="Email" name="email" value="{{request.POST.email}}">
+                </div>
+              </div>
+              <div class="filter_col col-3">
+                <div class="form-group">
+                  <label for="exampleInputEmail1">Status</label>
+                  <select class="form-control" name="status">
+                    <option value="True" {% if request.POST.status == "True"%}selected{% endif %}>Active</option>
+                    <option value="False" {% if request.POST.status == "False"%}selected{% endif %}>InActive</option>
+                  </select>
                 </div>
               </div>
               <div class="filter_col text-center col-12">
@@ -97,20 +106,22 @@
                     <td>{{ user.first_name }}</td>
                     <td>{{ user.username }}</td>
                     <td>{{ user.email }}</td>
-                    <td>{% if user.is_superuser %} Admin {% else %} {{user.role}} {% endif %}</td>
-                    <td>
+
+                    <td>{% if user.is_superuser %} ADMIN {% else %} {{user.role}} {% endif %}</td>
+                    <td><a href="{% url 'common:change_user_status' pk=user.id %}" class="on_off" style="color: #454545; text-decoration: none;">
                       {% if user.is_active == True %}
-                        Active
+                        <i class="fa fa-toggle-on"></i> Active
                       {% else %}
-                        InActive
+                        <i class="fa fa-toggle-off"></i> InActive
                       {% endif %}
+                    </a>
                     </td>
                     <td class="actions">
                       <!-- <a href="{% url 'common:view_user' user.id %}" class="btn btn-info view"><i class="fas fa-eye"></i>View</a> -->
                       {% if user.email != admin_email  or request.user.email == admin_email %}
                       <a href="{% url 'common:edit_user' user.id %}" class="btn btn-success edit"><i class="fas fa-pencil-alt"></i>Edit</a>
                       {% endif %}
-                      <a href="{% url 'common:remove_user' user.id %}" class="btn btn-danger trash" {% if request.user.email == user.email or user.role == "ADMIN"  or user.is_superuser %} style="visibility: hidden;" {% endif %}><i class="fas fa-trash-alt"></i>Delete</a>
+                      <a href="{% url 'common:remove_user' user.id %}" class="btn btn-danger trash" {% if request.user.email == user.email %} style="visibility: hidden;" {% endif %}><i class="fas fa-trash-alt"></i>Delete</a>
                     </td>
                   </tr>
                   {% endfor %}
