@@ -126,7 +126,8 @@
                                   <button  class="action btn btn-danger" onclick="remove_attachment({{attachment.id}})">Remove</button>
                                 </div>
                               </div>
-                                <div class="stream-post-container" id="attachment_name{{attachment.id}}"><pre><a href="{{ attachment.attachment.url }}">{{ attachment.file_name }}</a></pre></div>
+                              <i class="{{attachemnt.get_file_type_display}}" aria-hidden="true" style="font-size:3rem;"></i>
+                              <span><a style="display:block;" href="{% url 'common:download_attachment' attachemnt.id %}">Download</a></span>
                               <div class="stream-container">
                                 <pre class="float-left">{{ attachment.created_by }}</pre>
                                 <pre class="float-right">{{ attachment.created_on|date:'m/d/Y,  H:i:s A' }}</pre>
@@ -427,7 +428,7 @@ $("#attachment_form").submit(function (e) {
           $("#attachment_div").prepend(
             "<li class='list-group-item list-row' id='attachment" + data.attachment_id + "'>" +
               "<div class='float-right right-container'><div class='list-row-buttons btn-group float-right'><button class='action btn btn-danger' onclick='remove_attachment("+data.attachment_id+")''>Remove</button></div></div>" +
-              "<div class='stream-post-container' id='comment_name"+data.attachment_id+"'><pre><a href='"+data.attachment_url+"'>"+data.attachment+"</a></pre></div>"+
+              "<i class='"+data.attachment_display+"'+'aria-hidden='true' style='font-size:3rem;'></i><span><a style='display:block;' href='/download/"+ data.attachment_id+"/'>Download</a></span>"+
               "<div class='stream-container'><pre class='float-left'>"+data.created_by+"</pre><pre class='float-right'>"+d.toLocaleString('en-US', { hour12: true})+"</pre></div>" +
             "</li>"
           )
