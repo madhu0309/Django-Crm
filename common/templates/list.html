@@ -89,7 +89,7 @@
                   <tr class="text-center">
                     <td scope="row">{{ forloop.counter }}</td>
                     <td>{{ user.first_name }}</td>
-                    <td>{{ user.username }}</td>
+                    <td><a href="{% url 'common:view_user' user.id %}">{{ user.username }}</a></td>
                     <td>{{ user.email }}</td>
 
                     <td class="user_role">{% if user.is_superuser %} Admin {% else %} {{user.role}} {% endif %}</td>
