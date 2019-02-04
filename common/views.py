@@ -1,5 +1,6 @@
 import os
 from django.contrib.auth import logout, authenticate, login
+from django.core.mail import EmailMessage
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http404
@@ -11,6 +12,11 @@ from common.forms import UserForm, LoginForm, ChangePasswordForm, PasswordResetE
 from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy
 from django.conf import settings
+from opportunity.models import Opportunity
+from cases.models import Case
+from contacts.models import Contact
+from accounts.models import Account
+from django.template.loader import render_to_string
 
 
 def handler404(request, exception):
@@ -157,6 +163,16 @@ class CreateUserView(AdminRequiredMixin, CreateView):
         if form.cleaned_data.get("password"):
             user.set_password(form.cleaned_data.get("password"))
         user.save()
+
+        mail_subject = 'Created account in CRM'
+        message = render_to_string('new_user.html', {
+            'user': user,
+            'created_by':self.request.user
+
+        })
+        email = EmailMessage(mail_subject, message, to=[user.email])
+        email.send()
+
         if self.request.is_ajax():
             data = {'success_url': reverse_lazy('common:users_list'), 'error': False}
             return JsonResponse(data)
@@ -180,15 +196,17 @@ class CreateUserView(AdminRequiredMixin, CreateView):
 class UserDetailView(AdminRequiredMixin, DetailView):
     model = User
     context_object_name = "users"
-    template_name = "list.html"
+    template_name = "user_detail.html"
 
     def get_context_data(self, **kwargs):
         context = super(UserDetailView, self).get_context_data(**kwargs)
-        users_list = User.objects.all()
+        user_obj = self.object
         context.update({
-            "users": users_list, "user_obj": self.object,
-            "active_users": users_list.filter(is_active=True),
-            "inactive_users": users_list.filter(is_active=False)
+            "user_obj": user_obj,
+            "opportunity_list": Opportunity.objects.filter(assigned_to=user_obj.id),
+            "contacts": Contact.objects.filter(assigned_to=user_obj.id),
+            "cases": Case.objects.filter(assigned_to=user_obj.id),
+            "accounts": Account.objects.filter(assigned_to=user_obj.id),
         })
         return context
 
