@@ -38,7 +38,11 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(AccountsListView, self).get_context_data(**kwargs)
+        open_accounts = self.get_queryset().filter(status='open')
+        close_accounts = self.get_queryset().filter(status='close')
         context["accounts_list"] = self.get_queryset()
+        context['open_accounts'] = open_accounts
+        context['close_accounts'] = close_accounts
         context["industries"] = INDCHOICES
         context["per_page"] = self.request.POST.get('per_page')
         return context
@@ -130,6 +134,7 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
         context["users"] = self.users
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
+        context['status_choices'] = Account.ACCOUNT_STATUS_CHOICE
         context["teams"] = Team.objects.all()
         if "billing_form" in kwargs and "shipping_form" in kwargs:
             context["billing_form"] = kwargs["billing_form"]
@@ -187,7 +192,8 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
             "case_priority": PRIORITY_CHOICE,
             "case_status": STATUS_CHOICE,
             'comment_permission': comment_permission,
-            "assigned_data": json.dumps(assigned_data)
+            "assigned_data": json.dumps(assigned_data),
+            "account_status_choices": Account.ACCOUNT_STATUS_CHOICE
         })
         return context
 
@@ -282,6 +288,7 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         context["users"] = self.users
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
+        context['status_choices'] = Account.ACCOUNT_STATUS_CHOICE
         context["teams"] = Team.objects.all()
         if "billing_form" in kwargs and "shipping_form" in kwargs:
             context["billing_form"] = kwargs["billing_form"]
