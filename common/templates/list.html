@@ -5,6 +5,11 @@
   <!-- main_container starts here -->
   <div class="main_container">   
     <!-- filter_row starts here -->
+    <div class="row marl">
+      <div class="col-lg-12 text-right">
+         <span class="d-inline"><a href="{% url 'common:create_user'%}" class="btn primary_btn"><i class="fa fa-plus"></i> Add New User</a></span>
+      </div>
+    </div>
     <div class="filter_row list_filter_row row marl">
       <div class="col-md-12">
         <div class="card">
@@ -59,7 +64,7 @@
           <div class="card-body">
             <div class="card-title list text-right">
               <span class="float-left">Users - {% if show_pageitems %} {% show_pageitems %}{% else %} {{ users|length }}{% endif %}</span>
-              <span class="d-inline"><a href="{% url 'common:create_user'%}" class="btn primary_btn"><i class="fa fa-plus"></i> Add New User</a></span>
+             
               <span class="filter_toggle">
                 <a href="#" class="primary_btn"><i class="fas fa-filter"></i></a>
               </span>
@@ -104,9 +109,9 @@
                     <td class="actions">
                       <!-- <a href="{% url 'common:view_user' user.id %}" class="btn btn-info view"><i class="fas fa-eye"></i>View</a> -->
                       {% if user.email != admin_email  or request.user.email == admin_email %}
-                      <a href="{% url 'common:edit_user' user.id %}" class="btn btn-success edit"><i class="fas fa-pencil-alt"></i>Edit</a>
+                      <a href="{% url 'common:edit_user' user.id %}" class="btn btn-success edit action"><i class="fas fa-pencil-alt"></i>Edit</a>
                       {% endif %}
-                      <a href="{% url 'common:remove_user' user.id %}" class="btn btn-danger trash" {% if request.user.email == user.email %} style="visibility: hidden;" {% endif %}><i class="fas fa-trash-alt"></i>Delete</a>
+                      <a href="{% url 'common:remove_user' user.id %}" class="btn btn-danger trash action" {% if request.user.email == user.email %} style="visibility: hidden;" {% endif %}><i class="fas fa-trash-alt"></i>Delete</a>
                     </td>
                   </tr>
                   {% endfor %}
