@@ -105,6 +105,9 @@ class CreateOpportunityView(LoginRequiredMixin, CreateView):
             return JsonResponse({'error': False})
         if self.request.POST.get("savenewform"):
             return redirect("opportunities:save")
+        if self.request.POST.get('from_account'):
+            from_account = self.request.POST.get('from_account')
+            return redirect("accounts:view_account", pk=from_account)
         else:
             return redirect('opportunities:list')
 
@@ -196,8 +199,6 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
         all_members_list = []
         if self.request.POST.getlist('assigned_to', []):
             current_site = get_current_site(self.request)
-            print(assigned_to_ids, 'aasiigned to ids')
-
             assigned_form_users = form.cleaned_data.get('assigned_to').values_list('id', flat=True)
             all_members_list = list(set(list(assigned_form_users)) - set(list(assigned_to_ids)))
             if len(all_members_list):
@@ -220,6 +221,10 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
             opportunity_obj.teams.add(*self.request.POST.getlist('teams'))
         if self.request.POST.getlist('contacts', []):
             opportunity_obj.contacts.add(*self.request.POST.getlist('contacts'))
+
+        if self.request.POST.get('from_account'):
+            from_account = self.request.POST.get('from_account')
+            return redirect("accounts:view_account", pk=from_account)
         if self.request.is_ajax():
             return JsonResponse({'error': False})
         return redirect('opportunities:list')
@@ -260,7 +265,12 @@ class DeleteOpportunityView(LoginRequiredMixin, View):
         self.object.delete()
         if request.is_ajax():
             return JsonResponse({'error': False})
-        return redirect("opportunities:list")
+        else:
+            if request.GET.get('view_account'):
+                account = request.GET.get('view_account')
+                return redirect("accounts:view_account", pk=account)
+            else:
+                return redirect("opportunities:list")
 
 
 class GetContactView(LoginRequiredMixin, View):

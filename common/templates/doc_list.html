@@ -114,6 +114,13 @@
 {% endblock %}
 {% block js_block %}
 <script type="text/javascript">
+
+  $(document).ready(function(){ 
+    $(".filter_toggle").click(function(){ 
+      $(".list_filter_row").toggle(); 
+      }); 
+  });
+  
   $('.remove_document').click(function(e){
     e.preventDefault()
     url = $(this).attr('href')
