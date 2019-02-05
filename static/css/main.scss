@@ -966,3 +966,59 @@ pre{
 .bootstrap-datetimepicker-widget{
   display: block !important;
 }
+.count_blocks_row{
+  margin-top: 2rem;
+  .item{
+    background: #fff;
+    border-radius: 0;
+    border: 1px solid #dedede;
+    padding:0;
+    text-align: center;
+    .title{
+      background: #dedede;
+      line-height: 2.5rem;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+    .count{
+      font-size: 2rem;
+      font-weight: 600;
+      padding: 0.5rem 0;
+    }
+    .more{
+      font-size: 0.85rem;
+      a{
+        color: #fff;
+        display: block;
+        font-weight: 600;
+        padding: 0.35rem;
+        background: darken($color_cyan_aqua_approx, 10%);
+      }
+      &.green{
+        a{
+          background: darken($color_apricot_peach_approx, 10%);
+        }
+      }
+      &.blue{
+        a{
+          background: darken($color_blue_dianne_approx, 10%);
+        }
+      }
+      &.red{
+        a{
+          background: darken($color_cerise_red_approx, 10%);
+        }
+      }
+    }
+  }
+}
+/* open_sections */
+.open_sections{
+  margin-top: 1.5rem;
+  .table_container_row{
+    .table{
+      margin-bottom: 0;
+    }
+  }
+}
