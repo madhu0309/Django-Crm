@@ -1,3 +1,4 @@
+import json
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
@@ -143,8 +144,16 @@ class CaseDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(CaseDetailView, self).get_context_data(**kwargs)
+        assigned_data = []
+        for each in context['case_record'].assigned_to.all():
+            assigned_dict = {}
+            assigned_dict['id'] = each.id
+            assigned_dict['name'] =  each.email
+            assigned_data.append(assigned_dict)
+
         context.update({"comments": context["case_record"].cases.all(), 
-            "attachments": context['case_record'].case_attachment.all()})
+            "attachments": context['case_record'].case_attachment.all(), 
+            "assigned_data": json.dumps(assigned_data)})
         return context
 
 
@@ -174,21 +183,25 @@ class UpdateCaseView(LoginRequiredMixin, UpdateView):
             return self.form_invalid(form)
 
     def form_valid(self, form):
-        case_obj = form.save()
-
-        assigned_to_ids = case_obj.assigned_to.all().values_list('id', flat=True)
-        case_obj.assigned_to.clear()
+        assigned_to_ids = self.get_object().assigned_to.all().values_list('id', flat=True)
+        print(assigned_to_ids, 'aaaa')
+        print(assigned_to_ids, 'asso')
+        case_obj = form.save(commit=False)
         case_obj.teams.clear()
         case_obj.contacts.clear()
+        case_obj.save()
         all_members_list = []
+
         if self.request.POST.getlist('assigned_to', []):
-            case_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
-            assigned_to_list = self.request.POST.getlist('assigned_to')
             current_site = get_current_site(self.request)
+
             assigned_form_users = form.cleaned_data.get('assigned_to').values_list('id', flat=True)
+            print(assigned_form_users, 'assigned_form_users')
             all_members_list = list(set(list(assigned_form_users)) - set(list(assigned_to_ids)))
+            print(all_members_list, 'alll')
+
             if len(all_members_list):
-                for assigned_to_user in assigned_to_list:
+                for assigned_to_user in all_members_list:
                     user = get_object_or_404(User, pk=assigned_to_user)
                     mail_subject = 'Assigned to case.'
                     message = render_to_string('assigned_to/cases_assigned.html', {
@@ -198,7 +211,12 @@ class UpdateCaseView(LoginRequiredMixin, UpdateView):
                         'case': case_obj
                     })
                     email = EmailMessage(mail_subject, message, to=[user.email])
+                    print(email.to, 'emmmm')
                     email.send()
+
+            case_obj.assigned_to.clear()
+            case_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+
         if self.request.POST.getlist('teams', []):
             case_obj.teams.add(*self.request.POST.getlist('teams'))
         if self.request.POST.getlist('contacts', []):
@@ -293,7 +311,7 @@ class AddCommentView(LoginRequiredMixin, CreateView):
         if (
             request.user in self.case.assigned_to.all() or
             request.user == self.case.created_by or request.user.is_superuser or
-            request.user.role == 'admin'
+            request.user.role == 'ADMIN'
         ):
             form = self.get_form()
             if form.is_valid():
@@ -325,7 +343,7 @@ class UpdateCommentView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         self.comment_obj = get_object_or_404(Comment, id=request.POST.get("commentid"))
         if (request.user == self.comment_obj.commented_by or request.user.is_superuser or
-            request.user.role == 'admin'):
+            request.user.role == 'ADMIN'):
             form = CaseCommentForm(request.POST, instance=self.comment_obj)
             if form.is_valid():
                 return self.form_valid(form)
@@ -352,7 +370,7 @@ class DeleteCommentView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         self.object = get_object_or_404(Comment, id=request.POST.get("comment_id"))
         if (request.user == self.object.commented_by or request.user.is_superuser or
-            request.user.role == 'admin'):
+            request.user.role == 'ADMIN'):
             self.object.delete()
             data = {"cid": request.POST.get("comment_id")}
             return JsonResponse(data)
@@ -372,7 +390,7 @@ class AddAttachmentView(LoginRequiredMixin, CreateView):
         if (
             request.user in self.case.assigned_to.all() or
             request.user == self.case.created_by or request.user.is_superuser or
-            request.user.role == 'admin'
+            request.user.role == 'ADMIN'
         ):
             form = self.get_form()
             if form.is_valid():
@@ -409,9 +427,8 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         self.object = get_object_or_404(Attachments, id=request.POST.get("attachment_id"))
-        print(request.POST)
         if (request.user == self.object.created_by or request.user.is_superuser or
-            request.user.role == 'admin'):
+            request.user.role == 'ADMIN'):
             self.object.delete()
             data = {"attachment_object": request.POST.get("attachment_id"), "error": False}
             return JsonResponse(data)

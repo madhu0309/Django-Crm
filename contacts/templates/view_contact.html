@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
+
 {% block breadcrumb %}
 <nav aria-label="breadcrumb">
 <ol class="breadcrumb">
@@ -117,7 +118,7 @@
                                 <div class="stream-post-container" id="attachment_name{{attachemnt.id}}"><pre><a href="{{ attachemnt.attachment.url }}">{{ attachemnt.file_name }}</a></pre></div>
                               <div class="stream-container">
                                 <pre class="float-left">{{ attachemnt.created_by }}</pre>
-                                <pre class="float-right">{{ attachemnt.created_on }}</pre>
+                                <pre class="float-right">{{ attachemnt.created_on|date:'m/d/Y,  H:i:s A' }}</pre>
                               </div>
                           </li>
                       {% endfor %}
@@ -164,7 +165,7 @@
                     <div class="stream-post-container" id="comment_name{{comment.id}}"><pre>{{ comment.comment }}</pre></div>
                     <div class="stream-container">
                       <pre class="float-left">{{ comment.commented_by }}</pre>
-                      <pre class="float-right">{{ comment.commented_on }}</pre>
+                      <pre class="float-right">{{ comment.commented_on|date:'m/d/Y,  H:i:s A' }}</pre>
                     </div>
                   </li>
                   {% endfor %}
@@ -203,12 +204,22 @@
 <!-- CONTACTS VIEW ENDS -->
 {% endblock%}
 {% block js_block %}
-  <script type="text/javascript">
+<script type="text/javascript">
 
-  function resetForm() {
-    $('#CommentEditError').hide()
-    document.getElementById("CommentEditError").reset();
-    }
+var assigned_to_list = "{{ assigned_data }}";
+assigned_to_list = JSON.parse(assigned_to_list.replace(/&(l|g|quo)t;/g, function(a,b){
+       return {
+            l   : '<',
+            g   : '>',
+            quo : '"'
+        }[b];
+    }));
+
+
+function resetForm() {
+  $('#CommentEditError').hide()
+  document.getElementById("CommentEditError").reset();
+  }
 
 $("#comment_form").submit(function (e) {
   e.preventDefault()
@@ -233,7 +244,7 @@ $("#comment_form").submit(function (e) {
           "<li><a class='action' onclick='edit_comment(" + data.comment_id + ")'>Edit</a></li>" +
           "<li><a class='action' onclick='remove_comment(" + data.comment_id + ")''>Remove</a></li></ul></div></div>" +
           "<div class='stream-post-container' id='comment_name"+data.comment_id+"'><pre>"+data.comment+"</pre></div>"+
-          "<div class='stream-container'><pre class='float-left'>"+data.commented_by+"</pre><pre class='float-right'>"+d.toGMTString()+"</pre></div>"
+          "<div class='stream-container'><pre class='float-left'>"+data.commented_by+"</pre><pre class='float-right'>"+d.toLocaleString('en-US', { hour12: true })+"</pre></div>"
         )
         $("#id_comments").val("")
         alert("Comment Submitted")
@@ -309,11 +320,12 @@ $("#attachment_form").submit(function (e) {
       if (data.error) {
         $("#AttachmentError").html(data.error).show()
       } else {
+        d = new Date(data.created_on)
         $("#attachment_div").prepend(
             "<li class='list-group-item list-row' id='attachment" + data.attachment_id + "'>" +
               "<div class='float-right right-container'><div class='list-row-buttons btn-group float-right'><button class='action btn btn-danger' onclick='remove_attachment("+data.attachment_id+")''>Remove</button></div></div>" +
               "<div class='stream-post-container' id='comment_name"+data.attachment_id+"'><pre><a href='"+data.attachment_url+"'>"+data.attachment+"</a></pre></div>"+
-              "<div class='stream-container'><pre class='float-left'>"+data.created_by+"</pre><pre class='float-right'>"+data.created_on+"</pre></div>" +
+              "<div class='stream-container'><pre class='float-left'>"+data.created_by+"</pre><pre class='float-right'>"+d.toLocaleString('en-US', { hour12: true })+"</pre></div>" +
             "</li>"
         )
         $("#id_attachments").val("")
@@ -346,4 +358,6 @@ function remove_attachment(x) {
     });
 
   </script>
+  <script src="{% static 'js/mention.js' %}"></script>
+
 {% endblock js_block %}

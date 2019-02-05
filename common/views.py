@@ -1,5 +1,6 @@
 import os
 from django.contrib.auth import logout, authenticate, login
+from django.core.mail import EmailMessage
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http404
@@ -11,6 +12,11 @@ from common.forms import UserForm, LoginForm, ChangePasswordForm, PasswordResetE
 from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy
 from django.conf import settings
+from opportunity.models import Opportunity
+from cases.models import Case
+from contacts.models import Contact
+from accounts.models import Account
+from django.template.loader import render_to_string
 
 
 def handler404(request, exception):
@@ -128,6 +134,8 @@ class UsersListView(AdminRequiredMixin, TemplateView):
                 queryset = queryset.filter(username__icontains=request_post.get('username'))
             if request_post.get('email'):
                 queryset = queryset.filter(email__icontains=request_post.get('email'))
+            if request_post.get('status'):
+                queryset = queryset.filter(is_active=request_post.get('status'))
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -151,9 +159,20 @@ class CreateUserView(AdminRequiredMixin, CreateView):
 
     def form_valid(self, form):
         user = form.save(commit=False)
+        print(form.errors)
         if form.cleaned_data.get("password"):
             user.set_password(form.cleaned_data.get("password"))
         user.save()
+
+        mail_subject = 'Created account in CRM'
+        message = render_to_string('new_user.html', {
+            'user': user,
+            'created_by':self.request.user
+
+        })
+        email = EmailMessage(mail_subject, message, to=[user.email])
+        email.send()
+
         if self.request.is_ajax():
             data = {'success_url': reverse_lazy('common:users_list'), 'error': False}
             return JsonResponse(data)
@@ -177,15 +196,17 @@ class CreateUserView(AdminRequiredMixin, CreateView):
 class UserDetailView(AdminRequiredMixin, DetailView):
     model = User
     context_object_name = "users"
-    template_name = "list.html"
+    template_name = "user_detail.html"
 
     def get_context_data(self, **kwargs):
         context = super(UserDetailView, self).get_context_data(**kwargs)
-        users_list = User.objects.all()
+        user_obj = self.object
         context.update({
-            "users": users_list, "user_obj": self.object,
-            "active_users": users_list.filter(is_active=True),
-            "inactive_users": users_list.filter(is_active=False)
+            "user_obj": user_obj,
+            "opportunity_list": Opportunity.objects.filter(assigned_to=user_obj.id),
+            "contacts": Contact.objects.filter(assigned_to=user_obj.id),
+            "cases": Case.objects.filter(assigned_to=user_obj.id),
+            "accounts": Account.objects.filter(assigned_to=user_obj.id),
         })
         return context
 
@@ -247,11 +268,9 @@ class DocumentCreateView(LoginRequiredMixin, CreateView):
     template_name = "doc_create.html"
 
     def form_valid(self, form):
-        print('heeee')
         doc = form.save(commit=False)
         doc.created_by = self.request.user
         doc.save()
-        print('doc saved')
         if self.request.is_ajax():
             data = {'success_url': reverse_lazy('common:doc_list'), 'error': False}
             return JsonResponse(data)
@@ -261,7 +280,6 @@ class DocumentCreateView(LoginRequiredMixin, CreateView):
     def form_invalid(self, form):
         response = super(DocumentCreateView, self).form_invalid(form)
         if self.request.is_ajax():
-            print(form.errors, 'qeeee')
             return JsonResponse({'error': True, 'errors': form.errors})
         return response
 
@@ -285,11 +303,14 @@ class DocumentListView(LoginRequiredMixin, TemplateView):
         if request_post:
             if request_post.get('doc_name'):
                 queryset = queryset.filter(title__icontains=request_post.get('doc_name'))
+            if request_post.get('status'):
+                queryset = queryset.filter(status=request_post.get('status'))
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super(DocumentListView, self).get_context_data(**kwargs)
         context["documents"] = self.get_queryset()
+        context["status_choices"] = Document.DOCUMENT_STATUS_CHOICE
         context["per_page"] = self.request.POST.get('per_page')
         return context
 
@@ -360,3 +381,13 @@ def download_document(request, pk):
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
             return response
     raise Http404
+
+
+def change_user_status(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    if user.is_active:
+        user.is_active = False
+    else:
+        user.is_active = True
+    user.save()
+    return HttpResponseRedirect('/users/list/')
