@@ -46,7 +46,7 @@ urlpatterns = [
     path('documents/<int:pk>/download/', download_document, name='download_document'),
 
     # download_attachment
-     path('download/<int:pk>/', download_attachment, name='download_attachment'),
+     path('attachments/<int:pk>/download/', download_attachment, name='download_attachment'),
 
     path('user/status/<int:pk>/', change_user_status, name='change_user_status'),
 

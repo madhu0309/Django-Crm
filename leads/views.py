@@ -19,6 +19,7 @@ from leads.models import Lead
 from leads.forms import LeadCommentForm, LeadForm, LeadAttachmentForm
 from planner.models import Event, Reminder
 from planner.forms import ReminderForm
+from django.urls import reverse
 
 
 class LeadListView(LoginRequiredMixin, TemplateView):
@@ -532,6 +533,7 @@ class AddAttachmentsView(LoginRequiredMixin, CreateView):
             "attachment_url": attachment.attachment.url,
             "created_on": attachment.created_on,
             "created_by": attachment.created_by.email,
+            "download_url": reverse('common:download_attachment', kwargs={'pk':attachment.id}),
             "attachment_display": attachment.get_file_type_display()
         })
 
