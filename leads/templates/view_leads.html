@@ -145,17 +145,22 @@
                       <input type="hidden" value="{{lead_record.id}}" name="leadid">
                   </form>
                   <ul class="list-group" id="attachment_div">
-                      {% for attachemnt in attachments %}
-                          <li class="list-group-item list-row" id="attachment{{attachemnt.id}}">
+                      {% for attachment in attachments %}
+                          <li class="list-group-item list-row" id="attachment{{attachment.id}}">
                               <div class="float-right right-container">
                                 <div class="list-row-buttons btn-group float-right">
-                                  <button  class="action btn primary_btn" onclick="remove_attachment({{attachemnt.id}})">Remove</button>
+                                  <button  class="action btn primary_btn" onclick="remove_attachment({{attachment.id}})">Remove</button>
                                 </div>
                               </div>
-                                <div class="stream-post-container" id="attachment_name{{attachemnt.id}}"><pre><span class="icon"> <i class="far fa-file-excel"></i> </span> <a href="{{ attachemnt.attachment.url }}">{{ attachemnt.file_name }}</a></pre></div>
+
+                              
+                              <div class="stream-post-container" id="attachment_name{{attachment.id}}">
+                                <pre> <span class="icon"><i style="font-size:1.5rem;" class="{{attachment.get_file_type_display}}"></i> </span> <a href="{% url 'common:download_attachment' attachment.id %}">Download</a></pre>
+                              </div>
+
                               <div class="stream-container">
-                                <pre class="float-left">{{ attachemnt.created_by }}</pre>
-                                <pre class="float-right">{{ attachemnt.created_on|date:'m/d/Y,  H:i:s A' }}</pre>
+                                <pre class="float-left">{{ attachment.created_by }}</pre>
+                                <pre class="float-right">{{ attachment.created_on|date:'m/d/Y,  H:i:s A' }}</pre>
                               </div>
                           </li>
                       {% endfor %}
@@ -361,11 +366,12 @@ $("#attachment_form").submit(function (e) {
       } else {
         d = new Date(data.created_on)
         $("#attachment_div").prepend(
-            "<li class='list-group-item list-row' id='attachment" + data.attachment_id + "'>" +
-              "<div class='float-right right-container'><div class='list-row-buttons btn-group float-right'><button class='action btn btn-danger' onclick='remove_attachment("+data.attachment_id+")''>Remove</button></div></div>" +
-              "<div class='stream-post-container' id='comment_name"+data.attachment_id+"'><pre><a href='"+data.attachment_url+"'>"+data.attachment+"</a></pre></div>"+
-              "<div class='stream-container'><pre class='float-left'>"+data.created_by+"</pre><pre class='float-right'>"+d.toLocaleString('en-US', { hour12: true })+"</pre></div>" +
-            "</li>"
+              "<li class='list-group-item list-row' id='attachment" + data.attachment_id + "'>" +
+                "<div class='float-right right-container'><div class='list-row-buttons btn-group float-right'><button class='action btn primary_btn' onclick='remove_attachment("+data.attachment_id+")''>Remove</button></div></div>" +
+                "<div class='stream-post-container' id='attachment_name"+data.attachment_id+"'>"+
+                "<pre><span class='icon'><i style='font-size:1.5rem;' class='"+data.attachment_display+"'></i>&nbsp;&nbsp;</span><a href='"+data.download_url+"'>Download</a></pre></div>"+
+                "<div class='stream-container'><pre class='float-left'>"+data.created_by+"</pre><pre class='float-right date'>"+d.toLocaleString('en-US', { hour12: true })+"</pre></div>" +
+              "</li>"
         );
         $("#id_attachments").val("")
         alert("Attachment Saved")

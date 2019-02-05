@@ -14,6 +14,7 @@ from common.models import Team, User, Comment, Attachments
 from accounts.models import Account
 from contacts.models import Contact
 from common.utils import PRIORITY_CHOICE, STATUS_CHOICE, CASE_TYPE
+from django.urls import reverse
 
 
 class CasesListView(LoginRequiredMixin, TemplateView):
@@ -413,9 +414,11 @@ class AddAttachmentView(LoginRequiredMixin, CreateView):
             "attachment_id": attachment.id,
             "attachment": attachment.file_name,
             "attachment_url": attachment.attachment.url,
+            "download_url": reverse('common:download_attachment', kwargs={'pk':attachment.id}),
             "created_on": attachment.created_on,
             "created_by": attachment.created_by.email,
             "message": "attachment Created",
+            "attachment_display": attachment.get_file_type_display(),
             "error": False
         })
 

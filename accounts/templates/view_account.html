@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
+
 {% block breadcrumb %}
 <!-- breadcrumb starts here -->
 <nav aria-label="breadcrumb">
@@ -8,7 +9,6 @@
     <li class="active breadcrumb-item">{{account_record.name}}</li>
   </ol>
 </nav>
-<!-- breadcrumb ends here -->
 {% endblock breadcrumb %}
 {% block content %}
 <!-- ACCOUNTS VIEW STARTS -->
@@ -154,24 +154,24 @@
                         </div>
                       </div>
                       <input type="hidden" value="{{account_record.id}}" name="accountid">
-                    </form>
+                  </form>
+                  <ul class="list-group" id="attachment_div">
+                      {% for attachment in attachments %}
+                          <li class="list-group-item list-row" id="attachment{{attachment.id}}">
+                              <div class="float-right right-container">
+                                <div class="list-row-buttons btn-group float-right">
+                                  <button  class="action btn primary_btn" onclick="remove_attachment({{attachment.id}})">Remove</button>
+                                </div>
+                              </div>
 
-                    <ul class="list-group" id="attachment_div">
-                      {% for attachemnt in attachments %}
-                      <li class="list-group-item list-row" id="attachment{{attachemnt.id}}">
-                        <div class="float-right right-container">
-                          <div class="list-row-buttons btn-group float-right">
-                            <button  class="action btn primary_btn" onclick="remove_attachment({{attachemnt.id}})">Remove</button>
-                          </div>
-                        </div>
-                        <div class="stream-post-container" id="attachment_name{{attachemnt.id}}">
-                          <pre> <span class="icon"> <i class="far fa-file-excel"></i> </span> <a href="{{ attachemnt.attachment.url }}">{{ attachemnt.file_name }}</a></pre>
-                        </div>
-                        <div class="stream-container">
-                          <pre class="float-left">{{ attachemnt.created_by }}</pre>
-                          <pre class="float-right date">{{ attachemnt.created_on|date:'m/d/Y,  H:i:s A' }}</pre>
-                        </div>
-                      </li>
+                              <div class="stream-post-container" id="attachment_name{{attachment.id}}">
+                                <pre> <span class="icon"><i style="font-size:1.5rem;" class="{{attachment.get_file_type_display}}"></i> </span> <a href="{% url 'common:download_attachment' attachment.id %}">Download</a></pre>
+                              </div>
+                              <div class="stream-container">
+                                <pre class="float-left">{{ attachment.created_by }}</pre>
+                                <pre class="float-right date">{{ attachment.created_on|date:'m/d/Y,  H:i:s A' }}</pre>
+                              </div>
+                          </li>
                       {% endfor %}
                     </ul>
                   </div>
@@ -2020,8 +2020,7 @@
            }
       });
   });
-</script>
-<script type="text/javascript">
+
   var assigned_to_list = "{{ assigned_data }}";
   assigned_to_list = JSON.parse(assigned_to_list.replace(/&(l|g|quo)t;/g, function(a,b){
          return {
@@ -2065,10 +2064,7 @@
     });
   });
   
-  /*Comment Add Js Ends*/
-  
-  /*Comment Edit Js Start*/
-  
+
   function edit_comment(x) {
     $('#Comments_Accounts_Modal').modal('show');
     comment = $("#comment_name" + x).text()
@@ -2138,48 +2134,52 @@
   function remove_attachment(x) {
     const con = confirm("Do you want to Delete it for Sure!?");
     if (con == true) {
-    $.post('{% url "leads:remove_attachment" %}', {
-      "attachment_id": x
-    }, function (data) {
-      if (data.error) {
-        alert(data.error)
-      } else {
-        $("#attachment" + data.aid).remove()
+      $.post('{% url "leads:remove_attachment" %}', {
+        "attachment_id": x
+      }, function (data) {
+        if (data.error) {
+          alert(data.error)
+        } else {
+          $("#attachment" + data.aid).remove()
+        }
+      })
+    }
+  }
+
+  $("#attachment_form").submit(function (e) {
+    e.preventDefault()
+      const formData = new FormData($("#attachment_form")[0]);
+      $.ajax({
+      url: "{% url 'accounts:add_attachment' %}",
+      type: "POST",
+      data: formData,
+      cache: false,
+      contentType: false,
+      processData: false,
+      success: function (data) {
+        if (data.error) {
+          $("#AttachmentError").html(data.error).show()
+        } else {
+          d = new Date(data.created_on)
+          $("#attachment_div").prepend(
+              "<li class='list-group-item list-row' id='attachment" + data.attachment_id + "'>" +
+                "<div class='float-right right-container'><div class='list-row-buttons btn-group float-right'><button class='action btn primary_btn' onclick='remove_attachment("+data.attachment_id+")''>Remove</button></div></div>" +
+                "<div class='stream-post-container' id='attachment_name"+data.attachment_id+"'>"+
+                "<pre><span class='icon'><i style='font-size:1.5rem;' class='"+data.attachment_display+"'></i>&nbsp;&nbsp;</span><a href='"+data.download_url+"'>Download</a></pre></div>"+
+                "<div class='stream-container'><pre class='float-left'>"+data.created_by+"</pre><pre class='float-right date'>"+d.toLocaleString('en-US', { hour12: true })+"</pre></div>" +
+              "</li>"
+          )
+    
+          $("#AttachmentError").html("")
+          $("#id_attachments").val("")
+          alert("Attachment Saved")
+        }
       }
     })
-  }
-  }
-  
-  $("#attachment_form").submit(function (e) {
-  e.preventDefault()
-    const formData = new FormData($("#attachment_form")[0]);
-    $.ajax({
-    url: "{% url 'accounts:add_attachment' %}",
-    type: "POST",
-    data: formData,
-    cache: false,
-    contentType: false,
-    processData: false,
-    success: function (data) {
-      if (data.error) {
-        $("#AttachmentError").html(data.error).show()
-      } else {
-        d = new Date(data.created_on)
-        $("#attachment_div").prepend(
-            "<li class='list-group-item list-row' id='attachment" + data.attachment_id + "'>" +
-              "<div class='float-right right-container'><div class='list-row-buttons btn-group float-right'><button class='action btn btn-danger' onclick='remove_attachment("+data.attachment_id+")''>Remove</button></div></div>" +
-              "<div class='stream-post-container' id='comment_name"+data.attachment_id+"'><pre><a href='"+data.attachment_url+"'>"+data.attachment+"</a></pre></div>"+
-              "<div class='stream-container'><pre class='float-left'>"+data.created_by+"</pre><pre class='float-right'>"+d.toLocaleString('en-US', { hour12: true })+"</pre></div>" +
-            "</li>"
-        )
-  
-        $("#AttachmentError").html("")
-        $("#id_attachments").val("")
-          alert("Attachment Saved")
-      }
-    }
   })
-  })
+
 </script>
+
 <script src="{% static 'js/mention.js' %}"></script>
+
 {% endblock js_block %}
