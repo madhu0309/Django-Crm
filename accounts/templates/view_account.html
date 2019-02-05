@@ -169,7 +169,7 @@
                               </div>
                               <div class="stream-container">
                                 <pre class="float-left">{{ attachment.created_by }}</pre>
-                                <pre class="float-right date">{{ attachment.created_on|date:'m/d/Y,  H:i:s A' }}</pre>
+                                <pre class="float-right date">{{ attachment.created_on|date:'m/d/Y,  h:i:s A' }}</pre>
                               </div>
                           </li>
                       {% endfor %}
@@ -217,7 +217,7 @@
                         </div>
                         <div class="stream-container">
                           <pre class="float-left">{{ comment.commented_by }}</pre>
-                          <pre class="float-right date">{{ comment.commented_on|date:'m/d/Y,  H:i:s A' }}</pre>
+                          <pre class="float-right date">{{ comment.commented_on|date:'m/d/Y,  h:i:s A' }}</pre>
                         </div>
                       </li>
                       {% endfor %}
