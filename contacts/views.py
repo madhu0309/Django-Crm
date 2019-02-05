@@ -15,6 +15,7 @@ from common.forms import BillingAddressForm
 from common.utils import COUNTRIES
 from contacts.models import Contact
 from contacts.forms import ContactForm, ContactCommentForm, ContactAttachmentForm
+from django.urls import reverse
 
 
 class ContactsListView(LoginRequiredMixin, TemplateView):
@@ -404,6 +405,8 @@ class AddAttachmentsView(LoginRequiredMixin, CreateView):
             "attachment": attachment.file_name,
             "attachment_url": attachment.attachment.url,
             "created_on": attachment.created_on,
+            "download_url": reverse('common:download_attachment', kwargs={'pk':attachment.id}),
+            "attachment_display": attachment.get_file_type_display(),
             "created_by": attachment.created_by.email
         })
 

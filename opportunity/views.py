@@ -12,6 +12,7 @@ from common.utils import STAGES, SOURCES, CURRENCY_CODES
 from contacts.models import Contact
 from opportunity.forms import OpportunityForm, OpportunityCommentForm, OpportunityAttachmentForm
 from opportunity.models import Opportunity
+from django.urls import reverse
 
 
 class OpportunityListView(LoginRequiredMixin, TemplateView):
@@ -406,7 +407,9 @@ class AddAttachmentsView(LoginRequiredMixin, CreateView):
             "attachment": attachment.file_name,
             "attachment_url": attachment.attachment.url,
             "created_on": attachment.created_on,
-            "created_by": attachment.created_by.email
+            "created_by": attachment.created_by.email,
+            "download_url": reverse('common:download_attachment', kwargs={'pk':attachment.id}),
+            "attachment_display": attachment.get_file_type_display()
         })
 
     def form_invalid(self, form):
