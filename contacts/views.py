@@ -102,6 +102,9 @@ class CreateContactView(LoginRequiredMixin, CreateView):
             return JsonResponse({'error': False})
         if self.request.POST.get("savenewform"):
             return redirect("contacts:add_contact")
+        elif self.request.POST.get('from_account'):
+            from_account = self.request.POST.get('from_account')
+            return redirect("accounts:view_account", pk=from_account)
         else:
             return redirect('contacts:list')
 
@@ -217,6 +220,10 @@ class UpdateContactView(LoginRequiredMixin, UpdateView):
 
         if self.request.POST.getlist('teams', []):
             contact_obj.teams.add(*self.request.POST.getlist('teams'))
+
+        if self.request.POST.get('from_account'):
+            from_account = self.request.POST.get('from_account')
+            return redirect("accounts:view_account", pk=from_account)
         if self.request.is_ajax():
             return JsonResponse({'error': False})
         return redirect("contacts:list")
@@ -269,7 +276,11 @@ class RemoveContactView(LoginRequiredMixin, View):
         if self.request.is_ajax():
             return JsonResponse({'error': False})
         else:
-            return redirect("contacts:list")
+            if request.GET.get('view_account'):
+                account = request.GET.get('view_account')
+                return redirect("accounts:view_account", pk=account)
+            else:
+                return redirect("contacts:list")
 
 
 class AddCommentView(LoginRequiredMixin, CreateView):

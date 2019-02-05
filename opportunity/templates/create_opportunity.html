@@ -71,6 +71,10 @@
                   </div>
                 </div>
               </div>
+              <input type="hidden" name="from_account" value="{{request.GET.view_account}}">
+              {% if request.GET.view_account %}
+                <input type="hidden" name="account" value="{{request.GET.view_account}}">
+              {% endif %}
               <div class="col-md-6">
                 <div class="filter_col col-md-12">
                   <div class="form-group">
@@ -118,7 +122,7 @@
             {% if not opportunity_obj %}
               <button class="btn btn-success save savenew" type="submit">Save & New</button>
             {% endif %}
-            <a href="{% url 'opportunities:list' %}" class="btn btn-default clear">Cancel</a>
+            <a {% if request.GET.view_account %} href="{% url 'accounts:view_account' request.GET.view_account %}" {% else %} href="{% url 'opportunities:list' %}" {% endif %} class="btn btn-default clear">Cancel</a>
           </div>
         </div>
       </div>

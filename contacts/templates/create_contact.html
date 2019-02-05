@@ -52,6 +52,12 @@
                     <span class="error">{{ contact_form.phone.errors }}</span>
                   </div>
                 </div>
+                <input type="hidden" name="from_account" value="{{request.GET.view_account}}">
+                {% if request.GET.view_account %}
+                  <input type="hidden" name="account" value="{{request.GET.view_account}}">
+                {% endif %}
+
+                <input type="hidden" id="save_new_form" name="savenewform">
                 <div class="filter_col col-md-12">
                   <div class="form-group ">
                     <label for="exampleInputEmail1" class="required" >Email Address{% if contact_form.email.field.required %}<span class="error">*</span>{% endif %}</label>
@@ -113,13 +119,14 @@
         </div>
       </div>
       <input type="hidden" id="save_new_form" name="savenewform">
+
     </div>
     <div class="row marl buttons_row text-center form_btn_row">
       <button  class="btn btn-default save" type="submit">Save</button>
       {% if not contact_obj %}
         <button class="btn btn-success save savenew" type="submit">Save & New</button>
       {% endif %}
-      <a href="{% url 'contacts:list' %}" class="btn btn-default clear" id="create_contact_cancel">Cancel</a>
+      <a {% if request.GET.view_account %} href="{% url 'accounts:view_account' request.GET.view_account %}" {% else %}href="{% url 'contacts:list' %}"{% endif %} class="btn btn-default clear" id="create_contact_cancel">Cancel</a>
     </div>
   </form>
 {% endblock %}

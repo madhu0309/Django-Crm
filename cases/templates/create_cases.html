@@ -96,6 +96,11 @@
                     <span class="error">{{ case_form.description.errors }}</span>
                   </div>
                 </div>
+
+                <input type="hidden" name="from_account" value="{{request.GET.view_account}}">
+                {% if request.GET.view_account %}
+                  <input type="hidden" name="account" value="{{request.GET.view_account}}">
+                {% endif %}
               </div>
             </div>
             <br clear="all">
@@ -110,7 +115,7 @@
       {% if not case_obj %}
         <button class="btn btn-success save savenew" type="submit">Save & New</button>
       {% endif %}
-      <a href="{% url 'cases:list' %}" class="btn btn-default clear">Cancel</a>
+      <a {% if request.GET.view_account %} href="{% url 'accounts:view_account' request.GET.view_account %}" {% else %} href="{% url 'cases:list' %}" {% endif %} class="btn btn-default clear">Cancel</a>
     </div>
   </form>
 {% endblock %}
