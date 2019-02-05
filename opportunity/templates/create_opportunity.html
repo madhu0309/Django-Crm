@@ -13,15 +13,15 @@
 {% endblock %}
 {% block content %}
   <form class= "form_user" method="POST" action="" novalidate>
-    <div class="overview_form_block row marl">
-      <div class="col-md-12">
+    <div class="overview_form_block row marl justify-content-center">
+      <div class="col-md-9">
         <div class="card">
           <div class="card-body">
           <div class="card-title text-center">
             {% if opportunity_obj %}EDIT{% else %}CREATE{% endif %} OPPORTUNITY
           </div>
             <div class="row marl no-gutters">
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1" class="required">Name{% if opportunity_form.name.field.required %}<span class="error">*</span>{% endif %}</label>
@@ -41,7 +41,14 @@
                     <label for="exampleInputEmail1">Amount</label>
                     <div class="input-group" style="width:100%;">
                       <div class="input-group-btn left-dropdown" style="width:auto;">
-                        {{ opportunity_form.currency }}
+                      {{request.POST.assigned_to}}
+                      <select class="assigned_users form-control" name="assigned_to" multiple="multiple">
+                      {% for user in users %}
+                      <option value="{{user.id}}" {% if user in account_obj.assigned_to.all  or user.id in assignedto_list %} selected="" {% endif %}>{{user.email}}</option>
+                      {% endfor %}
+                      </select>
+                      {{ account_form.assigned_to.errors }}
+                        { opportunity_form.currency }
                         <span class="error">{{opportunity_form.currency.errors}}</span>
                       </div>
                       {{ opportunity_form.amount }}
@@ -56,6 +63,9 @@
                     <span class="error">{{opportunity_form.stage.errors}}</span>
                   </div>
                 </div>
+                
+              </div>
+              <div class="col-md-4">
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Lead Source{% if opportunity_form.lead_source.field.required %}<span class="error">*</span>{% endif %}</label>
@@ -70,8 +80,6 @@
                     <span class="error">{{opportunity_form.probability.errors}}</span>
                   </div>
                 </div>
-              </div>
-              <div class="col-md-6">
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Assigned Users</label>
@@ -82,7 +90,6 @@
                     </select>
                   </div>
                 </div>
-                <br>
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Contacts{% if opportunity_form.contacts.field.required %}<span class="error">*</span>{% endif %}</label>
@@ -90,6 +97,10 @@
                     <span class="error">{{opportunity_form.contacts.errors}}</span>
                   </div>
                 </div>
+              </div>
+              <div class="col-md-4">
+                
+                
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Close Date{% if opportunity_form.closed_on.field.required %}<span class="error">*</span>{% endif %}</label>
