@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.views.generic import CreateView, UpdateView, DetailView, ListView, TemplateView, View
-from accounts.models import Account
+from accounts.models import Account, Tags
 from common.models import User, Comment, Team, Attachments
 from common.utils import STAGES, SOURCES, CURRENCY_CODES
 from contacts.models import Contact
@@ -100,6 +100,16 @@ class CreateOpportunityView(LoginRequiredMixin, CreateView):
             opportunity_obj.teams.add(*self.request.POST.getlist('teams'))
         if self.request.POST.getlist('contacts', []):
             opportunity_obj.contacts.add(*self.request.POST.getlist('contacts'))
+        if self.request.POST.get('tags', ''):
+                tags = self.request.POST.get("tags")
+                splitted_tags = tags.split(",")
+                for t in splitted_tags:
+                    tag = Tags.objects.filter(name=t.lower())
+                    if tag:
+                        tag = tag[0]
+                    else:
+                        tag = Tags.objects.create(name=t.lower())
+                    opportunity_obj.tags.add(tag)
         if self.request.is_ajax():
             return JsonResponse({'error': False})
         if self.request.POST.get("savenewform"):
@@ -218,7 +228,17 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
             opportunity_obj.teams.add(*self.request.POST.getlist('teams'))
         if self.request.POST.getlist('contacts', []):
             opportunity_obj.contacts.add(*self.request.POST.getlist('contacts'))
-
+        opportunity_obj.tags.clear()
+        if self.request.POST.get('tags', ''):
+            tags = self.request.POST.get("tags")
+            splitted_tags = tags.split(",")
+            for t in splitted_tags:
+                tag = Tags.objects.filter(name=t.lower())
+                if tag:
+                    tag = tag[0]
+                else:
+                    tag = Tags.objects.create(name=t.lower())
+                opportunity_obj.tags.add(tag)
         if self.request.POST.get('from_account'):
             from_account = self.request.POST.get('from_account')
             return redirect("accounts:view_account", pk=from_account)
