@@ -45,21 +45,15 @@
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Amount</label>
-                    <div class="input-group" style="width:100%;">
-                      <div class="input-group-btn left-dropdown" style="width:auto;">
-                      {{request.POST.assigned_to}}
-                      <select class="assigned_users form-control" name="assigned_to" multiple="multiple">
-                      {% for user in users %}
-                      <option value="{{user.id}}" {% if user in account_obj.assigned_to.all  or user.id in assignedto_list %} selected="" {% endif %}>{{user.email}}</option>
-                      {% endfor %}
-                      </select>
-                      {{ account_form.assigned_to.errors }}
-                        {{ opportunity_form.currency }}
-                        <span class="error">{{opportunity_form.currency.errors}}</span>
-                      </div>
-                      {{ opportunity_form.amount }}
+                    {{ opportunity_form.amount }}
                       <span class="error">{{opportunity_form.amount.errors}}</span>
-                    </div>
+                  </div>
+                </div>
+                <div class="filter_col col-md-12">
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">Currency</label>
+                    {{ opportunity_form.currency }}
+                    <span class="error">{{opportunity_form.currency.errors}}</span>
                   </div>
                 </div>
                 <div class="filter_col col-md-12">
