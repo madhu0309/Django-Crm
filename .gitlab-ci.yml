@@ -24,3 +24,4 @@ deploy_live:
     - master
   tags:
     - github-crm
+    - djcrm_micropyramid
