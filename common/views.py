@@ -93,12 +93,10 @@ class LoginView(TemplateView):
                     "error": True,
                     "message": "Your Account is InActive. Please Contact Administrator"
                 })
-    
             return render(request, "login.html", {
                 "error": True,
                 "message": "Your Account is not Found. Please Contact Administrator"
             })
-
         return render(request, "login.html", {
             "error": True,
             "message": "Your username and password didn't match. Please try again."
@@ -258,7 +256,6 @@ class PasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
     form_class = PasswordResetEmailForm
     email_template_name = 'registration/password_reset_email.html'
-
 
 
 class DocumentCreateView(LoginRequiredMixin, CreateView):

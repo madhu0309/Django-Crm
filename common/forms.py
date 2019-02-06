@@ -113,9 +113,9 @@ class LoginForm(forms.ModelForm):
             if self.user:
                 if not self.user.is_active:
                     raise forms.ValidationError("User is Inactive")
-    
             raise forms.ValidationError("Invalid email and password")
         return self.cleaned_data
+
 
 
 class ChangePasswordForm(forms.Form):

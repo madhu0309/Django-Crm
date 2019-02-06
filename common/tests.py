@@ -96,7 +96,7 @@ class LoginViewTestCase(ObjectsCreation, TestCase):
         self.client.logout()
         data = {"email": "admin@micropyramid.com", "password": "admin123",'is_active':False}
         response = self.client.post('/login/', data)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
 
     def test_login_invalid(self):
         self.client.logout()
