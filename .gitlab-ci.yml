@@ -10,6 +10,21 @@ Python 3.5.2:
     except:
     - tags
 
+deploy_mp:
+  stage: deploy
+  environment:
+    name: live
+  script:
+    - sudo /bin/rm -rf /home/dj_crm/dj_crm/; cp -r . /home/dj_crm/dj_crm
+    - source /home/dj_crm/env/bin/activate
+    - pip install -r /home/dj_crm/dj_crm/requirements.txt
+    - python /home/dj_crm/dj_crm/manage.py migrate --noinput
+    - sudo /etc/init.d/uwsgi restart
+  only:
+    - master
+  tags:
+    - djcrm_micropyramid
+
 deploy_live:
   stage: deploy
   environment:
@@ -24,4 +39,3 @@ deploy_live:
     - master
   tags:
     - github-crm
-    - djcrm_micropyramid
