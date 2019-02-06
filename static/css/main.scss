@@ -72,6 +72,7 @@ a{
   }
   .errorlist li{
     color: red;
+    font-size: 0.83rem;
   }
   label {
     font-size: 14px;
@@ -1063,5 +1064,10 @@ pre{
         }
       }
     }
+  }
+}
+.errorlist{
+  li{
+    font-size: 0.83rem;
   }
 }
