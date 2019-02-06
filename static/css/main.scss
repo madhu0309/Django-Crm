@@ -75,6 +75,7 @@ a{
   }
   .errorlist li{
     color: red;
+    font-size: 0.83rem;
   }
   label {
     font-size: 14px;
@@ -877,7 +878,7 @@ padding:0px !important;
   display: inline-block;
   margin-bottom: 5px;
   border-radius: 2px;
-  &.sky_blue{
+  &.color1{
     background: darken($dark_sky, 5%);
   }
   &.red{
@@ -886,10 +887,10 @@ padding:0px !important;
   &.green{
     background: darken($green, 5%);
   }
-  &.yellow{
+  &.color2{
     background: darken($dark_yellow, 10%);
   }
-  &.orange{
+  &.color3{
     background: darken($color_apricot_peach_approx, 40%);
   }
 }

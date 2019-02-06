@@ -76,11 +76,10 @@
                     <span class="error">{{ lead_form.email.errors }}</span>
                   </div>
                 </div>
-               
-               
+              
               </div>
               <div class="col-md-4">
-                 <div class="filter_col col-md-12">
+                <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Website{% if lead_form.website.field.required %}<span class="error">*</span>{% endif %}</label>
                     {{ lead_form.website }}
@@ -94,7 +93,7 @@
                   <span class="error">{{ lead_form.description.errors }}</span>
                 </div>
               </div>
-               <div class="filter_col col-md-12">
+              <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Assigned Users</label>
                      <select class="assigned_users form-control" name="assigned_to" multiple="multiple">
@@ -105,6 +104,7 @@
                     <span class="error">{{ lead_form.assigned_to.errors }}</span>
                   </div>
                 </div>
+                   
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1"/>Status{% if lead_form.status.field.required %}<span class="error">*</span>{% endif %}</label>
@@ -114,7 +114,7 @@
                 </div>
               </div>
               <div class="col-md-4">
-               
+             
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1"/>Source{% if lead_form.source.field.required %}<span class="error">*</span>{% endif %}</label>
@@ -159,12 +159,12 @@
               </div>
               <div class="col-md-12">
                  <div class="row marl buttons_row text-center form_btn_row">
-      <button  class="btn btn-default save" type="submit">Save</button>
-      {% if not lead_obj %}
-        <button class="btn btn-success save savenew" type="submit">Save & New</button>
-      {% endif %}
-      <a href="{% url 'leads:list' %}" class="btn btn-default clear" id="create_lead_cancel">Cancel</a>
-    </div>
+                  <button  class="btn btn-default save" type="submit">Save</button>
+                  {% if not lead_obj %}
+                    <button class="btn btn-success save savenew" type="submit">Save & New</button>
+                  {% endif %}
+                  <a href="{% url 'leads:list' %}" class="btn btn-default clear" id="create_lead_cancel">Cancel</a>
+                </div>
               </div>
             </div>
           </div>
