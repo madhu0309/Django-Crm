@@ -81,15 +81,15 @@ class UserForm(forms.ModelForm):
             if self.instance.email != email:
                 if not User.objects.filter(email=self.cleaned_data.get("email")).exists():
                     return self.cleaned_data.get("email")
-                else:
-                    raise forms.ValidationError('Email already exists')
-            else:
-                return self.cleaned_data.get("email")
-        else:
-            if not User.objects.filter(email=self.cleaned_data.get("email")).exists():
-                    return self.cleaned_data.get("email")
-            else:
-                raise forms.ValidationError('User already exists with this email')
+                
+                raise forms.ValidationError('Email already exists')
+            
+            return self.cleaned_data.get("email")
+        
+        if not User.objects.filter(email=self.cleaned_data.get("email")).exists():
+            return self.cleaned_data.get("email")
+        
+        raise forms.ValidationError('User already exists with this email')
 
 
 class LoginForm(forms.ModelForm):
@@ -113,8 +113,8 @@ class LoginForm(forms.ModelForm):
             if self.user:
                 if not self.user.is_active:
                     raise forms.ValidationError("User is Inactive")
-            else:
-                raise forms.ValidationError("Invalid email and password")
+    
+            raise forms.ValidationError("Invalid email and password")
         return self.cleaned_data
 
 

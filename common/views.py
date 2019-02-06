@@ -88,21 +88,21 @@ class LoginView(TemplateView):
                 if user.is_active:
                     login(request, user)
                     return HttpResponseRedirect('/')
-                else:
-                    return render(request, "login.html", {
-                        "error": True,
-                        "message": "Your Account is InActive. Please Contact Administrator"
-                    })
-            else:
+                
                 return render(request, "login.html", {
                     "error": True,
-                    "message": "Your Account is not Found. Please Contact Administrator"
+                    "message": "Your Account is InActive. Please Contact Administrator"
                 })
-        else:
+    
             return render(request, "login.html", {
                 "error": True,
-                "message": "Your username and password didn't match. Please try again."
+                "message": "Your Account is not Found. Please Contact Administrator"
             })
+
+        return render(request, "login.html", {
+            "error": True,
+            "message": "Your username and password didn't match. Please try again."
+        })
 
 
 class ForgotPasswordView(TemplateView):
@@ -362,7 +362,7 @@ class DocumentDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(DocumentDetailView, self).get_context_data(**kwargs)
-        documents = Document.objects.all()
+        # documents = Document.objects.all()
         context.update({
             "file_type_code": self.object.file_type()[1],
             "doc_obj": self.object,
