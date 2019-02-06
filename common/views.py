@@ -16,6 +16,7 @@ from opportunity.models import Opportunity
 from cases.models import Case
 from contacts.models import Contact
 from accounts.models import Account
+from leads.models import Lead
 from django.template.loader import render_to_string
 
 
@@ -41,6 +42,15 @@ class AdminRequiredMixin(AccessMixin):
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "index.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(HomeView, self).get_context_data(**kwargs)
+        context["accounts"] = Account.objects.filter(status="open")
+        context["contacts_count"] = Contact.objects.count()
+        context["leads_count"] = Lead.objects.count()
+        context["opportunities"] = Opportunity.objects.all()
+        return context
+
 
 
 class ChangePasswordView(LoginRequiredMixin, TemplateView):
