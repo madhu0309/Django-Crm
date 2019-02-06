@@ -37,6 +37,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='contact',
-            unique_together={('email',)},
+            unique_together={},
         ),
     ]

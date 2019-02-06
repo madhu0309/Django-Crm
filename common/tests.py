@@ -129,6 +129,9 @@ class UserListTestCase(ObjectsCreation, TestCase):
     def test_users_list(self):
         self.users = User.objects.all()
         response = self.client.get('/users/list/')
+        get_img_url = self.users.filter()
+        get_user = User.objects.get(email='admin@micropyramid.com')
+        self.assertEqual(get_user.email,get_user.__unicode__())
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'list.html')
 
@@ -182,20 +185,26 @@ class UserUpdateTestCase(ObjectsCreation,TestCase):
 #         repsonse = self.client.post(url,data)
 #         self.assertEqual(response.status_code,200)
 
-class ProfileViewTestCase(ObjectsCreation,TestCase):
+
+class ProfileViewTestCase(ObjectsCreation, TestCase):
     def test_profile_view(self):
         url = "/profile/"
         response = self.client.get(url)
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code, 200)
 
-class UserDetailView(ObjectsCreation,TestCase):
+
+class UserDetailView(ObjectsCreation, TestCase):
     def test_user_detail(self):
-        url = "/users/"+str(self.user.id)+"/view/"
+        url = "/users/" + str(self.user.id) + "/view/"
         response = self.client.get(url)
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code, 200)
 
-class DocumentDetailView(ObjectsCreation,TestCase):
+
+class DocumentDetailView(ObjectsCreation, TestCase):
     def test_document_detail(self):
-        url = "/documents/"+str(self.document.id)+"/view/"
+        url = "/documents/" + str(self.document.id) + "/view/"
         repsonse = self.client.get(url)
-        self.assertEqual(repsonse.status_code,200)
+        get_title = Document.objects.get(title='abc')
+        self.assertEqual(get_title.title,str(self.document))
+        # print('-----------------',self.document.title)
+        self.assertEqual(repsonse.status_code, 200)
