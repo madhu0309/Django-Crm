@@ -98,7 +98,7 @@
                 <div class="card-body">
                   <div class="panel-heading-list card-title text-right">
                     
-                    <span class="total_count float-left">List of Open Accounts :{% if show_pageitems %} {% show_pageitems %}{% else %}{{open_accounts|length}}{% endif %}</span>
+                    <span class="total_count float-left">Open Accounts - {% if show_pageitems %} {% show_pageitems %}{% else %}{{open_accounts|length}}{% endif %}</span>
                     <span class="filter_toggle ">
                     <a href="#" class="primary_btn"><i class="fas fa-filter"></i></a>
                     </span>
@@ -131,7 +131,17 @@
                           <td>{% if each_account.name %}<a href="{% url 'accounts:view_account' each_account.id %}">{{ each_account.name }}</a>{% endif %}</td>
                           <td>{% if each_account.billing_address.city %}{{ each_account.billing_address.city }} {% else %} Not specified {% endif %}</td>
                           <td>{% if each_account.billing_address.state %}{{ each_account.billing_address.state }} {% else %} Not specified {% endif %}</td>
-                          <td>santro@mp.com</td>
+                          <td>
+                            {% with assigned_users=each_account.assigned_to.all %}
+                              {% if assigned_users %}
+                                  {% for user in assigned_users %}
+                                    <span class="text-left">{{ user.email }}</span><br>
+                                  {% endfor %}
+                              {% else %}
+                                  Not Assigned
+                              {% endif %}
+                            {% endwith %}
+                          </td>
                           <td>{% if each_account.industry %}{{ each_account.industry }} {% else %} Not specified {% endif %}</td>
                           <td style="display: block;">
                             {% with tags=each_account.tags.all %}
@@ -166,9 +176,11 @@
             <div class="tab-pane fade" id="close" role="tabpanel" aria-labelledby="close">
               <div class="card">
                 <div class="card-body">
-                  <div class="panel-heading-list card-title">
-                    List of Closed Accounts
-                    <span class="float-right total_count">{% if show_pageitems %} {% show_pageitems %}{% else %}Total Closed Accounts {{close_accounts|length}}{% endif %}</span>
+                  <div class="panel-heading-list card-title text-right">
+                    <span class="total_count float-left">Close Accounts - {% if show_pageitems %} {% show_pageitems %}{% else %}{{close_accounts|length}}{% endif %}</span>
+                    <span class="filter_toggle ">
+                        <a href="#" class="primary_btn"><i class="fas fa-filter"></i></a>
+                    </span>                  
                   </div>
                   <div class="table-responsive">
                     <table class="table">
@@ -198,7 +210,17 @@
                           <td>{% if each_account.name %}<a href="{% url 'accounts:view_account' each_account.id %}">{{ each_account.name }}</a>{% endif %}</td>
                           <td>{% if each_account.billing_address.city %}{{ each_account.billing_address.city }} {% else %} Not specified {% endif %}</td>
                           <td>{% if each_account.billing_address.state %}{{ each_account.billing_address.state }} {% else %} Not specified {% endif %}</td>
-                          <td>santro@mp.com</td>
+                          <td>
+                            {% with assigned_users=each_account.assigned_to.all %}
+                              {% if assigned_users %}
+                                  {% for user in assigned_users %}
+                                    <span class="text-left">{{ user.email }}</span><br>
+                                  {% endfor %}
+                              {% else %}
+                                  Not Assigned
+                              {% endif %}
+                            {% endwith %}
+                          </td>
                           <td>{% if each_account.industry %}{{ each_account.industry }} {% else %} Not specified {% endif %}</td>
                           <td style="display: block;">
                             {% with tags=each_account.tags.all %}
