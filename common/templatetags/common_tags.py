@@ -109,4 +109,3 @@ def is_document_file_sheet(ext):
 def is_document_file_zip(ext):
     ext_list = ['zip', '7Z', 'gz', 'rar', 'ZIPX', 'ACE', 'tar', ]
     return ext.lower() in ext_list
-
