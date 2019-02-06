@@ -116,7 +116,7 @@
 <script type="text/javascript">
 
   $(document).ready(function(){ 
-    $(".filter_toggle").click(function(){ 
+    $(".filter_toggle").click(function(){
       $(".list_filter_row").toggle(); 
       }); 
   });
@@ -129,11 +129,6 @@
     window.location = $(this).attr('href')
   });
 
-$(document).ready(function(){    
-    $(".filter_toggle").click(function(){    
-        $(".list_filter_row").toggle();    
-    });    
-  });  
   $(".reset").click(function(e){
     window.location = "{% url 'common:doc_list'%}"
   });
