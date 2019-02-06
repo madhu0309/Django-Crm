@@ -2,11 +2,11 @@ from django.shortcuts import render
 
 
 def index(request):
-    return render(request, {}, 'marketing/index.html')
+    return render(request, 'marketing/index.html')
 
 
 def contact_lists(request):
-    return render(request, {}, 'marketing/lists/index.html')
+    return render(request, 'marketing/lists/index.html')
 
 
 def contact_list_new(request):
