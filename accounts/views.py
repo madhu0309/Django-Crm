@@ -44,6 +44,7 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
         open_accounts = self.get_queryset().filter(status='open')
         close_accounts = self.get_queryset().filter(status='close')
         context["accounts_list"] = self.get_queryset()
+        context["users"] =  User.objects.filter(is_active=True).order_by('email')
         context['open_accounts'] = open_accounts
         context['close_accounts'] = close_accounts
         context["industries"] = INDCHOICES

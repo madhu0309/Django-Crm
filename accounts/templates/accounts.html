@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
 {% load paginate %}
+{% block extralinks %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
 {% block content %}
 <!-- main_container starts here -->
 <div class="main_container">
@@ -33,10 +36,9 @@
                 <div class="filter_col col-md-2">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Assigned Users</label>
-                    {{request.POST.assigned_to}}
-                    <select class="assigned_users1 form-control" name="assigned_to" multiple="multiple">
+                    <select class="assigned_users form-control" name="assigned_to" multiple="multiple">
                     {% for user in users %}
-                    <option value="{{user.id}}" {% if user in account_obj.assigned_to.all  or user.id in assignedto_list %} selected="" {% endif %}>{{user.email}}</option>
+                    <option value="{{user.id}}" {% if user in account_obj.assigned_to.all or user.id in assignedto_list or user.id in request.POST.assigned_to %} selected="" {% endif %}>{{user.email}}</option>
                     {% endfor %}
                     </select>
                     {{ account_form.assigned_to.errors }}
@@ -264,7 +266,12 @@
 <!-- main_container ends here -->
 {% endblock %}
 {% block js_block %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 <script type="text/javascript">
+  $(document).ready(function() {
+    $('.assigned_users').select2();
+  });
+
   $('.remove_account').click(function(e){
     e.preventDefault()
     url = $(this).attr('href')
@@ -281,7 +288,6 @@
     $(".filter_toggle").click(function(){    
         $(".list_filter_row").toggle();    
     });    
-    $('.assigned_users1').select2();
   });  
   
   $("a[rel='page']").click(function(e){
