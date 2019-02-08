@@ -9,7 +9,7 @@ body {
   margin: 0;
   padding-top:60px; 
   font-size: 15px;
-  @mediremovea(min-width:$large){
+  @mediaremove(min-width:$large){
     font-size:18px;
   }
 }
@@ -519,7 +519,7 @@ $color_2: #000;
             td{
               vertical-align: middle;
               color: #454545;
-              font-size: 0.9rem;
+              font-size: 0.83rem;
               text-align: left;
               font-weight: 500;
               padding:7px 5px;
@@ -1118,7 +1118,8 @@ pre{
                 border-radius: 3px;
                 display: inline-block;
                 font-size: 0.8rem;
-                padding: 0.1rem 0.3rem;
+                padding: 0.1rem 0.4rem;
+                line-height: 1rem;
               }
               svg{
                 display: inline-block;
@@ -1133,5 +1134,5 @@ pre{
 }
 
 .badge{
-  font-size: 80%;
+  font-size: 85%;
 }

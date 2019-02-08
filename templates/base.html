@@ -30,18 +30,18 @@
   </button>
   {% if request.user.is_authenticated %}
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
-   <ul class="navbar-nav mr-auto">
-       {% if request.user.role == "ADMIN"  or request.user.is_superuser %}
-        <li class="nav-item"><a class="nav-link" id="users" href="{% url 'common:users_list' %}">Users</a></li>
-       {% endif %}
-        <li class="nav-item"><a class="nav-link" id="accounts" href="{% url 'accounts:list' %}">Accounts</a></li>
-        <li class="nav-item"><a class="nav-link" id="contacts" href="{% url 'contacts:list' %}">Contacts</a></li>
-        <li class="nav-item"><a class="nav-link" id="leads" href="{% url 'leads:list' %}">Leads</a></li>
-        <li class="nav-item"><a class="nav-link" id="opportunities"href="{% url 'opportunities:list' %}">Opportunities</a></li>
-        <li class="nav-item"><a class="nav-link" id="cases" href="{% url 'cases:list' %}">Cases</a></li>
-        <li class="nav-item"><a class="nav-link" id="documents" href="{% url 'common:doc_list' %}">Documents</a></li>
-        <li class="nav-item"><a class="nav-link" id="marketing" href="{% url 'marketing:index' %}">Marketing</a></li>
-      </ul>
+    <ul class="navbar-nav mr-auto">
+     {% if request.user.role == "ADMIN"  or request.user.is_superuser %}
+      <li class="nav-item"><a class="nav-link" id="users" href="{% url 'common:users_list' %}">Users</a></li>
+     {% endif %}
+      <li class="nav-item"><a class="nav-link" id="accounts" href="{% url 'accounts:list' %}">Accounts</a></li>
+      <li class="nav-item"><a class="nav-link" id="contacts" href="{% url 'contacts:list' %}">Contacts</a></li>
+      <li class="nav-item"><a class="nav-link" id="leads" href="{% url 'leads:list' %}">Leads</a></li>
+      <li class="nav-item"><a class="nav-link" id="opportunities"href="{% url 'opportunities:list' %}">Opportunities</a></li>
+      <li class="nav-item"><a class="nav-link" id="cases" href="{% url 'cases:list' %}">Cases</a></li>
+      <li class="nav-item"><a class="nav-link" id="documents" href="{% url 'common:doc_list' %}">Documents</a></li>
+      <li class="nav-item"><a class="nav-link" id="marketing" href="{% url 'marketing:index' %}">Marketing</a></li>
+    </ul>
 
     <ul class="navbar-nav navbar-right my-2 my-lg-0">
       <li class="nav-item dropdown">
@@ -53,6 +53,7 @@
             {% thumbnail request.user.profile_pic "25x25" as im %}
               <img src="{{ im.url }}">
             {% endthumbnail %}
+            
           {% endif %}
           <b class="caret"></b></a>
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
