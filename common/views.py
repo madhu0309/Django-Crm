@@ -47,7 +47,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context = super(HomeView, self).get_context_data(**kwargs)
         context["accounts"] = Account.objects.filter(status="open")
         context["contacts_count"] = Contact.objects.count()
-        context["leads_count"] = Lead.objects.count()
+        context["leads_count"] = Lead.objects.exclude(status='converted')
         context["opportunities"] = Opportunity.objects.all()
         return context
 
