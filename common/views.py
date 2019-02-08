@@ -41,7 +41,7 @@ class AdminRequiredMixin(AccessMixin):
 
 
 class HomeView(LoginRequiredMixin, TemplateView):
-    template_name = "index.html"
+    template_name = "sales/index.html"
 
     def get_context_data(self, **kwargs):
         context = super(HomeView, self).get_context_data(**kwargs)
@@ -50,7 +50,6 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context["leads_count"] = Lead.objects.count()
         context["opportunities"] = Opportunity.objects.all()
         return context
-
 
 
 class ChangePasswordView(LoginRequiredMixin, TemplateView):
@@ -98,7 +97,7 @@ class LoginView(TemplateView):
                 if user.is_active:
                     login(request, user)
                     return HttpResponseRedirect('/')
-                
+
                 return render(request, "login.html", {
                     "error": True,
                     "message": "Your Account is InActive. Please Contact Administrator"
@@ -174,7 +173,7 @@ class CreateUserView(AdminRequiredMixin, CreateView):
         mail_subject = 'Created account in CRM'
         message = render_to_string('new_user.html', {
             'user': user,
-            'created_by':self.request.user
+            'created_by': self.request.user
 
         })
         email = EmailMessage(mail_subject, message, to=[user.email])
@@ -184,7 +183,6 @@ class CreateUserView(AdminRequiredMixin, CreateView):
             data = {'success_url': reverse_lazy('common:users_list'), 'error': False}
             return JsonResponse(data)
         return super(CreateUserView, self).form_valid(form)
-
 
     def form_invalid(self, form):
         response = super(CreateUserView, self).form_invalid(form)
@@ -237,7 +235,6 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
             return JsonResponse(data)
         return super(UpdateUserView, self).form_valid(form)
 
-
     def form_invalid(self, form):
         response = super(UpdateUserView, self).form_invalid(form)
         if self.request.is_ajax():
@@ -282,7 +279,6 @@ class DocumentCreateView(LoginRequiredMixin, CreateView):
             return JsonResponse(data)
         return super(DocumentCreateView, self).form_valid(form)
 
-
     def form_invalid(self, form):
         response = super(DocumentCreateView, self).form_invalid(form)
         if self.request.is_ajax():
@@ -295,7 +291,6 @@ class DocumentCreateView(LoginRequiredMixin, CreateView):
         if "errors" in kwargs:
             context["errors"] = kwargs["errors"]
         return context
-
 
 
 class DocumentListView(LoginRequiredMixin, TemplateView):
@@ -346,7 +341,6 @@ class UpdateDocumentView(LoginRequiredMixin, UpdateView):
             data = {'success_url': reverse_lazy('common:doc_list'), 'error': False}
             return JsonResponse(data)
         return super(UpdateDocumentView, self).form_valid(form)
-
 
     def form_invalid(self, form):
         response = super(UpdateDocumentView, self).form_invalid(form)

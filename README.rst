@@ -63,7 +63,8 @@ This project contains the following modules.
    * Planner
 
 
-## Try
+Try
+===
 
 Demo Available `here`_.
 
@@ -73,7 +74,8 @@ Demo credentials for Django CRM:
   * **Password:** admin
 
 
-## Community
+Community
+=========
 
 Get help or stay up to date.
 
@@ -81,7 +83,7 @@ Get help or stay up to date.
 - Follow [@micropyramid](https://twitter.com/micropyramid) on Twitter
 - Ask questions on [Stack Overflow](https://stackoverflow.com/questions/tagged/django-crm)
 - Chat with community [Gitter](https://gitter.im/MicroPyramid/Django-CRM)
-- If privacy is required, email django-crm@micropyramid.com
+- For customisations, email django-crm@micropyramid.com
 
 
 Feature requests and bug reports

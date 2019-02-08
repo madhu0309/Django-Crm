@@ -1,0 +1,13 @@
+{% extends 'root.html' %}
+
+{% block main_menu %}
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item"><a class="nav-link" id="dashboard" href="#">Dashboard</a></li>
+              {% if request.user.role == "ADMIN"  or request.user.is_superuser %}
+                <li class="nav-item"><a class="nav-link" id="users" href="{% url 'common:users_list' %}">Users</a></li>
+              {% endif %}
+              <li class="nav-item"><a class="nav-link" id="marketing" href="{% url 'marketing:index' %}">Subscribers</a></li>
+              <li class="nav-item"><a class="nav-link" id="marketing" href="{% url 'marketing:index' %}">Email Templates</a></li>
+              <li class="nav-item"><a class="nav-link" id="marketing" href="{% url 'marketing:index' %}">Campaigns</a></li>
+            </ul>
+{% endblock %}
