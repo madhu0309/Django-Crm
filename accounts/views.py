@@ -37,6 +37,8 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
                 queryset = queryset.filter(industry__icontains=request_post.get('industry'))
             if request_post.get('tag'):
                 queryset = queryset.filter(tags__in=request_post.get('tag'))
+            if request_post.get('assigned_to'):
+                queryset = queryset.filter(assigned_to__id__in=request_post.get('assigned_to'))
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -44,11 +46,17 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
         open_accounts = self.get_queryset().filter(status='open')
         close_accounts = self.get_queryset().filter(status='close')
         context["accounts_list"] = self.get_queryset()
+        context["users"] =  User.objects.filter(is_active=True).order_by('email')
         context['open_accounts'] = open_accounts
         context['close_accounts'] = close_accounts
         context["industries"] = INDCHOICES
         context["per_page"] = self.request.POST.get('per_page')
         context['tags'] = Tags.objects.all()
+
+        tab_status = 'Open'
+        if self.request.POST.get('tab_status'):
+            tab_status = self.request.POST.get('tab_status')
+        context['tab_status'] = tab_status
         return context
 
     def get(self, request, *args, **kwargs):
@@ -166,7 +174,8 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
         account_record = context["account_record"]
         if (
             self.request.user in account_record.assigned_to.all() or
-            self.request.user == account_record.created_by
+            self.request.user == account_record.created_by or
+            self.request.user.is_superuser or self.request.user.role == 'ADMIN'
         ):
             comment_permission = True
         else:
