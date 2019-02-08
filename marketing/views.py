@@ -26,11 +26,11 @@ def email_template_new(request):
 
 
 def email_template_edit(request):
-    return render(request, {}, 'marketing/email_template/edit.html')
+    return render(request, 'marketing/email_template/edit.html')
 
 
 def email_template_detail(request):
-    return render(request, {}, 'marketing/email_template/detail.html')
+    return render(request, 'marketing/email_template/detail.html')
 
 
 def campaign_list(request):
@@ -38,12 +38,12 @@ def campaign_list(request):
 
 
 def campaign_new(request):
-    return render(request, {}, 'marketing/campaign/new.html')
+    return render(request, 'marketing/campaign/new.html')
 
 
 def campaign_edit(request):
-    return render(request, {}, 'marketing/campaign/edit.html')
+    return render(request, 'marketing/campaign/edit.html')
 
 
 def campaign_details(request):
-    return render(request, {}, 'marketing/campaign/details.html')
+    return render(request, 'marketing/campaign/details.html')
