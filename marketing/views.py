@@ -10,7 +10,7 @@ def contact_lists(request):
 
 
 def contact_list_new(request):
-    return render(request, {}, 'marketing/lists/new.html')
+    return render(request, 'marketing/lists/new.html')
 
 
 def contact_list_detail(request):
@@ -18,11 +18,11 @@ def contact_list_detail(request):
 
 
 def email_template_list(request):
-    return render(request, {}, 'marketing/email_template/index.html')
+    return render(request, 'marketing/email_template/index.html')
 
 
 def email_template_new(request):
-    return render(request, {}, 'marketing/email_template/new.html')
+    return render(request, 'marketing/email_template/new.html')
 
 
 def email_template_edit(request):
@@ -34,7 +34,7 @@ def email_template_detail(request):
 
 
 def campaign_list(request):
-    return render(request, {}, 'marketing/campaign/index.html')
+    return render(request, 'marketing/campaign/index.html')
 
 
 def campaign_new(request):
