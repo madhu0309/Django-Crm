@@ -11,6 +11,9 @@ def contact_lists(request):
 def contacts_list(request):
     return render(request, 'marketing/lists/list.html')    
 
+def contacts_list(request):
+    return render(request, 'marketing/lists/list.html')        
+
 
 def contact_list_new(request):
     return render(request, 'marketing/lists/new.html')
