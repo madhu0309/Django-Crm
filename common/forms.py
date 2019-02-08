@@ -153,6 +153,7 @@ class DocumentForm(forms.ModelForm):
 
         self.fields['status'].choices = [(each[0], each[1]) for each in Document.DOCUMENT_STATUS_CHOICE]
         self.fields['status'].required = False
+        self.fields['title'].required = True
 
     class Meta:
         model = Document
