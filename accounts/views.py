@@ -37,6 +37,8 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
                 queryset = queryset.filter(industry__icontains=request_post.get('industry'))
             if request_post.get('tag'):
                 queryset = queryset.filter(tags__in=request_post.get('tag'))
+            if request_post.get('assigned_to'):
+                queryset = queryset.filter(assigned_to__id__in=request_post.get('assigned_to'))
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -44,6 +46,7 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
         open_accounts = self.get_queryset().filter(status='open')
         close_accounts = self.get_queryset().filter(status='close')
         context["accounts_list"] = self.get_queryset()
+        context["users"] =  User.objects.filter(is_active=True).order_by('email')
         context['open_accounts'] = open_accounts
         context['close_accounts'] = close_accounts
         context["industries"] = INDCHOICES
@@ -81,8 +84,8 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
         shipping_form = ShippingAddressForm(request.POST, prefix='ship')
         if form.is_valid() and billing_form.is_valid() and shipping_form.is_valid():
             return self.form_valid(form, billing_form, shipping_form)
-        else:
-            return self.form_invalid(form, billing_form, shipping_form)
+        
+        return self.form_invalid(form, billing_form, shipping_form)
 
     def form_valid(self, form, billing_form, shipping_form):
         # Save Billing & Shipping Address
@@ -112,19 +115,19 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
         if self.request.POST.getlist('teams', []):
             account_object.teams.add(*self.request.POST.getlist('teams'))
         if self.request.POST.get('tags', ''):
-                tags = self.request.POST.get("tags")
-                splitted_tags = tags.split(",")
-                for t in splitted_tags:
-                    tag = Tags.objects.filter(name=t.lower())
-                    if tag:
-                        tag = tag[0]
-                    else:
-                        tag = Tags.objects.create(name=t.lower())
-                    account_object.tags.add(tag)
+            tags = self.request.POST.get("tags")
+            splitted_tags = tags.split(",")
+            for t in splitted_tags:
+                tag = Tags.objects.filter(name=t.lower())
+                if tag:
+                    tag = tag[0]
+                else:
+                    tag = Tags.objects.create(name=t.lower())
+                account_object.tags.add(tag)
         if self.request.POST.get("savenewform"):
             return redirect("accounts:new_account")
-        else:
-            return redirect("accounts:list")
+        
+        return redirect("accounts:list")
 
     def form_invalid(self, form, billing_form, shipping_form):
         return self.render_to_response(
@@ -166,7 +169,8 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
         account_record = context["account_record"]
         if (
             self.request.user in account_record.assigned_to.all() or
-            self.request.user == account_record.created_by
+            self.request.user == account_record.created_by or
+            self.request.user.is_superuser or self.request.user.role == 'ADMIN'
         ):
             comment_permission = True
         else:
@@ -222,8 +226,8 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
             request.POST, instance=self.object.shipping_address, prefix='ship')
         if form.is_valid() and billing_form.is_valid() and shipping_form.is_valid():
             return self.form_valid(form, billing_form, shipping_form)
-        else:
-            return self.form_invalid(form, billing_form, shipping_form)
+        
+        return self.form_invalid(form, billing_form, shipping_form)
 
     def form_valid(self, form, billing_form, shipping_form):
         assigned_to_ids = self.get_object().assigned_to.all().values_list('id', flat=True)
@@ -340,11 +344,11 @@ class AddCommentView(LoginRequiredMixin, CreateView):
             form = self.get_form()
             if form.is_valid():
                 return self.form_valid(form)
-            else:
-                return self.form_invalid(form)
-        else:
-            data = {'error': "You don't have permission to comment for this account."}
-            return JsonResponse(data)
+            
+            return self.form_invalid(form)
+        
+        data = {'error': "You don't have permission to comment for this account."}
+        return JsonResponse(data)
 
     def form_valid(self, form):
         comment = form.save(commit=False)
@@ -370,11 +374,11 @@ class UpdateCommentView(LoginRequiredMixin, View):
             form = AccountCommentForm(request.POST, instance=self.comment_obj)
             if form.is_valid():
                 return self.form_valid(form)
-            else:
-                return self.form_invalid(form)
-        else:
-            data = {'error': "You don't have permission to edit this comment."}
-            return JsonResponse(data)
+            
+            return self.form_invalid(form)
+        
+        data = {'error': "You don't have permission to edit this comment."}
+        return JsonResponse(data)
 
     def form_valid(self, form):
         self.comment_obj.comment = form.cleaned_data.get("comment")
@@ -396,9 +400,9 @@ class DeleteCommentView(LoginRequiredMixin, View):
             self.object.delete()
             data = {"cid": request.POST.get("comment_id")}
             return JsonResponse(data)
-        else:
-            data = {'error': "You don't have permission to delete this comment."}
-            return JsonResponse(data)
+        
+        data = {'error': "You don't have permission to delete this comment."}
+        return JsonResponse(data)
 
 
 class AddAttachmentView(LoginRequiredMixin, CreateView):
@@ -417,11 +421,11 @@ class AddAttachmentView(LoginRequiredMixin, CreateView):
             form = self.get_form()
             if form.is_valid():
                 return self.form_valid(form)
-            else:
-                return self.form_invalid(form)
-        else:
-            data = {'error': "You don't have permission to add attachment for this account."}
-            return JsonResponse(data)
+            
+            return self.form_invalid(form)
+        
+        data = {'error': "You don't have permission to add attachment for this account."}
+        return JsonResponse(data)
 
     def form_valid(self, form):
         attachment = form.save(commit=False)
@@ -447,11 +451,13 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         self.object = get_object_or_404(Attachments, id=request.POST.get("attachment_id"))
-        if (request.user == self.object.created_by or request.user.is_superuser or
-            request.user.role == 'ADMIN'):
+        if (
+            request.user == self.object.created_by or request.user.is_superuser or 
+            request.user.role == 'ADMIN'
+        ):
             self.object.delete()
             data = {"acd": request.POST.get("attachment_id")}
             return JsonResponse(data)
-        else:
-            data = {'error': "You don't have permission to delete this attachment."}
-            return JsonResponse(data)
+        
+        data = {'error': "You don't have permission to delete this attachment."}
+        return JsonResponse(data)

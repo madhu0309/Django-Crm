@@ -96,7 +96,12 @@
 <script type="text/javascript">
     $(document).ready(function(){
         word = window.location.pathname.split('/')[1]
-        $('#' + word).addClass('active')
+        if(word == ""){
+          $("#dashboard").addClass('active')
+        }
+        else{
+          $('#' + word).addClass('active')
+        }
     })
 </script>
 </body>
