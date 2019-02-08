@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.test import Client
 from common.models import User
 from emails.models import Email
+from emails.forms import EmailForm
 
 
 class UserCreation(TestCase):
@@ -12,8 +13,27 @@ class UserCreation(TestCase):
         self.user.set_password('navi123')
         self.user.save()
         self.email = Email.objects.create(
-            from_email="admin@micropyramid.com", to_email="meghana@micropyramid.com", subject="wish", message="haii")
+            from_email="admin@micropyramid.com", to_email="meghana@micropyramid.com", subject="wish", message="haii",
+            important=False)
         self.client.login(username='n@mp.com', password='navi123')
+
+
+class EmailSentEdit(UserCreation, TestCase):
+    def test_edit_form_valid(self):
+        form = EmailForm(data={'from_email': "abc@mp.com",
+                               'to_email': "xyz@mp.com",
+                               'subject': "hello hi",
+                               'message': 'simple mail'})
+        print('yes')
+        self.assertTrue(form.is_valid())
+
+    def test_edit_form_invalid(self):
+        form = EmailForm(data={'from_email': "abc@mp.com",
+                               'to_email': "",
+                               'subject': "hello hi",
+                               'message': 'simple mail'})
+        print('yes2')
+        self.assertFalse(form.is_valid())
 
 
 class EmailListTestCase(UserCreation, TestCase):
@@ -31,9 +51,11 @@ class EmailTestCase(UserCreation, TestCase):
             'subject': 'act', 'message': "Hello"
         }
         response = self.client.post(url, data)
-        get_email = Email.objects.get(subject="wish")        # check
-        # print(Email.objects.all())
-        # self.assertEqual(get_email.subject, u'%s' % (get_email))
+        get_email = Email.objects.get(subject="wish")
+        # boo = Email.objects.get(important=True)
+        # print('yes')
+        self.assertFalse(get_email.important)
+        self.assertEqual(get_email.subject, get_email.__unicode__())
 
         self.assertEqual(response.status_code, 302)
 
