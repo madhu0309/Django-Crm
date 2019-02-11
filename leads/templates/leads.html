@@ -1,6 +1,9 @@
 {% extends 'sales/base.html' %}
 {% load staticfiles %}
 {% load paginate %}
+{% block extralinks %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
 {% block content %}
 <!-- main_container starts here -->
 <div class="main_container">
@@ -21,17 +24,32 @@
             <div class="row marl">
               <div class="filter_col col-md-2">
                 <div class="form-group">
-                  <label for="exampleInputEmail1">First Name</label>
-                  <input type="text" class="form-control" placeholder="First Name" name="first_name" value="{{request.POST.first_name}}">
+                  <label for="exampleInputEmail1">Name</label>
+                  <input type="text" class="form-control" placeholder="First Name" name="name" value="{{request.POST.name}}">
                 </div>
               </div>
               <div class="filter_col col-md-2">
                 <div class="form-group">
-                  <label for="exampleInputEmail1">Last Name</label>
-                  <input type="text" class="form-control" placeholder="Last Name" name="last_name" value="{{request.POST.last_name}}">
+                  <label for="exampleInputEmail1">Source</label>
+                  <select class="form-control" id="id_source" name="source" >
+                    <option value="">--Source of Lead--</option>
+                    {% for each_source in source %}
+                    <option value="{{each_source.0}}" {% if request.POST.source %} {% ifequal each_source.0 request.POST.source %}selected{% endifequal %}{% endif %} >{{each_source.1}} </option>
+                    {% endfor %}
+                  </select>
                 </div>
-              </div>
-              <div class="filter_col col-md-3">
+              </div> 
+              <div class="filter_col col-md-2">
+                <div class="form-group">
+                  <label for="exampleInputEmail1">Assigned Users</label>
+                  <select class="assigned_users form-control" name="assigned_to" multiple="multiple">
+                  {% for user in users %}
+                  <option value="{{user.id}}" {% if user.id in assignedto_list %} selected="" {% endif %}>{{user.email}}</option>
+                  {% endfor %}
+                  </select>
+                </div>
+              </div>            
+              <div class="filter_col col-md-2">
                 <div class="form-group">
                   <label for="exampleInputEmail1">Lead Status</label>
                   <select class="form-control" id="id_status" name="status" >
@@ -42,7 +60,7 @@
                   </select>
                 </div>
               </div>
-              <div class="filter_col col-md-3">
+              <div class="filter_col col-md-2">
                 <div class="form-group">
                   <label for="exampleInputEmail1">Tags</label>
                   <select class="form-control" id="id_tag" name="tag" >
@@ -153,8 +171,10 @@
 <!-- main_container ends here -->
 {% endblock %}
 {% block js_block %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 <script type="text/javascript">
-  $(document).ready(function(){    
+  $(document).ready(function(){  
+    $('.assigned_users').select2();
     $(".filter_toggle").click(function(){    
       $(".list_filter_row").toggle();    
     });    
