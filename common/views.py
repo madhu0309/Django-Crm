@@ -232,6 +232,10 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         user = form.save(commit=False)
+        if self.request.is_ajax():
+            if self.request.user.id != self.object.id:
+                data = {'error_403': True, 'error': True}
+                return JsonResponse(data)
         if user.role == "USER":
             user.is_superuser = False
         user.save()
@@ -241,13 +245,9 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
                     'common:users_list'), 'error': False}
                 return JsonResponse(data)
         if self.request.is_ajax():
-            if self.request.user.id == self.object.id:
-                data = {'success_url': reverse_lazy(
-                    'common:profile'), 'error': False}
-                return JsonResponse(data)
-            else:
-                data = {'error_403': True, 'error': True}
-                return JsonResponse(data)
+            data = {'success_url': reverse_lazy(
+                'common:profile'), 'error': False}
+            return JsonResponse(data)
         return super(UpdateUserView, self).form_valid(form)
 
     def form_invalid(self, form):
