@@ -107,12 +107,14 @@ class LoginForm(forms.ModelForm):
         password = self.cleaned_data.get("password")
 
         if email and password:
-            self.user = authenticate(email=email, password=password)
+            self.user = authenticate(username=email, password=password)
             if self.user:
                 if not self.user.is_active:
-                    raise forms.ValidationError("User is Inactive")
+                    pass
+                    # raise forms.ValidationError("User is Inactive")
             else:
-                raise forms.ValidationError("Invalid email and password")
+                pass
+                # raise forms.ValidationError("Invalid email and password")
         return self.cleaned_data
 
 
