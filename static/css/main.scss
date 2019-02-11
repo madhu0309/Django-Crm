@@ -1418,3 +1418,11 @@ pre{
     font-weight: 600;
   }
 }
+.demo_clist{
+  a{
+    font-size: 0.83rem;
+    color: darken($text_color, 15%);
+    font-weight: 600;
+    text-decoration: underline !important;
+  }
+}
