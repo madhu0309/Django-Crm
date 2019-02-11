@@ -93,24 +93,35 @@ class LoginView(TemplateView):
     def post(self, request, *args, **kwargs):
         form = LoginForm(request.POST, request=request)
         if form.is_valid():
-            user = authenticate(username=request.POST.get('email'), password=request.POST.get('password'))
+            user = User.objects.filter(email=request.POST.get('email')).first()
+            # user = authenticate(username=request.POST.get('email'), password=request.POST.get('password'))
             if user is not None:
                 if user.is_active:
-                    login(request, user)
-                    return HttpResponseRedirect('/')
-
+                    user = authenticate(username=request.POST.get('email'), password=request.POST.get('password'))
+                    if user is not None:
+                        login(request, user)
+                        return HttpResponseRedirect('/')
+                    else:
+                        return render(request, "login.html", {
+                            "error": True,
+                            "message": "Your username and password didn't match. Please try again."
+                        })
+                else:
+                    return render(request, "login.html", {
+                        "error": True,
+                        "message": "Your Account is inactive. Please Contact Administrator"
+                    })
+            else:
                 return render(request, "login.html", {
                     "error": True,
-                    "message": "Your Account is InActive. Please Contact Administrator"
+                    "message": "Your Account is not Found. Please Contact Administrator"
                 })
+
+        else:
             return render(request, "login.html", {
                 "error": True,
-                "message": "Your Account is not Found. Please Contact Administrator"
+                "message": "Your username and password didn't match. Please try again."
             })
-        return render(request, "login.html", {
-            "error": True,
-            "message": "Your username and password didn't match. Please try again."
-        })
 
 
 class ForgotPasswordView(TemplateView):
