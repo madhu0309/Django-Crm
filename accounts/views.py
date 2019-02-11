@@ -118,6 +118,7 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
                     'account': account_object
                 })
                 email = EmailMessage(mail_subject, message, to=[user.email])
+                email.content_subtype = "html"
                 email.send()
         if self.request.POST.getlist('teams', []):
             account_object.teams.add(*self.request.POST.getlist('teams'))
@@ -265,6 +266,7 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
                         'account': account_object
                     })
                     email = EmailMessage(mail_subject, message, to=[user.email])
+                    email.content_subtype = "html"
                     email.send()
 
             account_object.assigned_to.clear()

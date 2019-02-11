@@ -98,6 +98,7 @@ class CreateCaseView(LoginRequiredMixin, CreateView):
                     'case': case
                 })
                 email = EmailMessage(mail_subject, message, to=[user.email])
+                email.content_subtype = "html"
                 email.send()
         if self.request.POST.getlist('teams', []):
             case.teams.add(*self.request.POST.getlist('teams'))
@@ -214,6 +215,7 @@ class UpdateCaseView(LoginRequiredMixin, UpdateView):
                         'case': case_obj
                     })
                     email = EmailMessage(mail_subject, message, to=[user.email])
+                    email.content_subtype = "html"
                     email.send()
 
             case_obj.assigned_to.clear()
