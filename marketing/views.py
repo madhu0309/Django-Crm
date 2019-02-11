@@ -1,8 +1,8 @@
 from django.shortcuts import render
 
 
-def index(request):
-    return render(request, 'marketing/index.html')
+def dashboard(request):
+    return render(request, 'marketing/dashboard.html')
 
 
 def contact_lists(request):
@@ -21,8 +21,12 @@ def contacts_list_new(request):
     return render(request, 'marketing/lists/cnew.html')
 
 
+def edit_contact(request):
+    return render(request, 'marketing/lists/edit_contact.html')
+
+
 def contact_list_detail(request):
-    return render(request, {}, 'marketing/lists/detail.html')
+    return render(request, 'marketing/lists/detail.html')
 
 
 def email_template_list(request):

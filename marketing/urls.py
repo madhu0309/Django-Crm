@@ -1,15 +1,17 @@
 from django.urls import path
 from .views import (
-    index, contact_lists, contacts_list, contact_list_new, contacts_list_new, contact_list_detail, email_template_list, email_template_new, email_template_edit,
+    dashboard, contact_lists, contacts_list, contact_list_new, contacts_list_new, contact_list_detail, edit_contact,
+    email_template_list, email_template_new, email_template_edit,
     email_template_detail, campaign_list, campaign_new, campaign_edit, campaign_details
 )
 
 app_name = 'marketing'
 
 urlpatterns = [
-    path('', index, name='index'),
+    path('', dashboard, name='dashboard'),
 
     path('cl/all/', contact_lists, name='contact_lists'),
+    path('cl/edit_contact/', edit_contact, name='edit_contact'),
     path('cl/lists/', contacts_list, name='contacts_list'),
     path('cl/list/new/', contact_list_new, name='contact_list_new'),
     path('cl/list/cnew/', contacts_list_new, name='contacts_list_new'),
