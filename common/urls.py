@@ -1,11 +1,11 @@
 from django.contrib.auth import views as auth_views
 
-from django.urls import path, re_path
+from django.urls import path
 from common.views import (
     HomeView, LoginView, ForgotPasswordView, LogoutView, ChangePasswordView, ProfileView,
     UsersListView, CreateUserView, UpdateUserView, UserDetailView, UserDeleteView, PasswordResetView,
     DocumentListView, DocumentCreateView, UpdateDocumentView, DocumentDetailView, DocumentDeleteView, 
-    download_document, change_user_status)
+    download_document, change_user_status, download_attachment, add_comment, edit_comment, remove_comment)
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -45,7 +45,13 @@ urlpatterns = [
     # download
     path('documents/<int:pk>/download/', download_document, name='download_document'),
 
+    # download_attachment
+    path('attachments/<int:pk>/download/', download_attachment, name='download_attachment'),
+
     path('user/status/<int:pk>/', change_user_status, name='change_user_status'),
 
+    path('comment/add/', add_comment, name="add_comment"),
+    path('comment/<int:pk>/edit/', edit_comment, name="edit_comment"),
+    path('comment/remove/', remove_comment, name="remove_comment"),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

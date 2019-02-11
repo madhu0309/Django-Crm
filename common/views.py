@@ -1,4 +1,5 @@
 import os
+import json
 from django.contrib.auth import logout, authenticate, login
 from django.core.mail import EmailMessage
 from django.contrib.auth.hashers import check_password
@@ -7,8 +8,8 @@ from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http40
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import (
     CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
-from common.models import User, Document
-from common.forms import UserForm, LoginForm, ChangePasswordForm, PasswordResetEmailForm,DocumentForm
+from common.models import User, Document, Attachments, Comment
+from common.forms import UserForm, LoginForm, ChangePasswordForm, PasswordResetEmailForm,DocumentForm, UserCommentForm
 from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy
 from django.conf import settings
@@ -16,6 +17,7 @@ from opportunity.models import Opportunity
 from cases.models import Case
 from contacts.models import Contact
 from accounts.models import Account
+from leads.models import Lead
 from django.template.loader import render_to_string
 
 
@@ -41,6 +43,15 @@ class AdminRequiredMixin(AccessMixin):
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "index.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(HomeView, self).get_context_data(**kwargs)
+        context["accounts"] = Account.objects.filter(status="open")
+        context["contacts_count"] = Contact.objects.count()
+        context["leads_count"] = Lead.objects.exclude(status='converted')
+        context["opportunities"] = Opportunity.objects.all()
+        return context
+
 
 
 class ChangePasswordView(LoginRequiredMixin, TemplateView):
@@ -83,26 +94,37 @@ class LoginView(TemplateView):
     def post(self, request, *args, **kwargs):
         form = LoginForm(request.POST, request=request)
         if form.is_valid():
-            user = authenticate(username=request.POST.get('email'), password=request.POST.get('password'))
+            user = User.objects.filter(email=request.POST.get('email')).first()
+            # user = authenticate(username=request.POST.get('email'), password=request.POST.get('password'))
             if user is not None:
                 if user.is_active:
-                    login(request, user)
-                    return HttpResponseRedirect('/')
+                    user = authenticate(username=request.POST.get('email'),
+                        password=request.POST.get('password'))
+                    if user is not None:
+                        login(request, user)
+                        return HttpResponseRedirect('/')
+                    else:
+                        return render(request, "login.html", {
+                            "error": True,
+                            "message": "Your username and password didn't match. Please try again."
+                            })
                 else:
                     return render(request, "login.html", {
                         "error": True,
-                        "message": "Your Account is InActive. Please Contact Administrator"
-                    })
+                        "message": "Your Account is inactive. Please Contact Administrator"
+                        })
             else:
                 return render(request, "login.html", {
                     "error": True,
                     "message": "Your Account is not Found. Please Contact Administrator"
-                })
+                    })
+
         else:
             return render(request, "login.html", {
                 "error": True,
                 "message": "Your username and password didn't match. Please try again."
-            })
+                })
+
 
 
 class ForgotPasswordView(TemplateView):
@@ -124,25 +146,11 @@ class UsersListView(AdminRequiredMixin, TemplateView):
 
     def get_queryset(self):
         queryset = self.model.objects.all()
-        request_post = self.request.POST
-        if request_post:
-            if request_post.get('first_name'):
-                queryset = queryset.filter(first_name__icontains=request_post.get('first_name'))
-            if request_post.get('last_name'):
-                queryset = queryset.filter(last_name_id=request_post.get('last_name'))
-            if request_post.get('username'):
-                queryset = queryset.filter(username__icontains=request_post.get('username'))
-            if request_post.get('email'):
-                queryset = queryset.filter(email__icontains=request_post.get('email'))
-            if request_post.get('status'):
-                queryset = queryset.filter(is_active=request_post.get('status'))
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super(UsersListView, self).get_context_data(**kwargs)
         context["users"] = self.get_queryset()
-        context["active_users"] = self.get_queryset().filter(is_active=True)
-        context["inactive_users"] = self.get_queryset().filter(is_active=False)
         context["per_page"] = self.request.POST.get('per_page')
         context['admin_email'] = settings.ADMIN_EMAIL
         return context
@@ -159,7 +167,6 @@ class CreateUserView(AdminRequiredMixin, CreateView):
 
     def form_valid(self, form):
         user = form.save(commit=False)
-        print(form.errors)
         if form.cleaned_data.get("password"):
             user.set_password(form.cleaned_data.get("password"))
         user.save()
@@ -201,12 +208,20 @@ class UserDetailView(AdminRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super(UserDetailView, self).get_context_data(**kwargs)
         user_obj = self.object
+        users_data = []
+        for each in User.objects.all():
+            assigned_dict = {}
+            assigned_dict['id'] = each.id
+            assigned_dict['name'] =  each.username
+            users_data.append(assigned_dict)
         context.update({
             "user_obj": user_obj,
             "opportunity_list": Opportunity.objects.filter(assigned_to=user_obj.id),
             "contacts": Contact.objects.filter(assigned_to=user_obj.id),
             "cases": Case.objects.filter(assigned_to=user_obj.id),
             "accounts": Account.objects.filter(assigned_to=user_obj.id),
+            "assigned_data": json.dumps(users_data),
+            "comments": user_obj.user_comments.all(),
         })
         return context
 
@@ -259,7 +274,6 @@ class PasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
     form_class = PasswordResetEmailForm
     email_template_name = 'registration/password_reset_email.html'
-
 
 
 class DocumentCreateView(LoginRequiredMixin, CreateView):
@@ -363,7 +377,7 @@ class DocumentDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(DocumentDetailView, self).get_context_data(**kwargs)
-        documents = Document.objects.all()
+        # documents = Document.objects.all()
         context.update({
             "file_type_code": self.object.file_type()[1],
             "doc_obj": self.object,
@@ -383,6 +397,18 @@ def download_document(request, pk):
     raise Http404
 
 
+def download_attachment(request, pk):
+    attachment_obj = Attachments.objects.filter(id=pk).last()
+    path = attachment_obj.attachment.path
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            return response
+    raise Http404
+
+
 def change_user_status(request, pk):
     user = get_object_or_404(User, pk=pk)
     if user.is_active:
@@ -391,3 +417,50 @@ def change_user_status(request, pk):
         user.is_active = True
     user.save()
     return HttpResponseRedirect('/users/list/')
+
+
+def add_comment(request):
+    if request.method == "POST":
+        user = get_object_or_404(User, id=request.POST.get('userid'))
+        form = UserCommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.commented_by = request.user
+            comment.user = user
+            comment.save()
+            return JsonResponse({
+                "comment_id": comment.id, "comment": comment.comment,
+                "commented_on": comment.commented_on,
+                "commented_by": comment.commented_by.email
+            })
+        else:
+            return JsonResponse({"error": form.errors})
+
+
+def edit_comment(request, pk):
+    if request.method == "POST":
+        comment_obj = get_object_or_404(Comment, id=pk)
+        if request.user == comment_obj.commented_by:
+            form = UserCommentForm(request.POST, instance=comment_obj)
+            if form.is_valid():
+                comment_obj.comment = form.cleaned_data.get("comment")
+                comment_obj.save(update_fields=["comment"])
+                return JsonResponse({
+                    "comment_id": comment_obj.id,
+                    "comment": comment_obj.comment,
+                })
+            else:
+                return JsonResponse({"error": form['comment'].errors})
+        data = {'error': "You don't have permission to edit this comment."}
+        return JsonResponse(data)
+
+
+def remove_comment(request):
+    if request.method == "POST":
+        comment_obj = get_object_or_404(Comment, id=request.POST.get('comment_id'))
+        if request.user == comment_obj.commented_by:
+            comment_obj.delete()
+            data = {"cid": request.POST.get("comment_id")}
+            return JsonResponse(data)
+        data = {'error': "You don't have permission to delete this comment."}
+        return JsonResponse(data)

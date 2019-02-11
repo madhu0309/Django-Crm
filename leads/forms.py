@@ -1,6 +1,6 @@
 from django import forms
 from leads.models import Lead
-from common.models import Address, Comment, Attachments
+from common.models import Comment, Attachments
 
 
 class LeadForm(forms.ModelForm):
@@ -15,7 +15,6 @@ class LeadForm(forms.ModelForm):
         self.fields['assigned_to'].queryset = assigned_users
         self.fields['assigned_to'].required = False
         self.fields['teams'].required = False
-        self.fields['phone'].required = True
         for key, value in self.fields.items():
             if key == 'phone':
                 value.widget.attrs['placeholder'] = 'Enter phone number with country code'
@@ -30,6 +29,8 @@ class LeadForm(forms.ModelForm):
             'placeholder': 'Account Name'})
         self.fields['phone'].widget.attrs.update({
             'placeholder': '+91-123-456-7890'})
+        self.fields['description'].widget.attrs.update({
+            'rows': '6'})
 
     class Meta:
         model = Lead

@@ -20,8 +20,8 @@
   <link rel="stylesheet" type="text/css" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/themes/start/jquery-ui.css" />
 </head>
   <form id="add_form" method="POST" action="" novalidate>
-    <div class="overview_form_block row marl">
-      <div class="col-md-12">
+    <div class="overview_form_block row marl justify-content-center">
+      <div class="col-md-9">
         <div class="card">
         
           <div class="card-body">
@@ -29,16 +29,18 @@
             {% if lead_obj %}EDIT{% else %}CREATE{% endif %} LEAD
           </div>
             <div class="row marl no-gutters">
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <div class="filter_col col-md-12">
                   <div class="form-group">
-                    <label for="exampleInputEmail1" class="name" >Name{% if lead_form.first_name.field.required %}<span class="error">*</span>{% endif %}</label>
                     <div class="row">
                       <div class="filter_col col-md-6">
+                        <label for="exampleInputEmail1" class="name" >First Name{% if lead_form.first_name.field.required %}<span class="error">*</span>{% endif %}</label>
                         {{ lead_form.first_name }}
                         <span class="error">{{ lead_form.first_name.errors }}</span>
                       </div>
+
                       <div class="filter_col col-md-6">
+                        <label for="exampleInputEmail1" class="name" >Last Name{% if lead_form.last_name.field.required %}<span class="error">*</span>{% endif %}</label>
                         {{ lead_form.last_name }}
                         <span class="error">{{ lead_form.last_name.errors }}</span>
                       </div>
@@ -76,6 +78,9 @@
                     <span class="error">{{ lead_form.email.errors }}</span>
                   </div>
                 </div>
+              
+              </div>
+              <div class="col-md-4">
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Website{% if lead_form.website.field.required %}<span class="error">*</span>{% endif %}</label>
@@ -83,9 +88,14 @@
                     <span class="error">{{ lead_form.website.errors }}</span>
                   </div>
                 </div>
-              </div>
-              <div class="col-md-6">
                 <div class="filter_col col-md-12">
+                <div class="form-group">
+                  <label for="exampleInputEmail1" >Description{% if lead_form.description.field.required %}<span class="error">*</span>{% endif %}</label>
+                  {{ lead_form.description }}
+                  <span class="error">{{ lead_form.description.errors }}</span>
+                </div>
+              </div>
+              <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Assigned Users</label>
                      <select class="assigned_users form-control" name="assigned_to" multiple="multiple">
@@ -96,7 +106,7 @@
                     <span class="error">{{ lead_form.assigned_to.errors }}</span>
                   </div>
                 </div>
-                <br>
+                   
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1"/>Status{% if lead_form.status.field.required %}<span class="error">*</span>{% endif %}</label>
@@ -104,6 +114,9 @@
                     <span class="error">{{ lead_form.status.errors }}</span>
                   </div>
                 </div>
+              </div>
+              <div class="col-md-4">
+             
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1"/>Source{% if lead_form.source.field.required %}<span class="error">*</span>{% endif %}</label>
@@ -138,6 +151,7 @@
                     </div>
                   </div>
                 </div>
+                <br>
                 <div class="filter_col col-12">
                   <div class="form-group">
                     <label>Tags</label>
@@ -146,27 +160,22 @@
                   </div>
                 </div>
               </div>
-              <div class="filter_col col-md-6">
-                <div class="form-group col-md-12">
-                  <label for="exampleInputEmail1" >Description{% if lead_form.description.field.required %}<span class="error">*</span>{% endif %}</label>
-                  {{ lead_form.description }}
-                  <span class="error">{{ lead_form.description.errors }}</span>
+              <div class="col-md-12">
+                 <div class="row marl buttons_row text-center form_btn_row">
+                  <button  class="btn btn-default save" type="submit">Save</button>
+                  {% if not lead_obj %}
+                    <button class="btn btn-success save savenew" type="submit">Save & New</button>
+                  {% endif %}
+                  <a href="{% url 'leads:list' %}" class="btn btn-default clear" id="create_lead_cancel">Cancel</a>
                 </div>
               </div>
             </div>
           </div>
-          <br clear="all">
         </div>
       </div>
       <input type="hidden" id="save_new_form" name="savenewform">
     </div>
-    <div class="row marl buttons_row text-center form_btn_row">
-      <button  class="btn btn-default save" type="submit">Save</button>
-      {% if not lead_obj %}
-        <button class="btn btn-success save savenew" type="submit">Save & New</button>
-      {% endif %}
-      <a href="{% url 'leads:list' %}" class="btn btn-default clear" id="create_lead_cancel">Cancel</a>
-    </div>
+   
   </form>
 {% endblock %}
 {% block js_block %}

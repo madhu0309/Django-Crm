@@ -30,10 +30,10 @@ class LeadListView(LoginRequiredMixin, TemplateView):
         queryset = self.model.objects.all().exclude(status='converted')
         request_post = self.request.POST
         if request_post:
-            if request_post.get('first_name'):
-                queryset = queryset.filter(first_name__icontains=request_post.get('first_name'))
-            if request_post.get('last_name'):
-                queryset = queryset.filter(last_name__icontains=request_post.get('last_name'))
+            if request_post.get('name'):
+                queryset = queryset.filter(
+                    Q(first_name__icontains=request_post.get('name')) & 
+                    Q(last_name__icontains=request_post.get('name')))
             if request_post.get('city'):
                 queryset = queryset.filter(address__city__icontains=request_post.get('city'))
             if request_post.get('email'):
@@ -42,6 +42,10 @@ class LeadListView(LoginRequiredMixin, TemplateView):
                 queryset = queryset.filter(status=request_post.get('status'))
             if request_post.get('tag'):
                 queryset = queryset.filter(tags__in=request_post.get('tag'))
+            if request_post.get('source'):
+                queryset = queryset.filter(source=request_post.get('source'))
+            if request_post.getlist('assigned_to'):
+                queryset = queryset.filter(assigned_to__id__in=request_post.getlist('assigned_to'))
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -49,6 +53,11 @@ class LeadListView(LoginRequiredMixin, TemplateView):
         context["lead_obj"] = self.get_queryset()
         context["status"] = LEAD_STATUS
         context["per_page"] = self.request.POST.get('per_page')
+        context["source"] = LEAD_SOURCE
+        context["users"] = User.objects.filter(is_active=True).order_by('email')
+        context["assignedto_list"] = [
+            int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
+
         context['tags'] = Tags.objects.all()
         return context
 
@@ -77,8 +86,8 @@ class CreateLeadView(LoginRequiredMixin, CreateView):
         address_form = BillingAddressForm(request.POST)
         if form.is_valid() and address_form.is_valid():
             return self.form_valid(form, address_form)
-        else:
-            return self.form_invalid(form, address_form)
+
+        return self.form_invalid(form, address_form)
 
     def form_valid(self, form, address_form):
         address_object = address_form.save()
@@ -87,15 +96,15 @@ class CreateLeadView(LoginRequiredMixin, CreateView):
         lead_obj.created_by = self.request.user
         lead_obj.save()
         if self.request.POST.get('tags', ''):
-                tags = self.request.POST.get("tags")
-                splitted_tags = tags.split(",")
-                for t in splitted_tags:
-                    tag = Tags.objects.filter(name=t)
-                    if tag:
-                        tag = tag[0]
-                    else:
-                        tag = Tags.objects.create(name=t)
-                    lead_obj.tags.add(tag)
+            tags = self.request.POST.get("tags")
+            splitted_tags = tags.split(",")
+            for t in splitted_tags:
+                tag = Tags.objects.filter(name=t)
+                if tag:
+                    tag = tag[0]
+                else:
+                    tag = Tags.objects.create(name=t)
+                lead_obj.tags.add(tag)
         if self.request.POST.getlist('assigned_to', []):
             lead_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
             assigned_to_list = self.request.POST.getlist('assigned_to')
@@ -144,8 +153,7 @@ class CreateLeadView(LoginRequiredMixin, CreateView):
             account_object.save()
         if self.request.POST.get("savenewform"):
             return redirect("leads:add_lead")
-        else:
-            return redirect('leads:list')
+        return redirect('leads:list')
 
     def form_invalid(self, form, address_form):
         return self.render_to_response(
@@ -250,8 +258,8 @@ class UpdateLeadView(LoginRequiredMixin, UpdateView):
             form.fields['account_name'].required = False
         if form.is_valid() and address_form.is_valid():
             return self.form_valid(form, address_form)
-        else:
-            return self.form_invalid(form, address_form)
+    
+        return self.form_invalid(form, address_form)
 
     def form_valid(self, form, address_form):
         assigned_to_ids = self.get_object().assigned_to.all().values_list('id', flat=True)
@@ -263,15 +271,15 @@ class UpdateLeadView(LoginRequiredMixin, UpdateView):
         lead_obj.tags.clear()
         all_members_list = []
         if self.request.POST.get('tags', ''):
-                tags = self.request.POST.get("tags")
-                splitted_tags = tags.split(",")
-                for t in splitted_tags:
-                    tag = Tags.objects.filter(name=t)
-                    if tag:
-                        tag = tag[0]
-                    else:
-                        tag = Tags.objects.create(name=t)
-                    lead_obj.tags.add(tag)
+            tags = self.request.POST.get("tags")
+            splitted_tags = tags.split(",")
+            for t in splitted_tags:
+                tag = Tags.objects.filter(name=t)
+                if tag:
+                    tag = tag[0]
+                else:
+                    tag = Tags.objects.create(name=t)
+                lead_obj.tags.add(tag)
         if self.request.POST.getlist('assigned_to', []):
             if self.request.POST.get('status') != "converted":
 
@@ -328,8 +336,8 @@ class UpdateLeadView(LoginRequiredMixin, UpdateView):
         status = self.request.GET.get('status', None)
         if status:
             return redirect('accounts:list')
-        else:
-            return redirect('leads:list')
+
+        return redirect('leads:list')
 
     def form_invalid(self, form, address_form):
         return self.render_to_response(
@@ -405,9 +413,9 @@ class ConvertLeadView(LoginRequiredMixin, View):
                 email = EmailMessage(mail_subject, message, to=[user.email])
                 email.send()
             return redirect("accounts:list")
-        else:
-            return HttpResponseRedirect(
-                reverse('leads:edit_lead', kwargs={'pk': lead_obj.id}) + '?status=converted')
+    
+        return HttpResponseRedirect(
+            reverse('leads:edit_lead', kwargs={'pk': lead_obj.id}) + '?status=converted')
 
 
 class AddCommentView(LoginRequiredMixin, CreateView):
@@ -426,11 +434,11 @@ class AddCommentView(LoginRequiredMixin, CreateView):
             form = self.get_form()
             if form.is_valid():
                 return self.form_valid(form)
-            else:
-                return self.form_invalid(form)
-        else:
-            data = {'error': "You don't have permission to comment."}
-            return JsonResponse(data)
+
+            return self.form_invalid(form)
+        
+        data = {'error': "You don't have permission to comment."}
+        return JsonResponse(data)
 
     def form_valid(self, form):
         comment = form.save(commit=False)
@@ -456,11 +464,11 @@ class UpdateCommentView(LoginRequiredMixin, View):
             form = LeadCommentForm(request.POST, instance=self.comment_obj)
             if form.is_valid():
                 return self.form_valid(form)
-            else:
-                return self.form_invalid(form)
-        else:
-            data = {'error': "You don't have permission to edit this comment."}
-            return JsonResponse(data)
+
+            return self.form_invalid(form)
+        
+        data = {'error': "You don't have permission to edit this comment."}
+        return JsonResponse(data)
 
     def form_valid(self, form):
         self.comment_obj.comment = form.cleaned_data.get("comment")
@@ -482,9 +490,9 @@ class DeleteCommentView(LoginRequiredMixin, View):
             self.object.delete()
             data = {"cid": request.POST.get("comment_id")}
             return JsonResponse(data)
-        else:
-            data = {'error': "You don't have permission to delete this comment."}
-            return JsonResponse(data)
+        
+        data = {'error': "You don't have permission to delete this comment."}
+        return JsonResponse(data)
 
 
 class GetLeadsView(LoginRequiredMixin, ListView):
@@ -514,11 +522,10 @@ class AddAttachmentsView(LoginRequiredMixin, CreateView):
             form = self.get_form()
             if form.is_valid():
                 return self.form_valid(form)
-            else:
-                return self.form_invalid(form)
-        else:
-            data = {'error': "You don't have permission to add attachment."}
-            return JsonResponse(data)
+            return self.form_invalid(form)
+        
+        data = {'error': "You don't have permission to add attachment."}
+        return JsonResponse(data)
 
     def form_valid(self, form):
         attachment = form.save(commit=False)
@@ -531,7 +538,9 @@ class AddAttachmentsView(LoginRequiredMixin, CreateView):
             "attachment": attachment.file_name,
             "attachment_url": attachment.attachment.url,
             "created_on": attachment.created_on,
-            "created_by": attachment.created_by.email
+            "created_by": attachment.created_by.email,
+            "download_url": reverse('common:download_attachment', kwargs={'pk':attachment.id}),
+            "attachment_display": attachment.get_file_type_display()
         })
 
     def form_invalid(self, form):
@@ -542,11 +551,13 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         self.object = get_object_or_404(Attachments, id=request.POST.get("attachment_id"))
-        if (request.user == self.object.created_by or request.user.is_superuser or
-            request.user.role == 'ADMIN'):
+        if (
+            request.user == self.object.created_by or request.user.is_superuser or 
+            request.user.role == 'ADMIN'
+        ):
             self.object.delete()
             data = {"aid": request.POST.get("attachment_id")}
             return JsonResponse(data)
-        else:
-            data = {'error': "You don't have permission to delete this attachment."}
-            return JsonResponse(data)
+
+        data = {'error': "You don't have permission to delete this attachment."}
+        return JsonResponse(data)

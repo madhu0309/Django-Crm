@@ -12,16 +12,22 @@
 </nav>
 {% endblock %}
 {% block content %}
+<head>
+  <link rel="stylesheet" type="text/css" href="//xoxco.com/projects/code/tagsinput/jquery.tagsinput.css" />
+  <script type="text/javascript" src="//xoxco.com/projects/code/tagsinput/jquery.tagsinput.js"></script>
+  <script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js'></script>
+  <link rel="stylesheet" type="text/css" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/themes/start/jquery-ui.css" />
+</head>
   <form class= "form_user" method="POST" action="" novalidate>
-    <div class="overview_form_block row marl">
-      <div class="col-md-12">
+    <div class="overview_form_block row marl justify-content-center">
+      <div class="col-md-9">
         <div class="card">
           <div class="card-body">
           <div class="card-title text-center">
             {% if opportunity_obj %}EDIT{% else %}CREATE{% endif %} OPPORTUNITY
           </div>
             <div class="row marl no-gutters">
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1" class="required">Name{% if opportunity_form.name.field.required %}<span class="error">*</span>{% endif %}</label>
@@ -32,21 +38,28 @@
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Account{% if opportunity_form.account.field.required %}<span class="error">*</span>{% endif %}</label>
-                    <input type="text" name="account" class="form-control" readonly="">
+                    {% if account %}
+                    <select name="account" placeholder="Account" class="form-control" id="id_account" readonly>
+                        <option value="{{account.id}}" selected="">{{account.name}}</option>
+                    </select>
+                    {% else %}
+                    {{opportunity_form.account}}
+                    {% endif %}
                     <span class="error">{{opportunity_form.account.errors}}</span>
                   </div>
                 </div>
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Amount</label>
-                    <div class="input-group" style="width:100%;">
-                      <div class="input-group-btn left-dropdown" style="width:auto;">
-                        {{ opportunity_form.currency }}
-                        <span class="error">{{opportunity_form.currency.errors}}</span>
-                      </div>
-                      {{ opportunity_form.amount }}
+                    {{ opportunity_form.amount }}
                       <span class="error">{{opportunity_form.amount.errors}}</span>
-                    </div>
+                  </div>
+                </div>
+                <div class="filter_col col-md-12">
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">Currency</label>
+                    {{ opportunity_form.currency }}
+                    <span class="error">{{opportunity_form.currency.errors}}</span>
                   </div>
                 </div>
                 <div class="filter_col col-md-12">
@@ -56,6 +69,9 @@
                     <span class="error">{{opportunity_form.stage.errors}}</span>
                   </div>
                 </div>
+                
+              </div>
+              <div class="col-md-4">
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Lead Source{% if opportunity_form.lead_source.field.required %}<span class="error">*</span>{% endif %}</label>
@@ -70,8 +86,6 @@
                     <span class="error">{{opportunity_form.probability.errors}}</span>
                   </div>
                 </div>
-              </div>
-              <div class="col-md-6">
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Assigned Users</label>
@@ -82,7 +96,6 @@
                     </select>
                   </div>
                 </div>
-                <br>
                 <div class="filter_col col-md-12">
                   <div class="form-group">
                     <label for="exampleInputEmail1">Contacts{% if opportunity_form.contacts.field.required %}<span class="error">*</span>{% endif %}</label>
@@ -102,6 +115,15 @@
                     <span class="error">{{opportunity_form.closed_on.errors}}</span>
                   </div>
                 </div>
+              </div>
+              <div class="col-md-4">
+                <div class="filter_col col-12">
+                  <div class="form-group">
+                    <label>Tags</label>
+                    <div class="txt-box-div" id="tag-div"><input type="text" name="tags" id="tags_1" value="{% for t in opportunity_obj.tags.all %}{{t.name}}, {% endfor %}" class="tags"/>
+                    </div>
+                  </div>
+                </div>
                 <div class="form-group col-md-12">
                   <label for="exampleInputEmail1" >Description{% if opportunity_form.description.field.required %}<span class="error">*</span>{% endif %}</label>
                   {{ opportunity_form.description }}
@@ -110,6 +132,10 @@
               </div>
             </div>
             <br clear="all">
+            <input type="hidden" name="from_account" value="{{request.GET.view_account}}">
+            {% if request.GET.view_account %}
+              <input type="hidden" name="account" value="{{request.GET.view_account}}">
+            {% endif %}
             <input type="hidden" id="save_new_form" name="savenewform">
           </div>
           <!-- overview ends here -->
@@ -118,7 +144,7 @@
             {% if not opportunity_obj %}
               <button class="btn btn-success save savenew" type="submit">Save & New</button>
             {% endif %}
-            <a href="{% url 'opportunities:list' %}" class="btn btn-default clear">Cancel</a>
+            <a {% if request.GET.view_account %} href="{% url 'accounts:view_account' request.GET.view_account %}" {% else %} href="{% url 'opportunities:list' %}" {% endif %} class="btn btn-default clear">Cancel</a>
           </div>
         </div>
       </div>
@@ -127,6 +153,8 @@
 {% endblock %}
 {% block js_block %}
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-tagsinput/1.3.6/jquery.tagsinput.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-tagsinput/1.3.6/jquery.tagsinput.min.js"></script>
   <script type="text/javascript">
     $(function () {
        var date = new Date();
@@ -275,6 +303,45 @@
       });
 
   }
-
+  function onAddTag(tag) {
+    alert("Added a tag: " + tag);
+  }
+  function onRemoveTag(tag) {
+    alert("Removed a tag: " + tag);
+  }
+  
+  function onChangeTag(input,tag) {
+    alert("Changed a tag: " + tag);
+  }
+  
+  $(function() {
+  
+    $('#tags_1').tagsInput({width:'auto'});
+    $('#tags_2').tagsInput({
+      width: 'auto',
+      onChange: function(elem, elem_tags)
+      {
+        var languages = ['php','ruby','javascript'];
+        $('.tag', elem_tags).each(function()
+        {
+          if($(this).text().search(new RegExp('\\b(' + languages.join('|') + ')\\b')) >= 0)
+            $(this).css('background-color', 'yellow');
+        });
+      }
+    });
+    $('#tags_3').tagsInput({
+      width: 'auto',
+  
+      //autocomplete_url:'test/fake_plaintext_endpoint.html' //jquery.autocomplete (not jquery ui)
+      autocomplete_url:'test/fake_json_endpoint.html' // jquery ui autocomplete requires a json endpoint
+    });
+    
+  
+  // Uncomment this line to see the callback functions in action
+  //      $('input.tags').tagsInput({onAddTag:onAddTag,onRemoveTag:onRemoveTag,onChange: onChangeTag});   
+  
+  // Uncomment this line to see an input with no interface for adding new tags.
+  //      $('input.tags').tagsInput({interactive:false});
+  });
   </script>
 {% endblock js_block %}

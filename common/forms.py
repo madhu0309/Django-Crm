@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.contrib.auth.forms import PasswordResetForm
-from common.models import Address, User, Document
+from common.models import Address, User, Document, Comment
 
 
 class BillingAddressForm(forms.ModelForm):
@@ -11,6 +11,8 @@ class BillingAddressForm(forms.ModelForm):
         fields = ('address_line', 'street', 'city', 'state', 'postcode', 'country')
 
     def __init__(self, *args, **kwargs):
+        account_view = kwargs.pop('account', False)
+
         super(BillingAddressForm, self).__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs = {"class": "form-control"}
@@ -25,6 +27,14 @@ class BillingAddressForm(forms.ModelForm):
         self.fields['postcode'].widget.attrs.update({
             'placeholder': 'Postcode'})
         self.fields["country"].choices = [("", "--Country--"), ] + list(self.fields["country"].choices)[1:]
+
+        if account_view:
+            self.fields['address_line'].required = True
+            self.fields['street'].required = True
+            self.fields['city'].required = True
+            self.fields['state'].required = True
+            self.fields['postcode'].required = True
+            self.fields['country'].required = True
 
 
 class ShippingAddressForm(forms.ModelForm):
@@ -81,15 +91,13 @@ class UserForm(forms.ModelForm):
             if self.instance.email != email:
                 if not User.objects.filter(email=self.cleaned_data.get("email")).exists():
                     return self.cleaned_data.get("email")
-                else:
-                    raise forms.ValidationError('Email already exists')
+                raise forms.ValidationError('Email already exists')
             else:
                 return self.cleaned_data.get("email")
         else:
             if not User.objects.filter(email=self.cleaned_data.get("email")).exists():
-                    return self.cleaned_data.get("email")
-            else:
-                raise forms.ValidationError('User already exists with this email')
+                return self.cleaned_data.get("email")
+            raise forms.ValidationError('User already exists with this email')
 
 
 class LoginForm(forms.ModelForm):
@@ -109,12 +117,14 @@ class LoginForm(forms.ModelForm):
         password = self.cleaned_data.get("password")
 
         if email and password:
-            self.user = authenticate(email=email, password=password)
+            self.user = authenticate(username=email, password=password)
             if self.user:
                 if not self.user.is_active:
-                    raise forms.ValidationError("User is Inactive")
+                    pass
+                    # raise forms.ValidationError("User is Inactive")
             else:
-                raise forms.ValidationError("Invalid email and password")
+                pass
+                # raise forms.ValidationError("Invalid email and password")
         return self.cleaned_data
 
 
@@ -155,7 +165,16 @@ class DocumentForm(forms.ModelForm):
 
         self.fields['status'].choices = [(each[0], each[1]) for each in Document.DOCUMENT_STATUS_CHOICE]
         self.fields['status'].required = False
+        self.fields['title'].required = True
 
     class Meta:
         model = Document
         fields = ['title', 'document_file', 'status']
+
+
+class UserCommentForm(forms.ModelForm):
+    comment = forms.CharField(max_length=64, required=True)
+
+    class Meta:
+        model = Comment
+        fields = ('comment', 'user', 'commented_by')
