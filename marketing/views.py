@@ -8,15 +8,14 @@ def index(request):
 def contact_lists(request):
     return render(request, 'marketing/lists/index.html')
 
-def contacts_list(request):
-    return render(request, 'marketing/lists/list.html')    
 
 def contacts_list(request):
-    return render(request, 'marketing/lists/list.html')        
+    return render(request, 'marketing/lists/list.html')
 
 
 def contact_list_new(request):
     return render(request, 'marketing/lists/new.html')
+
 
 def contacts_list_new(request):
     return render(request, 'marketing/lists/cnew.html')

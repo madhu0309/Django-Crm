@@ -9,8 +9,8 @@ app_name = 'marketing'
 urlpatterns = [
     path('', index, name='index'),
 
-    path('cl/list/', contact_lists, name='contact_lists'),
-    path('cl/clist/', contacts_list, name='contacts_list'),
+    path('cl/all/', contact_lists, name='contact_lists'),
+    path('cl/lists/', contacts_list, name='contacts_list'),
     path('cl/list/new/', contact_list_new, name='contact_list_new'),
     path('cl/list/cnew/', contacts_list_new, name='contacts_list_new'),
     path('cl/list/detail/', contact_list_detail, name='contact_list_detail'),

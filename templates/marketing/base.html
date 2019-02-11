@@ -2,13 +2,6 @@
 
 {% block main_menu %}
 <ul class="navbar-nav mr-auto">
- <!--  <li class="nav-item"><a class="nav-link" id="dashboard" href="#">Dashboard</a></li>
-  {% if request.user.role == "ADMIN"  or request.user.is_superuser %}
-    <li class="nav-item"><a class="nav-link" id="users" href="{% url 'common:users_list' %}">Users</a></li>
-  {% endif %} -->
-  <li class="nav-item"><a class="nav-link" id="marketing" href="{% url 'marketing:index' %}">Subscribers</a></li>
-  <li class="nav-item"><a class="nav-link" id="marketing" href="{% url 'marketing:index' %}">Email Templates</a></li>
-  <li class="nav-item"><a class="nav-link" id="marketing" href="{% url 'marketing:index' %}">Campaigns</a></li>
 </ul>
 {% endblock %}
 
@@ -18,8 +11,8 @@
           <div class="item">
             <h6 class="heading"><i class="fas fa-address-book"></i> Contacts</h6>
             <ul>
-              <li><a href="/m/cl/list/" class="active"><i class="fas fa-bars"></i> Contact List <span class="float-right">202</span></a></li>
-              <li><a href="/m/cl/clist/"><i class="fas fa-bars"></i> Contacts List <span class="float-right">11</span></a></li>
+              <li><a href="/m/cl/lists/" class="active"><i class="fas fa-bars"></i> Lists</a></li>
+              <li><a href="/m/cl/all/"><i class="fas fa-bars"></i>All Contacts</a></li>
               <li><a href="/m/cl/list/new/"> <i class="fas fa-plus"></i>Create New Contact</a></li>
               <li><a href="/m/cl/list/cnew/"> <i class="fas fa-plus"></i>Create New Contacts</a></li>
             </ul>
@@ -29,8 +22,8 @@
           <div class="item">
             <h6 class="heading"><i class="fas fa-envelope"></i> Email Templates </h6>
             <ul>
-              <li><a href="/m/et/list"><i class="fas fa-bars"></i> Email Templates List <span class="float-right">15</span></a></li>
-              <li><a href="/m/et/new/"><i class="fas fa-plus"></i>Create New Email Template</a></li>
+              <li><a href="/m/et/list"><i class="fas fa-bars"></i>List</a></li>
+              <li><a href="/m/et/new/"><i class="fas fa-plus"></i>Create New Template</a></li>
             </ul>
           </div>
         </li>
@@ -38,8 +31,8 @@
           <div class="item">
             <h6 class="heading"><i class="fas fa-bullhorn"></i> Campigns</h6>
             <ul>
-              <li><a href="/m/cm/list/"><i class="fas fa-bars"></i> Campaigns List <span class="float-right">54</span></a></li>
-              <li><a href="/m/cm/new/"><i class="fas fa-plus"></i>Create New Campaign</a></li>
+              <li><a href="/m/cm/list/"><i class="fas fa-bars"></i>List</a></li>
+              <li><a href="/m/cm/new/"><i class="fas fa-plus"></i>New Campaign</a></li>
             </ul>
           </div>
         </li>
