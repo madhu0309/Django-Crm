@@ -95,6 +95,7 @@ class CreateOpportunityView(LoginRequiredMixin, CreateView):
                     'opportunity': opportunity_obj
                 })
                 email = EmailMessage(mail_subject, message, to=[user.email])
+                email.content_subtype = "html"
                 email.send()
         if self.request.POST.getlist('teams', []):
             opportunity_obj.teams.add(*self.request.POST.getlist('teams'))
@@ -222,6 +223,7 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
                         'opportunity': opportunity_obj
                     })
                     email = EmailMessage(mail_subject, message, to=[user.email])
+                    email.content_subtype = "html"
                     email.send()
 
             opportunity_obj.assigned_to.clear()

@@ -174,17 +174,17 @@ class CreateUserView(AdminRequiredMixin, CreateView):
         mail_subject = 'Created account in CRM'
         message = render_to_string('new_user.html', {
             'user': user,
-            'created_by':self.request.user
+            'created_by': self.request.user
 
         })
         email = EmailMessage(mail_subject, message, to=[user.email])
+        email.content_subtype = "html"
         email.send()
 
         if self.request.is_ajax():
             data = {'success_url': reverse_lazy('common:users_list'), 'error': False}
             return JsonResponse(data)
         return super(CreateUserView, self).form_valid(form)
-
 
     def form_invalid(self, form):
         response = super(CreateUserView, self).form_invalid(form)
