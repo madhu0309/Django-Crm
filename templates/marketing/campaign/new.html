@@ -8,122 +8,169 @@
 	  <div class="col-md-12">
 	    <form id="add_form" method="POST" action='' novalidate>
 		  <div class="overview_form_block row marl justify-content-center">
-		    <div class="col-md-9">
+		    <div class="col-md-12">
 		      <div class="card">
 		        <div class="card-body">
 		          <div class="card-title text-center">
-		            {% if contact_obj %}EDIT{% else %}CREATE{% endif %} CONTACT
+		            {% if contact_obj %}Edit{% else %}Create{% endif %} Email Template
 		          </div>
-		          <div class="row marl no-gutters justify-content-center">
-		            <div class="col-md-4">
-		              <div class="filter_col col-md-12">
-		                <div class="form-group">
-		                  <label for="exampleInputEmail1" class="required">Name{% if contact_form.first_name.field.required %}<span class="error">*</span>{% endif %}</label>
-		                  <div class="row">
-		                    <div class="filter_col col-md-6">
-		                      {{ contact_form.first_name }}
-		                      <span class="error">{{ contact_form.first_name.errors }}</span>
-		                    </div>
-		                    <div class="filter_col col-md-6">
-		                      {{ contact_form.last_name }}
-		                      <span class="error">{{ contact_form.last_name.errors }}</span>
-		                    </div>
-		                  </div>
-		                </div>
-		              </div>
-		              <div class="filter_col col-md-12">
-		                <div class="form-group">
-		                  <label for="exampleInputEmail1">Account{% if contact_form.account.field.required %}<span class="error">*</span>{% endif %}</label>
-		                  {% if account %}
-		                  <select name="account" placeholder="Account" class="form-control" id="id_account" readonly>
-		                      <option value="{{account.id}}" selected="">{{account.name}}</option>
-		                  </select>
-		                  {% else %}
-		                  {{contact_form.account}}
-		                  {% endif %}
-		                  <span class="error">{{ contact_form.account.errors }}</span>
-		                </div>
-		              </div>
-		              <div class="filter_col col-md-12">
-		                <div class="form-group ">
-		                  <label for="exampleInputEmail1" class="required" >Phone{% if contact_form.phone.field.required %}<span class="error">*</span>{% endif %}</label>
-		                  {{ contact_form.phone }}
-		                  <span class="error">{{ contact_form.phone.errors }}</span>
-		                </div>
-		              </div>
-		              <div class="filter_col col-md-12">
-		                <div class="form-group ">
-		                  <label for="exampleInputEmail1" class="required" >Email Address{% if contact_form.email.field.required %}<span class="error">*</span>{% endif %}</label>
-		                  {{ contact_form.email }}
-		                  <span class="error">{{ contact_form.email.errors }}</span>
-		                </div>
-		              </div>
-		            </div>
-		            <div class="col-md-4">
-		              <div class="filter_col col-12">
-		                <div class="form-group">
-		                  <label for="exampleInputEmail1">Assigned Users</label>
-		                  <select class="assigned_users form-control" name="assigned_to" multiple="multiple">
-		                  {% for user in users %}
-		                  <option value="{{user.id}}" {% if user in contact_obj.assigned_to.all or user.id in assignedto_list %} selected="" {% endif %}>{{user.email}}</option>
-		                  {% endfor %}
-		                  </select>
-		                  <span class="error">{{ contact_form.assigned_to.errors }}</span>
-		                </div>
-		              </div>
-		              <div class="filter_col col-md-12">
-		                <div class="form-group">
-		                  <label for="exampleInputEmail1">Address</label>
-		                  {{ address_form.address_line }}
-		                  <span class="error">{{ address_form.address_line.errors }}</span>
-		                </div>
-		                {{ address_form.street }}
-		                <span class="error">{{ address_form.street.errors }}</span>
-		                <div class="row" style="margin-top: 10px;">
-		                  <div class="col-md-4">
-		                    {{ address_form.city }}
-		                    {{ address_form.city.errors }}
-		                  </div>
-		                  <div class="col-md-4">
-		                    {{ address_form.state }}
-		                    <span class="error">{{ address_form.state.errors }}</span>
-		                  </div>
-		                  <div class="col-md-4">
-		                    {{ address_form.postcode }}
-		                    <span class="error">{{ address_form.postcode.errors }}</span>
-		                  </div>
-		                  <div class="col-md-12" style="margin-top: 10px;">
-		                    {{ address_form.country }}
-		                    <span class="error">{{ address_form.country.errors }}</span>
-		                  </div>
-		                </div>
-		              </div>
-		            </div>
-		            <div class="col-md-4">
-		              <div class="col-md-12">
-		                <div class="form-group">
-		                  <label for="exampleInputEmail1">Description{% if contact_form.description.field.required %}<span class="error">*</span>{% endif %}</label>
-		                  {{ contact_form.description }}
-		                  <span class="error">{{ contact_form.description.errors }}</span>
-		                </div>
-		              </div>
-		            </div>
-		            <input type="hidden" name="from_account" value="{{request.GET.view_account}}">
-		              {% if request.GET.view_account %}
-		                <input type="hidden" name="account" value="{{request.GET.view_account}}">
-		              {% endif %}
+		          	<form>
+									<div class="row marl">
+										<div class="col-md-3">		
+			                <div class="form-group">
+			                  <label>Select Template</label>
+												<select class="form-control">
+												  <option value="one">First template</option>
+												  <option value="two">Second template</option>
+												  <option value="three">Third template</option>
+												  <option value="four">Fourth template</option>
+												</select>
+			                </div>
+										</div>
+										<div class="col-md-3">
+											<div class="form-group">
+										    <label>Subject</label>
+										    <input type="email" class="form-control" placeholder="Subject of this email">
+										    <small class="form-text text-muted">Set a title for this campaign?</small>
+										  </div>
+										</div>
+										<div class="col-md-3">
+											<div class="form-group">
+										    <label>From Name</label>
+										    <input type="email" class="form-control" placeholder="hello@mp.com">
+										  </div>
+										</div>
+										<div class="col-md-3">
+											<div class="form-group">
+										    <label>From Email</label>
+										    <input type="email" class="form-control" placeholder="Support@mp.com">
+										  </div>
+										</div>
+										<div class="col-md-12">
+											<div class="row">
+												<div class="col-md-3">
+													<div class="form-group">
+												    <label>Reply to email</label>
+												    <input type="email" class="form-control" placeholder="replys@mp.com">
+												  </div>
+												  <div class="form-group">
+												    <label>Query String</label>
+												    <div class="well">
+				       							  Optionally append a query string to all links in your email newsletter. A good use case is Google Analytics tracking. Don't include '?' in your query string.			        
+				       							</div>
+				       							<input type="email" class="form-control" placeholder="url">
+												  </div>
+												  <div class="form-group">
+												    <label>Attachments</label>
+												    <input type="file" class="form-control" >
+												    <small class="form-text text-muted">Allowed file types: jpeg, jpg, gif, png, pdf, zip</small>
+												  </div>
+												  <div class="form-group">
+												  	<label>Track Opens</label>
+											      <button type="button" class="btn btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off">
+											        <div class="handle"></div>
+											      </button>
+												  </div>
+												  <div class="form-group">
+												  	<label>Track Clicks</label>
+											      <button type="button" class="btn btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off">
+											        <div class="handle"></div>
+											      </button>
+												  </div><br>
+												  <div class="form-group">
+														<button type="submit" class="primary_btn mar_btm">Save Campaign</button>
+														<button type="submit" class="seconadry_btn">Cancel</button>
+													</div>
+												</div>
+												<div class="col-md-9">
+													<div class="form-group">
+												    <label>Plain Text</label>
+												    <textarea class="form-control" rows="3"></textarea>
+												  </div>
+												  <div class="form-group">
+														<label>Html Code</label>
+														<div id="editor-container">
+														</div>
+														<span class="hint">Use the following tags in your subject, plain text or HTML code and they'll automatically be formatted when your campaign is sent. For web version and unsubscribe tags, you can style them with inline CSS.</span>
+													</div>
+													<div class="col-md-12 no-padding">
+														<div class="row help_container">
+															<div class="col-md-6">
+																<div class="heading">Essential tags (HTML only)</div>
+																<p class="desc">The following tags can only be used on the HTML version</p>
+																<ul>
+																	<li>
+																		<strong>Webversion link: </strong>
+																		<code><webversion>View web version<webversion></code>
+																	</li>
+																	<li>
+																		<strong>Unsubscribe link: </strong>
+																		<code><unsubscribe>Unsubscribe here</unsubscribe></code>
+																	</li>
+																</ul>
 
-		            <input type="hidden" id="save_new_form" name="savenewform">
-		            <div class="col-md-12">
-		              <div class="row marl buttons_row text-center form_btn_row">
-		                <button  class="btn btn-default save" type="submit">Save</button>
-		                {% if not contact_obj %}
-		                <button class="btn btn-success save savenew" type="submit">Save & New</button>
-		                {% endif %}
-		                <a {% if request.GET.view_account %} href="{% url 'accounts:view_account' request.GET.view_account %}" {% else %} href="{% url 'contacts:list' %}" {% endif %} class="btn btn-default clear" id="create_contact_cancel">Cancel</a>
-		              </div>
-		            </div>
-		          </div>
+																<div class="heading">Essential tags</div>
+																<p class="desc">The following tags can only be used on the HTML version</p>
+																<ul>
+																	<li>
+																		<strong>Webversion link: </strong>
+																		<code><webversion>View web version<webversion></code>
+																	</li>
+																	<li>
+																		<strong>Unsubscribe link: </strong>
+																		<code><unsubscribe>Unsubscribe here</unsubscribe></code>
+																	</li>
+																</ul>
+
+															</div>
+
+
+															<div class="col-md-6">
+																<div class="heading">Personalization tags</div>
+																<p class="desc">The following tags can be used on both Plain text or HTML version</p>
+																<ul>
+																	<li>
+																		<strong>Name: </strong>
+																		<code>[Name,fallback=]</code>
+																	</li>
+																	<li>
+																		<strong>Email: </strong>
+																		<code>[Email]</code>
+																	</li>
+																	<li>
+																		<strong>Two digit day of the month (eg. 01 to 31):</strong>
+																		<code>[currentdaynumber]</code>
+																	</li>
+																</ul>
+
+																<div class="heading">Essential tags</div>
+																<p class="desc">The following tags can only be used on the HTML version</p>
+																<ul>
+																	<li>
+																		<strong>Name: </strong>
+																		<code>[Name,fallback=]</code>
+																	</li>
+																	<li>
+																		<strong>Email: </strong>
+																		<code>[Email]</code>
+																	</li>
+																	<li>
+																		<strong>Two digit day of the month (eg. 01 to 31):</strong>
+																		<code>[currentdaynumber]</code>
+																	</li>
+																</ul>
+
+															</div>
+
+
+															<div class="col-md-6">asdas</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</form>
 		        </div>
 		      </div>
 		    </div>
@@ -133,3 +180,22 @@
 	</div>
 </div>
 {% endblock %}
+{% block js_block %}
+<script>
+	var quill = new Quill('#editor-container', {
+	  modules: {
+	    toolbar: [
+	      [{ header: [1, 2, false] }],
+	      ['bold', 'italic', 'underline'],
+	      ['image', 'code-block']
+	    ]
+	  },
+	  placeholder: 'Compose an epic...',
+	  theme: 'snow'  // or 'bubble'
+	});
+	$('form').submit(function(){
+		alert($(this["options"]).val());
+	    return false;
+	});
+</script>
+{% endblock js_block %}
