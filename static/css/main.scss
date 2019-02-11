@@ -1360,3 +1360,61 @@ pre{
     }
   }
 }
+
+.campaign_det{
+  .title{
+    font-size: 0.83rem;
+    .content{
+      font-size: 0.83rem;
+    }
+    .icon{
+      svg{
+        font-size: 0.7rem;
+        margin-left: 0.5rem;
+      }
+    }
+  }
+  .subject{
+    font-weight: bold;
+    margin:0.4rem 0;
+    color: darken($text_color, 20%);
+    .icon{
+      svg{
+        font-size: 0.7rem;
+        margin-left: 0.5rem;
+      }
+    }
+    a{
+      font-size: 0.83rem;
+      color: darken($text_color, 20%);
+      .content{
+        font-size: 0.83rem;
+        color: darken($text_color, 20%);
+      }
+    }
+  }
+  .recievers{
+    .badge{
+      font-size: 0.83rem;
+      font-weight: 500;
+    }
+  }
+}
+.count_status{
+  margin: 1rem 0;
+  .well{
+    .badge{
+      font-size: 0.83rem !important;
+    }
+    .label{
+      font-size: 0.83rem;
+      font-weight: bold;
+    }
+  }
+}
+.table_section{
+  .heading{
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+}
