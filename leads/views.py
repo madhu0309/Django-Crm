@@ -33,7 +33,7 @@ class LeadListView(LoginRequiredMixin, TemplateView):
             if request_post.get('name'):
                 queryset = queryset.filter(
                     Q(first_name__icontains=request_post.get('name')) & 
-                    Q(last_name__contains=request_post.get('name')))
+                    Q(last_name__icontains=request_post.get('name')))
             if request_post.get('city'):
                 queryset = queryset.filter(address__city__icontains=request_post.get('city'))
             if request_post.get('email'):

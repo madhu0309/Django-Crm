@@ -47,7 +47,6 @@
                   <option value="{{user.id}}" {% if user.id in assignedto_list %} selected="" {% endif %}>{{user.email}}</option>
                   {% endfor %}
                   </select>
-                  {{ account_form.assigned_to.errors }}
                 </div>
               </div>            
               <div class="filter_col col-md-2">
