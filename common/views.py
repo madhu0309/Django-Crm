@@ -146,25 +146,11 @@ class UsersListView(AdminRequiredMixin, TemplateView):
 
     def get_queryset(self):
         queryset = self.model.objects.all()
-        request_post = self.request.POST
-        if request_post:
-            if request_post.get('first_name'):
-                queryset = queryset.filter(first_name__icontains=request_post.get('first_name'))
-            if request_post.get('last_name'):
-                queryset = queryset.filter(last_name_id=request_post.get('last_name'))
-            if request_post.get('username'):
-                queryset = queryset.filter(username__icontains=request_post.get('username'))
-            if request_post.get('email'):
-                queryset = queryset.filter(email__icontains=request_post.get('email'))
-            if request_post.get('status'):
-                queryset = queryset.filter(is_active=request_post.get('status'))
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super(UsersListView, self).get_context_data(**kwargs)
         context["users"] = self.get_queryset()
-        context["active_users"] = self.get_queryset().filter(is_active=True)
-        context["inactive_users"] = self.get_queryset().filter(is_active=False)
         context["per_page"] = self.request.POST.get('per_page')
         context['admin_email'] = settings.ADMIN_EMAIL
         return context
