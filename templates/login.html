@@ -40,6 +40,7 @@
                             <p class="error">{{ message }}</p>
                         {% endif %}
                         <button type="submit" class="btn btn-danger">Login</button>
+                        <div class="forgot"><a href="{% url "common:google_login" %}">Google Login</a></div>
                     </form>
                     <div class="credentials">
                         <span class="heading">Test credentials to Login</span>

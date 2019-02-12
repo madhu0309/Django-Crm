@@ -464,3 +464,94 @@ def remove_comment(request):
             return JsonResponse(data)
         data = {'error': "You don't have permission to delete this comment."}
         return JsonResponse(data)
+
+
+
+import requests
+from django.urls import reverse
+from django.conf import settings
+from django.http.response import HttpResponseRedirect
+import random
+import string
+import json
+# import urllib
+# from urllib import parse
+# from urlparse import parse_qs
+
+
+def rand_string(size=6, chars=string.ascii_letters + string.digits):
+    return ''.join(random.choice(chars) for x in range(size))
+
+
+def google_login(request):
+    if 'code' in request.GET:
+        params = {
+            'grant_type': 'authorization_code',
+            'code': request.GET.get('code'),
+            'redirect_uri': 'http://' + request.META['HTTP_HOST'] + reverse('social:google_login'),
+            'client_id': settings.GP_CLIENT_ID,
+            'client_secret': settings.GP_CLIENT_SECRET
+        }
+
+        info = requests.post("https://accounts.google.com/o/oauth2/token", data=params)
+        info = info.json()
+        url = 'https://www.googleapis.com/oauth2/v1/userinfo'
+        params = {'access_token': info['access_token']}
+        kw = dict(params=params, headers={}, timeout=60)
+        response = requests.request('GET', url, **kw)
+        user_document = response.json()
+
+        link = "https://plus.google.com/"+user_document['id']
+        picture = user_document['picture'] if 'picture' in user_document.keys() else ""
+        dob = user_document['birthday'] if 'birthday' in user_document.keys() else ""
+        gender = user_document['gender'] if 'gender' in user_document.keys() else ""
+        link = user_document['link'] if 'link' in user_document.keys() else link
+        user = User.objects.filter(email=user_document['email'])
+        if user:
+            user = user[0]
+            user.first_name = user_document['given_name']
+            user.last_name = user_document['family_name']
+        else:
+            user = User.objects.create(
+                username=user_document['email'],
+                email=user_document['email'],
+                first_name=user_document['given_name'],
+                last_name=user_document['family_name'],
+                user_roles="Student"
+                )
+            rand_password = rand_string()
+            user.set_password(rand_password)
+        google, created = Google.objects.get_or_create(user=user)
+        google.user = user
+        google.google_url = link
+        google.verified_email = user_document['verified_email']
+        google.google_id = user_document['id']
+        google.family_name = user_document['family_name']
+        google.name = user_document['name']
+        google.given_name = user_document['given_name']
+        google.dob = dob
+        google.email = user_document['email']
+        google.gender = gender
+        google.picture = picture
+        google.save()
+
+        # user = authenticate(username=user_document['email'])
+        user.last_login = datetime.now()
+        user.social_login = True
+        user.save()
+
+        login(request, user)
+        # if not request.user.container_ip:
+        #     create_user_container.delay(request.user.id)
+        if request.GET.get('state') != '1235dfghjkf123':
+            return HttpResponseRedirect(request.GET.get('state'))
+        else:
+            return HttpResponseRedirect(reverse("common:home"))
+    else:
+        if request.GET.get('next'):
+            next_url = request.GET.get('next')
+        else:
+            next_url = '1235dfghjkf123'
+        rty = "https://accounts.google.com/o/oauth2/auth?client_id=" + settings.GP_CLIENT_ID + "&response_type=code"
+        rty += "&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email&redirect_uri=" + 'http://' + request.META['HTTP_HOST'] + reverse('common:google_login') + "&state="+next_url
+        return HttpResponseRedirect(rty)
