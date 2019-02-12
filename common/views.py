@@ -149,7 +149,7 @@ class UsersListView(AdminRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(UsersListView, self).get_context_data(**kwargs)
-        context["users"] = self.get_queryset()
+        context["users"] = self.get_queryset().exclude(id=self.request.user.id)
         context["per_page"] = self.request.POST.get('per_page')
         context['admin_email'] = settings.ADMIN_EMAIL
         return context
