@@ -77,7 +77,7 @@
             <label for="exampleInputEmail1">Upload Profile Picture{% if user_form.profile_pic.field.required %}<span class="error">*</span>{% endif %}</label>
             <input type="file" name="profile_pic" accept="image/*" class="form-control" />
           </div>
-          {% if user_obj %}<span>{{user_obj.profile_pic }}</span>{% endif %}
+          {% if user_obj %}<span>{{user_profile_name }}</span>{% endif %}
           <span class="error" id="id_profile_pic">{{ errors.profile_pic }}</span>
         </div>
       </div>

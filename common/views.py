@@ -260,6 +260,9 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super(UpdateUserView, self).get_context_data(**kwargs)
         context["user_obj"] = self.object
+        user_profile_name = str(context["user_obj"].profile_pic).split("/")
+        user_profile_name = user_profile_name[-1]
+        context["user_profile_name"] = user_profile_name
         context["user_form"] = context["form"]
         if "errors" in kwargs:
             context["errors"] = kwargs["errors"]
