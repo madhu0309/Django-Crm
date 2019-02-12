@@ -15,7 +15,7 @@ deploy_mp:
   environment:
     name: live
   script:
-    - docker-compose up
+    - /usr/local/bin/docker-compose up
   only:
     - master
   tags:
