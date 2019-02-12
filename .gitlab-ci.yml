@@ -15,6 +15,7 @@ deploy_mp:
   environment:
     name: live
   script:
+    - echo $(pwd)
     - /usr/local/bin/docker-compose up
   only:
     - master
