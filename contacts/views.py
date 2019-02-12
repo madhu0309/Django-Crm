@@ -89,6 +89,7 @@ class CreateContactView(LoginRequiredMixin, CreateView):
                     'contact': contact_obj
                 })
                 email = EmailMessage(mail_subject, message, to=[user.email])
+                email.content_subtype = "html"
                 email.send()
         if self.request.is_ajax():
             return JsonResponse({'error': False})
@@ -195,10 +196,13 @@ class UpdateContactView(LoginRequiredMixin, UpdateView):
                         'contact': contact_obj
                     })
                     email = EmailMessage(mail_subject, message, to=[user.email])
+                    email.content_subtype = "html"
                     email.send()
 
             contact_obj.assigned_to.clear()
             contact_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+        else:
+            contact_obj.assigned_to.clear()
 
         if self.request.is_ajax():
             return JsonResponse({'error': False})

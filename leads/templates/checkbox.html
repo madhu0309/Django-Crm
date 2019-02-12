@@ -11,7 +11,6 @@
       <a href="{% url 'leads:leads_convert' post.id %}">Convert</a>
     </h3>
   </div>
-  </div>
   <input class="check-scope" id = "accountid"  name="accountname" data-scope="Account" type="checkbox"/>Account</br>
   <input class="check-scope"  id = "contactid"  name="contactname" data-scope="Contact" type="checkbox"/>Contact</br>
   <input class="check-scope" id = "opportunityid"  name="opportunityname" data-scope="Opportunity" type="checkbox"/>Opportunity</br>
@@ -211,9 +210,6 @@
       <a href="{% url 'leads:view_lead' post.id %}"<button type="button" class="btn btn-default">CANCEL</button></a>
     </div>
   </div>
-  </div>
-  </body>
-  </html>
   <div class="contactconvert" style="display:none;">
     <div class="assigned_teams row marl">
       <div class="col-md-12">
@@ -341,6 +337,7 @@
             <textarea class="form-control" rows="3"  id="id_description" name="description">{%if post%}{{post.description}} {% else %}{{request.POST.description}}{%endif%}</textarea>
           </div>
         </div>
+        <br clear="all">
       </div>
       <br clear="all">
     </div>
@@ -348,12 +345,8 @@
       <a><button  class="btn btn-default save" type="submit">Convert</button></a>
       <a href="{% url 'leads:view_lead' post.id %}"<button type="button" class="btn btn-default">CANCEL</button></a>
     </div>
+  </div>
 </form>
-</div>
-</div>
-</div>
-<br clear="all">
-</div>
 {% endblock %}
 {# {% endblock %} #}
 {% block js_block %}
@@ -407,6 +400,3 @@
   
 </script>
 {% endblock js_block %}
-</head>
-</body>
-</html>

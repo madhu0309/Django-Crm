@@ -338,6 +338,7 @@
                 {% endifequal %}
               </ul>
             </div>
+            <!-- Calls Tab Division ends here-->
           </div>
           <!-- Calls Tab Division ends here-->
         </div>
@@ -749,7 +750,6 @@
                 {% for user in users %}
                 <option value="{{user.id}}" {% ifequal a_user.id user.id %} selected{% endifequal%}>{{user.username}}</option>
                 {% endfor %}
-              </select>
               </select>
             </div>
           </div>
