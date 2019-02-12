@@ -77,7 +77,7 @@ class CreateCaseView(LoginRequiredMixin, CreateView):
         form = self.get_form()
         if form.is_valid():
             return self.form_valid(form)
-        
+
         return self.form_invalid(form)
 
     def form_valid(self, form):
@@ -99,11 +99,18 @@ class CreateCaseView(LoginRequiredMixin, CreateView):
                 })
                 email = EmailMessage(mail_subject, message, to=[user.email])
                 email.content_subtype = "html"
-                email.send()
+                # email.send()
         if self.request.POST.getlist('teams', []):
             case.teams.add(*self.request.POST.getlist('teams'))
         if self.request.POST.getlist('contacts', []):
             case.contacts.add(*self.request.POST.getlist('contacts'))
+        if self.request.FILES.get('case_attachment'):
+            attachment = Attachments()
+            attachment.created_by = self.request.user
+            attachment.file_name = self.request.FILES.get('case_attachment').name
+            attachment.case = case
+            attachment.attachment = self.request.FILES.get('case_attachment')
+            attachment.save()
         if self.request.is_ajax():
             return JsonResponse({'error': False})
         if self.request.POST.get("savenewform"):
@@ -111,7 +118,7 @@ class CreateCaseView(LoginRequiredMixin, CreateView):
         if self.request.POST.get('from_account'):
             from_account = self.request.POST.get('from_account')
             return redirect("accounts:view_account", pk=from_account)
-        
+
         return redirect('cases:list')
 
     def form_invalid(self, form):
@@ -187,7 +194,7 @@ class UpdateCaseView(LoginRequiredMixin, UpdateView):
         form = self.get_form()
         if form.is_valid():
             return self.form_valid(form)
-        
+
         return self.form_invalid(form)
 
     def form_valid(self, form):
