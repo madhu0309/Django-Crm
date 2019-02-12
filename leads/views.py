@@ -315,6 +315,8 @@ class UpdateLeadView(LoginRequiredMixin, UpdateView):
 
             lead_obj.assigned_to.clear()
             lead_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+        else:
+            lead_obj.assigned_to.clear()
 
         if self.request.POST.getlist('teams', []):
             lead_obj.teams.add(*self.request.POST.getlist('teams'))
