@@ -61,7 +61,6 @@
   <!-- heading_create ends here -->
   <!-- filter_row starts here -->
   <div class="filter_row row marl">
-    
     <div class="col-md-12 col-lg-12 col-xl-12">
       <div class="table_container_row row marl no-gutters">
         <div class="col-md-12">
@@ -78,7 +77,6 @@
               <div class="card">
                 <div class="card-body">
                   <div class="panel-heading-list card-title text-right">
-                    
                     <span class="total_count float-left">Open Accounts - {% if show_pageitems %} {% show_pageitems %}{% else %}{{open_accounts|length}}{% endif %}</span>
                     <span class="filter_toggle ">
                     <a href="#" class="primary_btn"><i class="fas fa-filter"></i></a>
@@ -110,7 +108,6 @@
                           <td>{% if each_account.name %}<a href="{% url 'accounts:view_account' each_account.id %}">{{ each_account.name }}</a>{% endif %}</td>
                           <td>{% if each_account.billing_city %}{{ each_account.billing_city }} {% else %} Not specified {% endif %}</td>
                           <td>{% if each_account.billing_state %}{{ each_account.billing_state }} {% else %} Not specified {% endif %}</td>
-
                           <td style="display: block;">
                             {% with tags=each_account.tags.all %}
                             {% if tags %}
@@ -147,7 +144,7 @@
                   <div class="panel-heading-list card-title text-right">
                     <span class="total_count float-left">Closed Accounts - {% if show_pageitems %} {% show_pageitems %}{% else %}{{close_accounts|length}}{% endif %}</span>
                     <span class="filter_toggle ">
-                        <a href="#" class="primary_btn"><i class="fas fa-filter"></i></a>
+                    <a href="#" class="primary_btn"><i class="fas fa-filter"></i></a>
                     </span>                  
                   </div>
                   <div class="table-responsive">
@@ -176,7 +173,6 @@
                           <td>{% if each_account.name %}<a href="{% url 'accounts:view_account' each_account.id %}">{{ each_account.name }}</a>{% endif %}</td>
                           <td>{% if each_account.billing_city %}{{ each_account.billing_city }} {% else %} Not specified {% endif %}</td>
                           <td>{% if each_account.billing_state %}{{ each_account.billing_state }} {% else %} Not specified {% endif %}</td>
-
                           <td style="display: block;">
                             {% with tags=each_account.tags.all %}
                             {% if tags %}
@@ -221,23 +217,22 @@
 {% block js_block %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 <script type="text/javascript">
-
   $("#close-tab").click(function(e){
     $("#tab_status").val('Closed');
   })
-
+  
   $("#open-tab").click(function(e){
     $("#tab_status").val('Open')
   })
-
+  
   tab_status = "{{tab_status}}"
   if(tab_status == 'Closed'){
     $("#close-tab").click()
   }else{
     $("#open-tab").click()
   }
-
-
+  
+  
   $('.remove_account').click(function(e){
     e.preventDefault()
     url = $(this).attr('href')
