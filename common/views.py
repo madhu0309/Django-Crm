@@ -472,11 +472,10 @@ from django.urls import reverse
 from django.conf import settings
 from django.http.response import HttpResponseRedirect
 import random
+import datetime
 import string
 import json
-# import urllib
-# from urllib import parse
-# from urlparse import parse_qs
+from common.models import Google
 
 
 def rand_string(size=6, chars=string.ascii_letters + string.digits):
@@ -488,7 +487,7 @@ def google_login(request):
         params = {
             'grant_type': 'authorization_code',
             'code': request.GET.get('code'),
-            'redirect_uri': 'http://' + request.META['HTTP_HOST'] + reverse('social:google_login'),
+            'redirect_uri': 'http://' + request.META['HTTP_HOST'] + reverse('common:google_login'),
             'client_id': settings.GP_CLIENT_ID,
             'client_secret': settings.GP_CLIENT_SECRET
         }
@@ -517,7 +516,7 @@ def google_login(request):
                 email=user_document['email'],
                 first_name=user_document['given_name'],
                 last_name=user_document['family_name'],
-                user_roles="Student"
+                role="User"
                 )
             rand_password = rand_string()
             user.set_password(rand_password)
@@ -535,14 +534,12 @@ def google_login(request):
         google.picture = picture
         google.save()
 
-        # user = authenticate(username=user_document['email'])
-        user.last_login = datetime.now()
+        user.last_login = datetime.datetime.now()
         user.social_login = True
         user.save()
 
         login(request, user)
-        # if not request.user.container_ip:
-        #     create_user_container.delay(request.user.id)
+
         if request.GET.get('state') != '1235dfghjkf123':
             return HttpResponseRedirect(request.GET.get('state'))
         else:
