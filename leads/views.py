@@ -50,8 +50,12 @@ class LeadListView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(LeadListView, self).get_context_data(**kwargs)
-        context["lead_obj"] = self.get_queryset()
+        # context["lead_obj"] = self.get_queryset()
+        open_leads = self.get_queryset().exclude(status='dead')
+        close_leads = self.get_queryset().filter(status='dead')
         context["status"] = LEAD_STATUS
+        context["open_leads"] = open_leads
+        context["close_leads"] = close_leads
         context["per_page"] = self.request.POST.get('per_page')
         context["source"] = LEAD_SOURCE
         context["users"] = User.objects.filter(is_active=True).order_by('email')
@@ -59,6 +63,12 @@ class LeadListView(LoginRequiredMixin, TemplateView):
             int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
 
         context['tags'] = Tags.objects.all()
+
+        tab_status = 'Open'
+        if self.request.POST.get('tab_status'):
+            tab_status = self.request.POST.get('tab_status')
+        context['tab_status'] = tab_status
+
         return context
 
     def post(self, request, *args, **kwargs):
@@ -119,6 +129,7 @@ class CreateLeadView(LoginRequiredMixin, CreateView):
                     'lead': lead_obj
                 })
                 email = EmailMessage(mail_subject, message, to=[user.email])
+                email.content_subtype = "html"
                 email.send()
         if self.request.POST.getlist('teams', []):
             lead_obj.teams.add(*self.request.POST.getlist('teams'))
@@ -147,6 +158,7 @@ class CreateLeadView(LoginRequiredMixin, CreateView):
                         'account': account_object
                     })
                     email = EmailMessage(mail_subject, message, to=[user.email])
+                    email.content_subtype = "html"
                     email.send()
             if self.request.POST.getlist('teams', []):
                 account_object.teams.add(*self.request.POST.getlist('teams'))
@@ -298,10 +310,13 @@ class UpdateLeadView(LoginRequiredMixin, UpdateView):
                             'lead': lead_obj
                         })
                         email = EmailMessage(mail_subject, message, to=[user.email])
+                        email.content_subtype = "html"
                         email.send()
 
             lead_obj.assigned_to.clear()
             lead_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+        else:
+            lead_obj.assigned_to.clear()
 
         if self.request.POST.getlist('teams', []):
             lead_obj.teams.add(*self.request.POST.getlist('teams'))
@@ -329,6 +344,7 @@ class UpdateLeadView(LoginRequiredMixin, UpdateView):
                         'account': account_object
                     })
                     email = EmailMessage(mail_subject, message, to=[user.email])
+                    email.content_subtype = "html"
                     email.send()
             if self.request.POST.getlist('teams', []):
                 account_object.teams.add(*self.request.POST.getlist('teams'))
@@ -411,9 +427,10 @@ class ConvertLeadView(LoginRequiredMixin, View):
                     'account': account_object
                 })
                 email = EmailMessage(mail_subject, message, to=[user.email])
+                email.content_subtype = "html"
                 email.send()
             return redirect("accounts:list")
-    
+
         return HttpResponseRedirect(
             reverse('leads:edit_lead', kwargs={'pk': lead_obj.id}) + '?status=converted')
 

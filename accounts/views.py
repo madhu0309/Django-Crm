@@ -118,6 +118,7 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
                     'account': account_object
                 })
                 email = EmailMessage(mail_subject, message, to=[user.email])
+                email.content_subtype = "html"
                 email.send()
         if self.request.POST.getlist('teams', []):
             account_object.teams.add(*self.request.POST.getlist('teams'))
@@ -228,7 +229,7 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         form = self.get_form()
-        billing_form = BillingAddressForm(request.POST, instance=self.object.billing_address)
+        billing_form = BillingAddressForm(request.POST, instance=self.object.billing_address, account=True)
         shipping_form = ShippingAddressForm(
             request.POST, instance=self.object.shipping_address, prefix='ship')
         if form.is_valid() and billing_form.is_valid() and shipping_form.is_valid():
@@ -249,6 +250,7 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         account_object.save()
         account_object.teams.clear()
         all_members_list = []
+
         if self.request.POST.getlist('assigned_to', []):
             current_site = get_current_site(self.request)
             assigned_form_users = form.cleaned_data.get('assigned_to').values_list('id', flat=True)
@@ -265,10 +267,14 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
                         'account': account_object
                     })
                     email = EmailMessage(mail_subject, message, to=[user.email])
+                    email.content_subtype = "html"
                     email.send()
 
             account_object.assigned_to.clear()
             account_object.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+        else:
+            account_object.assigned_to.clear()
+
         if self.request.POST.getlist('teams', []):
             account_object.teams.add(*self.request.POST.getlist('teams'))
         account_object.tags.clear()
@@ -306,12 +312,12 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         else:
             if self.request.POST:
                 context["billing_form"] = BillingAddressForm(
-                    self.request.POST, instance=self.object.billing_address)
+                    self.request.POST, instance=self.object.billing_address, account=True)
                 context["shipping_form"] = ShippingAddressForm(
                     self.request.POST, instance=self.object.shipping_address, prefix='ship')
             else:
                 context["billing_form"] = BillingAddressForm(
-                    instance=self.object.billing_address)
+                    instance=self.object.billing_address, account=True)
                 context["shipping_form"] = ShippingAddressForm(
                     instance=self.object.shipping_address, prefix='ship')
         context["assignedto_list"] = [
