@@ -65,6 +65,7 @@
             <span class="error" id="id_role">{{ user_form.role.errors }}</span>
           </div>
         </div>
+        {% if not user_obj %}
         <div class="filter_col col-md-6">
           <div class="form-group">
             <label for="exampleInputEmail1">Password{% if user_form.password.field.required %}<span class="error">*</span>{% endif %}</label>
@@ -72,6 +73,7 @@
           </div>
           <span class="error" id="id_password">{{ errors.password }}</span>
         </div>
+        {% endif %}
         <div class="filter_col col-md-6">
           <div class="form-group">
             <label for="exampleInputEmail1">Upload Profile Picture{% if user_form.profile_pic.field.required %}<span class="error">*</span>{% endif %}</label>
