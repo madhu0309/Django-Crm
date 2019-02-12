@@ -13,8 +13,6 @@ services:
   web:
     build: .
     image: micropyramid/django-crm:1
-    environment:
-      - DJANGO_SETTINGS_MODULE=crm.dev_settings
     ports:
       - "8001:8000"
     depends_on:
