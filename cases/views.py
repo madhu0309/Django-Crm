@@ -220,6 +220,8 @@ class UpdateCaseView(LoginRequiredMixin, UpdateView):
 
             case_obj.assigned_to.clear()
             case_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+        else:
+            case_obj.assigned_to.clear()
 
         if self.request.POST.getlist('teams', []):
             case_obj.teams.add(*self.request.POST.getlist('teams'))
