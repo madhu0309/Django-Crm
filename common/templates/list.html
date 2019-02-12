@@ -27,7 +27,6 @@
                 <thead>
                   {% if users|length > 0 %}
                     <tr>
-                      <th width="20%">First Name</th>
                       <th width="20%">Username</th>
                       <th width="20%">Email Address</th>
                       <th width="8%">User Role</th>
@@ -44,7 +43,6 @@
                   {% endif %}
                   {% for user in users %}
                   <tr class="text-center">
-                    <td>{{ user.first_name }}</td>
                     <td><a href="{% url 'common:view_user' user.id %}">{{ user.username }}</a></td>
                     <td>{{ user.email }}</td>
 
