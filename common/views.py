@@ -175,6 +175,7 @@ class CreateUserView(AdminRequiredMixin, CreateView):
 
         })
         email = EmailMessage(mail_subject, message, to=[user.email])
+        email.content_subtype = "html"
         email.send()
 
         if self.request.is_ajax():
