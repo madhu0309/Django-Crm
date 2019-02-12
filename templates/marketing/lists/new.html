@@ -25,13 +25,13 @@
 		              
 		              <div class="filter_col col-md-12">
 		                <div class="form-group">
-		                  <label class="required">Contacts File <span class="error">*</span></label>
+		                  <label>Contacts File </label>
 		                  <input type="file" class="form-control" >
 		                </div>
 		              </div>
 		              <div class="filter_col col-md-12">
 						<div class="demo_clist">
-							<a href="#"><i class="fas fa-eye"></i> Demo file</a>
+							<a href="#">Demo file <i class="fas fa-download"></i> </a>
 						</div>
 		              </div>	 
 		            <input type="hidden" name="from_account" value="{{request.GET.view_account}}">
@@ -42,9 +42,9 @@
 		            <input type="hidden" id="save_new_form" name="savenewform">
 		            <div class="col-md-12">
 		              <div class="row marl buttons_row text-center form_btn_row">
-		                <button  class="btn btn-default save" type="submit">Save</button>
+		                <a href="/m/"  class="btn primary_btn" >Save</a>
 		              
-		                <a {% if request.GET.view_account %} href="{% url 'accounts:view_account' request.GET.view_account %}" {% else %} href="{% url 'contacts:list' %}" {% endif %} class="btn btn-default clear" id="create_contact_cancel">Cancel</a>
+		                <a href="/m/" class="btn seconadry_btn">Cancel</a>
 		              </div>
 		            </div>
 		          </div>

@@ -10,7 +10,7 @@ def contact_lists(request):
 
 
 def contacts_list(request):
-    return render(request, 'marketing/lists/list.html')
+    return render(request, 'marketing/lists/all.html')
 
 
 def contact_list_new(request):

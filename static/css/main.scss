@@ -55,6 +55,9 @@ a{
     text-decoration:none;
   }
 }
+.anchor{
+  color: darken($text_color, 15%)!important;
+}
 .login_form_block {
     margin-top: 30px;
     padding:50px 15px;
@@ -137,8 +140,9 @@ a{
   letter-spacing: initial;
   display: inline-block;
   border-radius: 3px;
-  padding: 0 10px;
+  padding: 5px 10px;
   line-height: 1.5rem;
+  bordeR: none;
   cursor: pointer;
   &:hover{
     background: darken($login_btn_bg, 10%);
@@ -476,10 +480,10 @@ $color_2: #000;
       .card-title{
         padding:5px 10px !important;
         background: #e5e5e5;
-        padding:6px 10px;
         font-size: 1rem;
         margin-bottom: 0;
         font-weight: 600;
+        line-height: 2.3rem;
         .dropdown{
           display: inline-block;
           .dropdown-toggle{
@@ -1131,6 +1135,9 @@ pre{
               display: block;
               padding: 0.2rem 0;
               padding-left: 0.7rem;
+              &:hover{
+                background: #ed7354;
+              }
               &.active{
                 background: #ed7354;
               }
@@ -1155,6 +1162,7 @@ pre{
   }
 .marketing_pages{
   margin-left: 250px;
+  margin-bottom: 1rem;
 }
 
 .badge{
@@ -1412,11 +1420,8 @@ pre{
     }
   }
 }
-.table_section{
-  .heading{
-    font-size: 1.3rem;
-    font-weight: 600;
-  }
+.mar_right_0{
+  margin-right: 0!important;
 }
 .demo_clist{
   a{
@@ -1424,5 +1429,12 @@ pre{
     color: darken($text_color, 15%);
     font-weight: 600;
     text-decoration: underline !important;
+  }
+}
+.table_det_section{
+  margin-bottom: 1rem;
+  .heading{
+    font-size: 1.3rem;
+    font-weight: 600;
   }
 }
