@@ -118,6 +118,7 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
                     'account': account_object
                 })
                 email = EmailMessage(mail_subject, message, to=[user.email])
+                email.content_subtype = "html"
                 email.send()
         if self.request.POST.getlist('teams', []):
             account_object.teams.add(*self.request.POST.getlist('teams'))
@@ -228,7 +229,7 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         form = self.get_form()
-        billing_form = BillingAddressForm(request.POST, instance=self.object.billing_address)
+        billing_form = BillingAddressForm(request.POST, instance=self.object.billing_address, account=True)
         shipping_form = ShippingAddressForm(
             request.POST, instance=self.object.shipping_address, prefix='ship')
         if form.is_valid() and billing_form.is_valid() and shipping_form.is_valid():
@@ -265,6 +266,7 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
                         'account': account_object
                     })
                     email = EmailMessage(mail_subject, message, to=[user.email])
+                    email.content_subtype = "html"
                     email.send()
 
             account_object.assigned_to.clear()
@@ -306,12 +308,12 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         else:
             if self.request.POST:
                 context["billing_form"] = BillingAddressForm(
-                    self.request.POST, instance=self.object.billing_address)
+                    self.request.POST, instance=self.object.billing_address, account=True)
                 context["shipping_form"] = ShippingAddressForm(
                     self.request.POST, instance=self.object.shipping_address, prefix='ship')
             else:
                 context["billing_form"] = BillingAddressForm(
-                    instance=self.object.billing_address)
+                    instance=self.object.billing_address, account=True)
                 context["shipping_form"] = ShippingAddressForm(
                     instance=self.object.shipping_address, prefix='ship')
         context["assignedto_list"] = [
