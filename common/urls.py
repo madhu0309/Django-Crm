@@ -5,7 +5,8 @@ from common.views import (
     HomeView, LoginView, ForgotPasswordView, LogoutView, ChangePasswordView, ProfileView,
     UsersListView, CreateUserView, UpdateUserView, UserDetailView, UserDeleteView, PasswordResetView,
     DocumentListView, DocumentCreateView, UpdateDocumentView, DocumentDetailView, DocumentDeleteView, 
-    download_document, change_user_status, download_attachment, add_comment, edit_comment, remove_comment, google_login)
+    download_document, change_user_status, download_attachment, add_comment, edit_comment, remove_comment, 
+    google_login)
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -30,23 +31,28 @@ urlpatterns = [
 
     path(
         'password-reset/', PasswordResetView.as_view(), name='password_reset'),
-    path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(),
+         name='password_reset_done'),
     path(
         'reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(),
+         name='password_reset_complete'),
 
     # Document
     path('documents/list/', DocumentListView.as_view(), name='doc_list'),
     path('documents/create/', DocumentCreateView.as_view(), name='create_doc'),
     path('documents/<int:pk>/edit/', UpdateDocumentView.as_view(), name="edit_doc"),
     path('documents/<int:pk>/view/', DocumentDetailView.as_view(), name='view_doc'),
-    path('documents/<int:pk>/delete/', DocumentDeleteView.as_view(), name='remove_doc'),
+    path('documents/<int:pk>/delete/',
+         DocumentDeleteView.as_view(), name='remove_doc'),
 
     # download
-    path('documents/<int:pk>/download/', download_document, name='download_document'),
+    path('documents/<int:pk>/download/',
+         download_document, name='download_document'),
 
     # download_attachment
-    path('attachments/<int:pk>/download/', download_attachment, name='download_attachment'),
+    path('attachments/<int:pk>/download/',
+         download_attachment, name='download_attachment'),
 
     path('user/status/<int:pk>/', change_user_status, name='change_user_status'),
 

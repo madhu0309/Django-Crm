@@ -149,7 +149,8 @@ COMPRESS_ROOT = BASE_DIR + '/static/'
 COMPRESS_URL = STATIC_URL
 COMPRESS_ENABLED = True
 
-COMPRESS_CSS_FILTERS = ['compressor.filters.css_default.CssAbsoluteFilter', 'compressor.filters.cssmin.CSSMinFilter']
+COMPRESS_CSS_FILTERS = [
+    'compressor.filters.css_default.CssAbsoluteFilter', 'compressor.filters.cssmin.CSSMinFilter']
 COMPRESS_REBUILD_TIMEOUT = 5400
 
 COMPRESS_OUTPUT_DIR = 'CACHE'
@@ -188,3 +189,7 @@ try:
     from .dev_settings import *
 except ImportError:
     pass
+
+
+GP_CLIENT_ID = os.getenv('GP_CLIENT_ID', '')
+GP_CLIENT_SECRET = os.getenv('GP_CLIENT_SECRET', '')
