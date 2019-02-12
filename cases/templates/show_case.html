@@ -157,7 +157,7 @@
   <div class="col-md-4">
     <div class="panel panel-default">
       <div class="panel-heading text-center">
-        <h6>Users&Teams</h6>
+        <h6>Users</h6>
       </div>
       <div class="panel-content" id="datashow">
         <div class="row marl">
@@ -165,13 +165,6 @@
             <div class="form-group">
               <label for="id_name" data-name="name" >Assigned User</label>
               <div class="field" id="case_assigned_user" data-name="name">{{ a_user.username }}{% ifequal a_user "None" %}Not Specified{% endifequal %}</div>
-            </div>
-          </div>
-          <div class="filter_col col-md-12">
-            <div class="form-group">
-              <label for="id_name" data-name="name" >Assigned Teams</label>
-              <div class="field" id="case_teams" data-name="name">{% ifequal case.teams None%}Not Specified
-              {% else %}{{case.teams}}{% endifequal %}
             </div>
           </div>
         </div>
@@ -734,17 +727,6 @@
                     <option value="{{user.id}}" {% ifequal a_user.id user.id %} selected{% endifequal%}>{{user.username}}</option>
                   {% endfor %}
                 </select>
-              </select>
-            </div>
-          </div>
-          <div class="filter_col col-md-6">
-            <div class="form-group">
-              <label for="id_teams">Teams</label>
-              <select class="form-control" id="id_teams" name="teams">
-                {% ifequal case.teams None%}<option value="" selected>--Select Support--</option>{% endifequal %}
-                <option value="Sales" {% ifequal case.teams "Sales"%} selected{% endifequal%}>Sales</option>
-                <option value="Support" {% ifequal case.teams "Support"%} selected{% endifequal%}>Support</option>
-                <option value="TopManagement" {% ifequal case.teams "TopManagement"%} selected{% endifequal%}>TopManagement</option>
               </select>
             </div>
           </div>

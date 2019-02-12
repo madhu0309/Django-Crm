@@ -25,7 +25,7 @@
           <div class="col-md-12">
             <div class="panel panel-default">
               <div class="panel-heading">
-                Assigned Users & Teams
+                Assigned Users
               </div>
               <div class="panel-content">
                 <div class="filter_col col-md-6">
@@ -40,18 +40,7 @@
                 </select>
                 </div>
               </div>
-                <div class="filter_col col-md-6">
-                  <div class="form-group">
-                    <label for="exampleInputEmail1">Teams</label>
-                   <select class="form-control" id="id_teams" name="teams">
-                        <option value="" selected="selected">---------</option>
-                      {% for k in teams %}
-                      <option value="{{ k.0 }}" {%ifequal k.0 post.teams %}selected {% endifequal %} {%ifequal k.0 request.POST.teams%}selected{%endifequal%}>{{ k.1 }}</option>
-                      {% endfor %}
-                      </select>
-                  </div>
-                </div>
-                <br clear="all">
+              <br clear="all">
               </div>
             </div>
           </div>
@@ -244,7 +233,7 @@
       <div class="col-md-12">
         <div class="panel panel-default">
           <div class="panel-heading" >
-            Assigned Users & Teams
+            Assigned Users
           </div>
           <div class="panel-content">
             <div class="filter_col col-md-6">
@@ -260,16 +249,7 @@
                 </select>
                 </div>
                 </div>
-            <div class="filter_col col-md-6">
-              <div class="form-group">
-                <label for="exampleInputEmail1">Teams</label>
-                <select class="form-control" id="id_teams" name="teams" value="{{edit_obj.teams }}">
-                        <option value="" selected="selected">---------</option>
-                          {% for i in teams%}
-                          <option value="{{i.0}}" {% ifequal i.0 edit_obj.teams %}selected{% endifequal %} {%ifequal i.0 request.POST.teams%}selected{%endifequal%}>{{i.1}}</option>
-                          {% endfor%}
-                        </select>
-              </div>
+
             </div>
             <br clear="all">
           </div>

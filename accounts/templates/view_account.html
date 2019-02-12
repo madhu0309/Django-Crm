@@ -75,49 +75,14 @@
                 </div>
               </div>
               {% endif %}
-              {% if account_record.industry %}
-              <div class="filter_col col-md-12">
-                <div class="form-group">
-                  <label class="acc_field_label" for="id_industry" data-name="name">Industry</label>
-                  <div class="account_field" id ="account_industry" data-name="name">{{ account_record.industry }}</div>
-                </div>
-              </div>
-              {% endif %}
             </div>
             <div class="col-md-4">
-              {% if account_record.billing_address.address_line or account_record.billing_address.street or  account_record.billing_address.city or   account_record.billing_address.state or account_record.billing_address.postcode or account_record.billing_address.country %}
+              {% if account_record.billing_address_line or account_record.billing_street or  account_record.billing_city or   account_record.billing_state or account_record.billing_postcode or account_record.billing_country %}
               <div class="filter_col col-md-12">
                 <div class="form-group">
                   <label class="acc_field_label" for="id_billing_address" data-name="name">Billing Address</label>
                   <div class="account_field" id="account_billing_address" data-name="name">
-                    {{account_record.billing_address.get_complete_address}}
-                  </div>
-                </div>
-              </div>
-              {% endif %}
-              {% if  account_record.shipping_address.address_line or account_record.shipping_address.street or account_record.shipping_address.city or account_record.shipping_address.state or account_record.shipping_address.postcode or account_record.shipping_address.country %}
-              <div class="filter_col col-md-12">
-                <div class="form-group">
-                  <label class="acc_field_label" for="id_shipping_address" data-name="name">Shipping Address</label>
-                  <div class="account_field" id="account_shipping_address" data-name="name">
-                    {% if account_record.shipping_address.address_line %}
-                    Address Line:{{account_record.shipping_address.address_line}}</br>
-                    {% endif %}
-                    {% if account_record.shipping_address.street %}
-                    Street:{{ account_record.shipping_address.street }}</br>
-                    {% endif %}
-                    {% if account_record.shipping_address.city %}
-                    City:{{ account_record.shipping_address.city }}</br>
-                    {% endif %}
-                    {% if account_record.shipping_address.state %}
-                    State:{{ account_record.shipping_address.state }}</br>
-                    {% endif %}
-                    {% if account_record.shipping_address.postcode %}
-                    Postcode:{{ account_record.shipping_address.postcode }}</br>
-                    {% endif %}
-                    {% if account_record.shipping_address.country %}
-                    Country:{{ account_record.shipping_address.get_country_display }}
-                    {% endif %}
+                    {{account_record.get_complete_address}}
                   </div>
                 </div>
               </div>
@@ -424,15 +389,6 @@
 {% block js_block %}
 <script type="text/javascript">
  
-  var assigned_to_list = "{{ assigned_data }}";
-  assigned_to_list = JSON.parse(assigned_to_list.replace(/&(l|g|quo)t;/g, function(a,b){
-         return {
-              l   : '<',
-              g   : '>',
-              quo : '"'
-          }[b];
-      }));
-  
     /*Comment Add Js Start*/
   $("#comment_form").submit(function(e){
     e.preventDefault()
