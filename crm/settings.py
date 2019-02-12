@@ -75,7 +75,7 @@ DATABASES = {
         'NAME': 'dj_crm',
         'USER': 'postgres',
         'PASSWORD': 'root',
-        'HOST': '127.0.0.1',
+        'HOST': 'djcrm_db_1',
         'PORT': '5432'
     }
 }
