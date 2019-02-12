@@ -199,6 +199,7 @@ class Document(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     status = models.CharField(
         choices=DOCUMENT_STATUS_CHOICE, max_length=64, default='active')
+    shared_to = models.ManyToManyField(User, related_name='document_shared_to')
 
     def file_type(self):
         name_ext_list = self.document_file.url.split(".")
