@@ -71,6 +71,8 @@ class CreateOpportunityView(LoginRequiredMixin, CreateView):
     def post(self, request, *args, **kwargs):
         self.object = None
         form = self.get_form()
+        print(request.POST)
+        print(request.FILES)
         if form.is_valid():
             return self.form_valid(form)
         return self.form_invalid(form)
@@ -111,6 +113,13 @@ class CreateOpportunityView(LoginRequiredMixin, CreateView):
                     else:
                         tag = Tags.objects.create(name=t.lower())
                     opportunity_obj.tags.add(tag)
+        if self.request.FILES.get('oppurtunity_attachment'):
+            attachment = Attachments()
+            attachment.created_by = self.request.user
+            attachment.file_name = self.request.FILES.get('oppurtunity_attachment').name
+            attachment.opportunity = opportunity_obj
+            attachment.attachment = self.request.FILES.get('oppurtunity_attachment')
+            attachment.save()
         if self.request.is_ajax():
             return JsonResponse({'error': False})
         if self.request.POST.get("savenewform"):
@@ -246,6 +255,13 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
                 else:
                     tag = Tags.objects.create(name=t.lower())
                 opportunity_obj.tags.add(tag)
+        if self.request.FILES.get('oppurtunity_attachment'):
+            attachment = Attachments()
+            attachment.created_by = self.request.user
+            attachment.file_name = self.request.FILES.get('oppurtunity_attachment').name
+            attachment.opportunity = opportunity_obj
+            attachment.attachment = self.request.FILES.get('oppurtunity_attachment')
+            attachment.save()
         if self.request.POST.get('from_account'):
             from_account = self.request.POST.get('from_account')
             return redirect("accounts:view_account", pk=from_account)
@@ -279,6 +295,7 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
             int(i) for i in self.request.POST.getlist('teams', []) if i]
         context["contacts_list"] = [
             int(i) for i in self.request.POST.getlist('contacts', []) if i]
+
         return context
 
 
