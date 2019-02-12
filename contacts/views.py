@@ -220,6 +220,8 @@ class UpdateContactView(LoginRequiredMixin, UpdateView):
 
             contact_obj.assigned_to.clear()
             contact_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+        else:
+            contact_obj.assigned_to.clear()
 
         if self.request.POST.getlist('teams', []):
             contact_obj.teams.add(*self.request.POST.getlist('teams'))

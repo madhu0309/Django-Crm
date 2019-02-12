@@ -228,6 +228,8 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
 
             opportunity_obj.assigned_to.clear()
             opportunity_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+        else:
+            opportunity_obj.assigned_to.clear()
 
         if self.request.POST.getlist('teams', []):
             opportunity_obj.teams.add(*self.request.POST.getlist('teams'))
