@@ -80,7 +80,7 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
 
     def post(self, request, *args, **kwargs):
         self.object = None
-        form = self.get_form(account=True)
+        form = self.get_form()
         if form.is_valid():
             return self.form_valid(form)
 
@@ -142,7 +142,7 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
             "comments": account_record.accounts_comments.all(),
             "attachments": account_record.account_attachment.all(),
             "opportunity_list": Opportunity.objects.filter(account=account_record),
-            "contacts": Contact.objects.filter(account=account_record),
+            "contacts": account_record.contacts.all(),
             "users": User.objects.filter(is_active=True).order_by('email'),
             "cases": Case.objects.filter(account=account_record),
             "stages": STAGES,

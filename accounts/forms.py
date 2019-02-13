@@ -7,7 +7,6 @@ class AccountForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         account_view = kwargs.pop('account', False)
-
         super(AccountForm, self).__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs = {"class": "form-control"}

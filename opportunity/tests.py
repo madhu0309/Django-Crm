@@ -2,7 +2,7 @@ from django.test import TestCase
 from opportunity.models import Opportunity
 from accounts.models import Account
 from contacts.models import Contact
-from common.models import User, Comment, Attachments
+from common.models import User, Comment, Attachments, Address
 from cases.models import Case
 
 
@@ -15,6 +15,10 @@ class OpportunityModel(object):
         self.user = User.objects.create(first_name="madhurima", username='madhurima', email="m@mp.com", role="ADMIN")
         self.user.set_password('madhu123')
         self.user.save()
+
+        self.address = Address.objects.create(
+            street="kphb", city="hyderabad", postcode="584",
+            country='IN')
 
         self.client.login(email='m@mp.com', password='madhu123')
 
@@ -31,10 +35,8 @@ class OpportunityModel(object):
             first_name="navi",
             last_name="s",
             email="navi@gmail.com", phone="8547",
-            account=self.account,
             description="defyj",
-            address_line="", street="kphb", city="hyderabad",
-            postcode="584", country='IN',
+            address=self.address,
             created_by=self.user)
 
         self.opportunity = Opportunity.objects.create(
