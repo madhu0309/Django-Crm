@@ -15,6 +15,7 @@ from contacts.models import Contact
 from opportunity.models import Opportunity, STAGES, SOURCES
 from cases.models import Case
 from django.urls import reverse
+from leads.models import Lead
 
 
 class AccountsListView(LoginRequiredMixin, TemplateView):
@@ -72,6 +73,10 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         self.users = User.objects.filter(is_active=True).order_by('email')
+        # if Contact.objects.count() == 0:
+        #     return JsonResponse({'message':'create Contact'})
+        # if Lead.objects.count() == 0:
+        #     return JsonResponse({'message':'create Lead'})
         return super(CreateAccountView, self).dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
@@ -102,6 +107,13 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
                 else:
                     tag = Tags.objects.create(name=t.lower())
                 account_object.tags.add(tag)
+        if self.request.FILES.get('account_attachment'):
+            attachment = Attachments()
+            attachment.created_by = self.request.user
+            attachment.file_name = self.request.FILES.get('account_attachment').name
+            attachment.account = account_object
+            attachment.attachment = self.request.FILES.get('account_attachment')
+            attachment.save()
         if self.request.POST.get("savenewform"):
             return redirect("accounts:new_account")
 
@@ -118,7 +130,6 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
         context["users"] = self.users
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
-
         return context
 
 
@@ -196,6 +207,13 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
                 else:
                     tag = Tags.objects.create(name=t.lower())
                 account_object.tags.add(tag)
+        if self.request.FILES.get('account_attachment'):
+            attachment = Attachments()
+            attachment.created_by = self.request.user
+            attachment.file_name = self.request.FILES.get('account_attachment').name
+            attachment.account = account_object
+            attachment.attachment = self.request.FILES.get('account_attachment')
+            attachment.save()
         return redirect("accounts:list")
 
     def form_invalid(self, form):
