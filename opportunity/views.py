@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.views.generic import CreateView, UpdateView, DetailView, ListView, TemplateView, View
 from accounts.models import Account, Tags
-from common.models import User, Comment, Team, Attachments
+from common.models import User, Comment, Attachments
 from common.utils import STAGES, SOURCES, CURRENCY_CODES
 from contacts.models import Contact
 from opportunity.forms import OpportunityForm, OpportunityCommentForm, OpportunityAttachmentForm
@@ -99,8 +99,6 @@ class CreateOpportunityView(LoginRequiredMixin, CreateView):
                 email = EmailMessage(mail_subject, message, to=[user.email])
                 email.content_subtype = "html"
                 email.send()
-        if self.request.POST.getlist('teams', []):
-            opportunity_obj.teams.add(*self.request.POST.getlist('teams'))
         if self.request.POST.getlist('contacts', []):
             opportunity_obj.contacts.add(*self.request.POST.getlist('contacts'))
         if self.request.POST.get('tags', ''):
@@ -138,7 +136,7 @@ class CreateOpportunityView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(CreateOpportunityView, self).get_context_data(**kwargs)
         context["opportunity_form"] = context["form"]
-        context["teams"] = Team.objects.all()
+
         context["accounts"] = self.accounts
         if self.request.GET.get('view_account'):
             context['account'] = get_object_or_404(
@@ -150,8 +148,7 @@ class CreateOpportunityView(LoginRequiredMixin, CreateView):
         context["sources"] = SOURCES
         context["assignedto_list"] = [
             int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
-        context["teams_list"] = [
-            int(i) for i in self.request.POST.getlist('teams', []) if i]
+
         context["contacts_list"] = [
             int(i) for i in self.request.POST.getlist('contacts', []) if i]
         return context
@@ -214,7 +211,7 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
         if self.request.POST.get('stage') in ['CLOSED WON', 'CLOSED LOST']:
             opportunity_obj.closed_by = self.request.user
         opportunity_obj.save()
-        opportunity_obj.teams.clear()
+
         opportunity_obj.contacts.clear()
         all_members_list = []
         if self.request.POST.getlist('assigned_to', []):
@@ -240,8 +237,6 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
         else:
             opportunity_obj.assigned_to.clear()
 
-        if self.request.POST.getlist('teams', []):
-            opportunity_obj.teams.add(*self.request.POST.getlist('teams'))
         if self.request.POST.getlist('contacts', []):
             opportunity_obj.contacts.add(*self.request.POST.getlist('contacts'))
         opportunity_obj.tags.clear()
@@ -279,7 +274,6 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
         context = super(UpdateOpportunityView, self).get_context_data(**kwargs)
         context["opportunity_obj"] = self.object
         context["opportunity_form"] = context["form"]
-        context["teams"] = Team.objects.all()
         context["accounts"] = self.accounts
         if self.request.GET.get('view_account'):
             context['account'] = get_object_or_404(
@@ -291,8 +285,6 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
         context["sources"] = SOURCES
         context["assignedto_list"] = [
             int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
-        context["teams_list"] = [
-            int(i) for i in self.request.POST.getlist('teams', []) if i]
         context["contacts_list"] = [
             int(i) for i in self.request.POST.getlist('contacts', []) if i]
 

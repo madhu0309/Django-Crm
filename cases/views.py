@@ -10,7 +10,7 @@ from django.views.generic import CreateView, UpdateView, DetailView, ListView, T
 
 from cases.models import Case
 from cases.forms import CaseForm, CaseCommentForm, CaseAttachmentForm
-from common.models import Team, User, Comment, Attachments
+from common.models import User, Comment, Attachments
 from accounts.models import Account
 from contacts.models import Contact
 from common.utils import PRIORITY_CHOICE, STATUS_CHOICE, CASE_TYPE
@@ -100,8 +100,7 @@ class CreateCaseView(LoginRequiredMixin, CreateView):
                 email = EmailMessage(mail_subject, message, to=[user.email])
                 email.content_subtype = "html"
                 email.send()
-        if self.request.POST.getlist('teams', []):
-            case.teams.add(*self.request.POST.getlist('teams'))
+
         if self.request.POST.getlist('contacts', []):
             case.contacts.add(*self.request.POST.getlist('contacts'))
         if self.request.FILES.get('case_attachment'):
@@ -128,7 +127,6 @@ class CreateCaseView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super(CreateCaseView, self).get_context_data(**kwargs)
-        context["teams"] = Team.objects.all()
         context["case_form"] = context["form"]
         context["accounts"] = self.accounts
         if self.request.GET.get('view_account'):
@@ -141,8 +139,6 @@ class CreateCaseView(LoginRequiredMixin, CreateView):
         context["case_status"] = STATUS_CHOICE
         context["assignedto_list"] = [
             int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
-        context["teams_list"] = [
-            int(i) for i in self.request.POST.getlist('teams', []) if i]
         context["contacts_list"] = [
             int(i) for i in self.request.POST.getlist('contacts', []) if i]
         return context
@@ -200,7 +196,6 @@ class UpdateCaseView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         assigned_to_ids = self.get_object().assigned_to.all().values_list('id', flat=True)
         case_obj = form.save(commit=False)
-        case_obj.teams.clear()
         case_obj.contacts.clear()
         case_obj.save()
         all_members_list = []
@@ -230,8 +225,6 @@ class UpdateCaseView(LoginRequiredMixin, UpdateView):
         else:
             case_obj.assigned_to.clear()
 
-        if self.request.POST.getlist('teams', []):
-            case_obj.teams.add(*self.request.POST.getlist('teams'))
         if self.request.POST.getlist('contacts', []):
             case_obj.contacts.add(*self.request.POST.getlist('contacts'))
 
@@ -258,7 +251,6 @@ class UpdateCaseView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super(UpdateCaseView, self).get_context_data(**kwargs)
         context["case_obj"] = self.object
-        context["teams"] = Team.objects.all()
         context["case_form"] = context["form"]
         context["accounts"] = self.accounts
         if self.request.GET.get('view_account'):
@@ -271,8 +263,6 @@ class UpdateCaseView(LoginRequiredMixin, UpdateView):
         context["case_status"] = STATUS_CHOICE
         context["assignedto_list"] = [
             int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
-        context["teams_list"] = [
-            int(i) for i in self.request.POST.getlist('teams', []) if i]
         context["contacts_list"] = [
             int(i) for i in self.request.POST.getlist('contacts', []) if i]
 
