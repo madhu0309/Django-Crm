@@ -102,6 +102,13 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
                 else:
                     tag = Tags.objects.create(name=t.lower())
                 account_object.tags.add(tag)
+        if self.request.FILES.get('account_attachment'):
+            attachment = Attachments()
+            attachment.created_by = self.request.user
+            attachment.file_name = self.request.FILES.get('account_attachment').name
+            attachment.account = account_object
+            attachment.attachment = self.request.FILES.get('account_attachment')
+            attachment.save()
         if self.request.POST.get("savenewform"):
             return redirect("accounts:new_account")
 
@@ -196,6 +203,13 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
                 else:
                     tag = Tags.objects.create(name=t.lower())
                 account_object.tags.add(tag)
+        if self.request.FILES.get('account_attachment'):
+            attachment = Attachments()
+            attachment.created_by = self.request.user
+            attachment.file_name = self.request.FILES.get('account_attachment').name
+            attachment.account = account_object
+            attachment.attachment = self.request.FILES.get('account_attachment')
+            attachment.save()
         return redirect("accounts:list")
 
     def form_invalid(self, form):

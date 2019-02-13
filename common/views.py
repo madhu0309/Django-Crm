@@ -190,7 +190,7 @@ class CreateUserView(AdminRequiredMixin, CreateView):
         response = super(CreateUserView, self).form_invalid(form)
         if self.request.is_ajax():
             return JsonResponse({'error': True, 'errors': form.errors})
-        return response
+
 
     def get_context_data(self, **kwargs):
         context = super(CreateUserView, self).get_context_data(**kwargs)

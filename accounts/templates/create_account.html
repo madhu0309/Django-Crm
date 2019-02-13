@@ -121,6 +121,21 @@
                   </div>
                 </div>
               </div>
+              <div class="filter_col col-md-12">
+                <div class="form-group">
+                  <label for="exampleInputEmail1">Attachment</label>
+                  <input type="file" name="account_attachment">
+                  {% if case_obj.account_attachment.count %}
+                    {% for i in case_obj.account_attachment.all %}
+                    <span id="attachment{{i.id}}">
+                      <a target="_blank" href="{{i.attachment.url}}">{{i.file_name}}</a>
+                      <a class="action btn primary_btn"  onclick="remove_attachment({{i.id}})">X</a>
+                    </span>
+                    {% endfor %}
+                  {% endif %}
+                  <span class="error"></span>
+                </div>
+              </div>
             </div>
             <div class="col-md-12">
               <div class="row marl buttons_row form_btn_row text-center">
@@ -197,6 +212,19 @@
   // Uncomment this line to see an input with no interface for adding new tags.
   //      $('input.tags').tagsInput({interactive:false});
   });
-  
+  function remove_attachment(x) {
+    const con = confirm("Do you want to Delete it for Sure!?");
+    if (con == true) {
+      $.post('{% url "cases:remove_attachment" %}', {
+        "attachment_id": x
+      }, function (data) {
+        if (data.error) {
+          alert(data.errors)
+        } else {
+          $("#attachment" + data.attachment_object).remove()
+        }
+      })
+    }
+  }
 </script>
 {% endblock js_block %}
