@@ -219,7 +219,7 @@ class UserDetailView(AdminRequiredMixin, DetailView):
             "opportunity_list": Opportunity.objects.filter(assigned_to=user_obj.id),
             "contacts": Contact.objects.filter(assigned_to=user_obj.id),
             "cases": Case.objects.filter(assigned_to=user_obj.id),
-            "accounts": Account.objects.filter(assigned_to=user_obj.id),
+            # "accounts": Account.objects.filter(assigned_to=user_obj.id),
             "assigned_data": json.dumps(users_data),
             "comments": user_obj.user_comments.all(),
         })
