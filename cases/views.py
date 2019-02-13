@@ -77,7 +77,7 @@ class CreateCaseView(LoginRequiredMixin, CreateView):
         form = self.get_form()
         if form.is_valid():
             return self.form_valid(form)
-        
+
         return self.form_invalid(form)
 
     def form_valid(self, form):
@@ -103,6 +103,13 @@ class CreateCaseView(LoginRequiredMixin, CreateView):
 
         if self.request.POST.getlist('contacts', []):
             case.contacts.add(*self.request.POST.getlist('contacts'))
+        if self.request.FILES.get('case_attachment'):
+            attachment = Attachments()
+            attachment.created_by = self.request.user
+            attachment.file_name = self.request.FILES.get('case_attachment').name
+            attachment.case = case
+            attachment.attachment = self.request.FILES.get('case_attachment')
+            attachment.save()
         if self.request.is_ajax():
             return JsonResponse({'error': False})
         if self.request.POST.get("savenewform"):
@@ -224,6 +231,13 @@ class UpdateCaseView(LoginRequiredMixin, UpdateView):
         if self.request.POST.get('from_account'):
             from_account = self.request.POST.get('from_account')
             return redirect("accounts:view_account", pk=from_account)
+        if self.request.FILES.get('case_attachment'):
+            attachment = Attachments()
+            attachment.created_by = self.request.user
+            attachment.file_name = self.request.FILES.get('case_attachment').name
+            attachment.case = case_obj
+            attachment.attachment = self.request.FILES.get('case_attachment')
+            attachment.save()
 
         if self.request.is_ajax():
             return JsonResponse({'error': False})
@@ -251,6 +265,8 @@ class UpdateCaseView(LoginRequiredMixin, UpdateView):
             int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
         context["contacts_list"] = [
             int(i) for i in self.request.POST.getlist('contacts', []) if i]
+
+        # import pdb; pdb.set_trace()
         return context
 
 
@@ -263,7 +279,7 @@ class RemoveCaseView(LoginRequiredMixin, View):
         if request.GET.get('view_account'):
             account = request.GET.get('view_account')
             return redirect("accounts:view_account", pk=account)
-        
+
         return redirect("cases:list")
 
     def post(self, request, *args, **kwargs):
@@ -324,9 +340,9 @@ class AddCommentView(LoginRequiredMixin, CreateView):
             form = self.get_form()
             if form.is_valid():
                 return self.form_valid(form)
-            
+
             return self.form_invalid(form)
-        
+
         data = {'error': "You don't have permission to comment."}
         return JsonResponse(data)
 
@@ -357,9 +373,9 @@ class UpdateCommentView(LoginRequiredMixin, View):
             form = CaseCommentForm(request.POST, instance=self.comment_obj)
             if form.is_valid():
                 return self.form_valid(form)
-            
+
             return self.form_invalid(form)
-        
+
         data = {'error': "You don't have permission to edit this comment."}
         return JsonResponse(data)
 
@@ -386,7 +402,7 @@ class DeleteCommentView(LoginRequiredMixin, View):
             self.object.delete()
             data = {"cid": request.POST.get("comment_id")}
             return JsonResponse(data)
-        
+
         data = {'error': "You don't have permission to delete this comment."}
         return JsonResponse(data)
 
@@ -407,9 +423,9 @@ class AddAttachmentView(LoginRequiredMixin, CreateView):
             form = self.get_form()
             if form.is_valid():
                 return self.form_valid(form)
-        
+
             return self.form_invalid(form)
-        
+
         data = {"error":True, "errors": "You don't have permission to add attachment for this case."}
         return JsonResponse(data)
 
@@ -448,6 +464,6 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
             self.object.delete()
             data = {"attachment_object": request.POST.get("attachment_id"), "error": False}
             return JsonResponse(data)
-        
+
         data = {"error":True, "errors": "You don't have permission to delete this attachment."}
         return JsonResponse(data)
