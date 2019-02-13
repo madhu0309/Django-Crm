@@ -17,12 +17,12 @@ body {
   
 }
 
-*{
+/**{
     font-size: 15px;
     @media(min-width:$large){
       font-size:17px;
     }
-  }
+  }*/
 .no_mar_top{
   margin-top:0 !important;
 }  
@@ -473,7 +473,7 @@ $color_2: #000;
   /* table_container_row starts here */
 
 }
-/* main_container ends here */
+/* main_container ends here */ 
  .table_container_row{
     margin-top: 10px;
     .card{
@@ -484,6 +484,9 @@ $color_2: #000;
         margin-bottom: 0;
         font-weight: 600;
         line-height: 2.3rem;
+        &.title_lh{
+          line-height: 2rem;
+        }
         .dropdown{
           display: inline-block;
           .dropdown-toggle{
