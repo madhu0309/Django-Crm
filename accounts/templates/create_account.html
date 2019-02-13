@@ -56,6 +56,13 @@
                   <span class="error">{{ account_form.email.errors }}</span>
                 </div>
               </div>
+              <div class="filter_col col-md-12">
+                <div class="form-group ">
+                  <label for="exampleInputEmail1" class="required">Leads{% if account_form.lead.field.required %}<span class="error">*</span>{% endif %}</label>
+                  {{ account_form.lead }}
+                  <span class="error">{{ account_form.lead.errors }}</span>
+                </div>
+              </div>
             </div>
             <div class="col-md-4">
               <div class="filter_col billing_block col-md-12" style="padding: 0px;">
@@ -98,6 +105,13 @@
                       <label for="exampleInputEmail1">Country {% if account_form.billing_country.field.required %}<span class="error">*</span>{% endif %}</label>
                       {{ account_form.billing_country }}
                       <span class="error">{{ account_form.billing_country.errors }}</span>
+                    </div>
+                  </div>
+                  <div class="filter_col col-md-12">
+                    <div class="form-group ">
+                      <label for="exampleInputEmail1" class="required">Contacts{% if account_form.contacts.field.required %}<span class="error">*</span>{% endif %}</label>
+                      {{ account_form.contacts }}
+                      <span class="error">{{ account_form.contacts.errors }}</span>
                     </div>
                   </div>
                 </div>

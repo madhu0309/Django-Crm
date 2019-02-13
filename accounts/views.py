@@ -15,6 +15,7 @@ from contacts.models import Contact
 from opportunity.models import Opportunity, STAGES, SOURCES
 from cases.models import Case
 from django.urls import reverse
+from leads.models import Lead
 
 
 class AccountsListView(LoginRequiredMixin, TemplateView):
@@ -72,6 +73,10 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         self.users = User.objects.filter(is_active=True).order_by('email')
+        if Contact.objects.count() == 0:
+            return JsonResponse({'message':'create Contact'})
+        if Lead.objects.count() == 0:
+            return JsonResponse({'message':'create Lead'})
         return super(CreateAccountView, self).dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
@@ -125,7 +130,6 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
         context["users"] = self.users
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
-
         return context
 
 

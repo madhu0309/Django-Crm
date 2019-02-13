@@ -46,7 +46,7 @@ class AccountForm(forms.ModelForm):
                   'description', 'status',
                   'billing_address_line', 'billing_street',
                   'billing_city', 'billing_state',
-                  'billing_postcode', 'billing_country')
+                  'billing_postcode', 'billing_country', 'lead', 'contacts')
 
 
 class AccountCommentForm(forms.ModelForm):
