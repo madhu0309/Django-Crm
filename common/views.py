@@ -8,15 +8,18 @@ from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http40
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import (
     CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
-from common.models import User, Document, Attachments, Comment
-from common.forms import UserForm, LoginForm, ChangePasswordForm, PasswordResetEmailForm, DocumentForm, UserCommentForm
+from common.models import User, Document, Attachments, Comment, APISettings
+from common.forms import (
+    UserForm, LoginForm, ChangePasswordForm, PasswordResetEmailForm, DocumentForm, UserCommentForm,
+    APISettingsForm
+)
 from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy
 from django.conf import settings
 from opportunity.models import Opportunity
 from cases.models import Case
 from contacts.models import Contact
-from accounts.models import Account
+from accounts.models import Account, Tags
 from leads.models import Lead
 from django.template.loader import render_to_string
 
@@ -474,3 +477,98 @@ def remove_comment(request):
             return JsonResponse(data)
         data = {'error': "You don't have permission to delete this comment."}
         return JsonResponse(data)
+
+
+def api_settings(request):
+    api_settings = APISettings.objects.all()
+    data = {'settings': api_settings}
+    return render(request, 'settings/list.html', data)
+
+
+def add_api_settings(request):
+    users = User.objects.filter(is_active=True).order_by('email')
+    form = APISettingsForm(assign_to=users)
+    assign_to_list = []
+    if request.POST:
+        print ("request.POST", request.POST)
+        form = APISettingsForm(request.POST, assign_to=users)
+        assign_to_list = [
+            int(i) for i in request.POST.getlist('lead_assigned_to', []) if i]
+        if form.is_valid():
+            settings_obj = form.save(commit=False)
+            settings_obj.created_by = request.user
+            settings_obj.save()
+            if request.POST.get('tags', ''):
+                tags = request.POST.get("tags")
+                splitted_tags = tags.split(",")
+                for t in splitted_tags:
+                    tag = Tags.objects.filter(name=t)
+                    if tag:
+                        tag = tag[0]
+                    else:
+                        tag = Tags.objects.create(name=t)
+                    settings_obj.tags.add(tag)
+            if assign_to_list:
+                settings_obj.lead_assigned_to.add(*assign_to_list)
+            if request.POST.get("savenewform"):
+                return redirect('common:add_api_settings')
+            return redirect("common:api_settings")
+        else:
+            print (form.errors)
+            data = {'form': form, "setting": api_settings, 'users': users, 'assign_to_list': assign_to_list}
+    else:
+        data = {'form': form, "setting": api_settings, 'users': users, 'assign_to_list': assign_to_list}
+    return render(request, 'settings/create.html', data)
+
+
+def view_api_settings(request, pk):
+    api_settings = APISettings.objects.filter(pk=pk).first()
+    data = {"setting": api_settings}
+    return render(request, 'settings/view.html', data)
+
+
+def update_api_settings(request, pk):
+    api_settings = APISettings.objects.filter(pk=pk).first()
+    users = User.objects.filter(is_active=True).order_by('email')
+    form = APISettingsForm(instance=api_settings, assign_to=users)
+    assign_to_list = []
+    if request.POST:
+        form = APISettingsForm(request.POST, instance=api_settings, assign_to=users)
+        assign_to_list = [
+            int(i) for i in request.POST.getlist('lead_assigned_to', []) if i]
+        if form.is_valid():
+            settings_obj = form.save(commit=False)
+            settings_obj.save()
+            if request.POST.get('tags', ''):
+                settings_obj.tags.clear()
+                tags = request.POST.get("tags")
+                splitted_tags = tags.split(",")
+                for t in splitted_tags:
+                    tag = Tags.objects.filter(name=t)
+                    if tag:
+                        tag = tag[0]
+                    else:
+                        tag = Tags.objects.create(name=t)
+                    settings_obj.tags.add(tag)
+            if assign_to_list:
+                settings_obj.lead_assigned_to.clear()
+                settings_obj.lead_assigned_to.add(*assign_to_list)
+            if request.POST.get("savenewform"):
+                return redirect('common:add_api_settings')
+            return redirect("common:api_settings")
+        else:
+            data = {'form': form, "setting": api_settings, 'users': users, 'assign_to_list': assign_to_list}
+    else:
+        data = {'form': form, "setting": api_settings, 'users': users, 'assign_to_list': assign_to_list}
+    return render(request, 'settings/update.html', data)
+
+
+def delete_api_settings(request, pk):
+    api_settings = APISettings.objects.filter(pk=pk).first()
+    if api_settings:
+        api_settings.delete()
+        data = {"error": False, "response": "Successfully Deleted!"}
+    else:
+        data = {"error": True, "response": "Object Not Found!"}
+    # return JsonResponse(data)
+    return redirect('common:api_settings')
