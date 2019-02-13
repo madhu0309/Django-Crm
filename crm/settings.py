@@ -168,6 +168,11 @@ COMPRESS_OFFLINE_CONTEXT = {
 }
 
 DEFAULT_FROM_EMAIL = 'no-reply@django-crm.micropyramid.com'
+
+# celery Tasks
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+
 MAIL_SENDER = 'AMAZON'
 INACTIVE_MAIL_SENDER = 'MANDRILL'
 
