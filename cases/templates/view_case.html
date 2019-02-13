@@ -1,6 +1,12 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
 {% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'cases:list' %}">Cases</a></li>
+    <li class="breadcrumb-item active">View</li>
+  </ol>
+</nav>
 <!-- CASE VIEW STARTS -->
 <div class="main_container" id="maincontainer">
   <div class="overview_form_block row marl justify-content-center">
