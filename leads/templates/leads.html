@@ -143,11 +143,11 @@
                           {% endif %}
                           {% endwith %}
                         </td>
-                        <td style="display: flex;">
+                        <td >
                           {% with tags=lead.tags.all %}
                           {% if tags %}
                           {% for tag in tags %}
-                          <span class="text-left color{{forloop.counter}}" id="list_tag">{{ tag.name }}</span><br>
+                          <span class="text-left color{{forloop.counter}}" id="list_tag">{{ tag.name }}</span>
                           {% endfor %}
                           {% else %}
                           No Tags
@@ -219,11 +219,11 @@
                           {% endif %}
                           {% endwith %}
                         </td>
-                        <td style="display: flex;">
+                        <td >
                           {% with tags=lead.tags.all %}
                           {% if tags %}
                           {% for tag in tags %}
-                          <span class="text-left color{{forloop.counter}}" id="list_tag">{{ tag.name }}</span><br>
+                          <span class="text-left color{{forloop.counter}}" id="list_tag">{{ tag.name }}</span>
                           {% endfor %}
                           {% else %}
                           No Tags
