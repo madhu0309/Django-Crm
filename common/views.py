@@ -192,6 +192,7 @@ class CreateUserView(AdminRequiredMixin, CreateView):
             return JsonResponse({'error': True, 'errors': form.errors})
         return response
 
+
     def get_context_data(self, **kwargs):
         context = super(CreateUserView, self).get_context_data(**kwargs)
         context["user_form"] = context["form"]
