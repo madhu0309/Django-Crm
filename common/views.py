@@ -21,6 +21,7 @@ from contacts.models import Contact
 from accounts.models import Account
 from leads.models import Lead
 from django.template.loader import render_to_string
+from django.core.paginator import Paginator
 
 
 def handler404(request, exception):
