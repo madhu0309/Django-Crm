@@ -226,3 +226,16 @@ class Document(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Google(models.Model):
+    user = models.ForeignKey(User, related_name='google', on_delete=models.CASCADE)
+    google_id = models.CharField(max_length=200, default='')
+    google_url = models.CharField(max_length=1000, default='')
+    verified_email = models.CharField(max_length=200, default='')
+    family_name = models.CharField(max_length=200, default='')
+    name = models.CharField(max_length=200, default='')
+    gender = models.CharField(max_length=10, default='')
+    dob = models.CharField(max_length=50, default='')
+    given_name = models.CharField(max_length=200, default='')
+    email = models.CharField(max_length=200, default='', db_index=True)
