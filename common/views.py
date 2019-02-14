@@ -150,7 +150,7 @@ class UsersListView(AdminRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(UsersListView, self).get_context_data(**kwargs)
-        context["users"] = self.get_queryset()
+        context["users"] = self.get_queryset().exclude(id=self.request.user.id)
         context["per_page"] = self.request.POST.get('per_page')
         context['admin_email'] = settings.ADMIN_EMAIL
         return context
@@ -193,6 +193,7 @@ class CreateUserView(AdminRequiredMixin, CreateView):
             return JsonResponse({'error': True, 'errors': form.errors})
         return response
 
+
     def get_context_data(self, **kwargs):
         context = super(CreateUserView, self).get_context_data(**kwargs)
         context["user_form"] = context["form"]
@@ -220,7 +221,7 @@ class UserDetailView(AdminRequiredMixin, DetailView):
             "opportunity_list": Opportunity.objects.filter(assigned_to=user_obj.id),
             "contacts": Contact.objects.filter(assigned_to=user_obj.id),
             "cases": Case.objects.filter(assigned_to=user_obj.id),
-            "accounts": Account.objects.filter(assigned_to=user_obj.id),
+            # "accounts": Account.objects.filter(assigned_to=user_obj.id),
             "assigned_data": json.dumps(users_data),
             "comments": user_obj.user_comments.all(),
         })
@@ -235,9 +236,10 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         user = form.save(commit=False)
         if self.request.is_ajax():
-            if self.request.user.id != self.object.id:
-                data = {'error_403': True, 'error': True}
-                return JsonResponse(data)
+            if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+                if self.request.user.id != self.object.id:
+                    data = {'error_403': True, 'error': True}
+                    return JsonResponse(data)
         if user.role == "USER":
             user.is_superuser = False
         user.save()
@@ -261,6 +263,9 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super(UpdateUserView, self).get_context_data(**kwargs)
         context["user_obj"] = self.object
+        user_profile_name = str(context["user_obj"].profile_pic).split("/")
+        user_profile_name = user_profile_name[-1]
+        context["user_profile_name"] = user_profile_name
         context["user_form"] = context["form"]
         if "errors" in kwargs:
             context["errors"] = kwargs["errors"]
