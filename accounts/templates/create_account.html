@@ -124,6 +124,17 @@
             <div class="col-md-4">
               <div class="filter_col col-12">
                 <div class="form-group">
+                  <label for="exampleInputEmail1">Assigned Users</label>
+                  <select class="assigned_users form-control" name="assigned_to" multiple="multiple">
+                  {% for user in users %}
+                  <option value="{{user.id}}" {% if user in account_obj.assigned_to.all or user.id in assignedto_list %} selected="" {% endif %}>{{user.email}}</option>
+                  {% endfor %}
+                  </select>
+                  {{ account_form.assigned_to.errors }}
+                </div>
+              </div>
+              <div class="filter_col col-12">
+                <div class="form-group">
                   <label for="id_sattus">Status{% if account_form.status.field.required %}<span class="error">*</span>{% endif %}</label>
                   {{ account_form.status }}
                   <span class="error">{{ account_form.status.errors }}</span>
