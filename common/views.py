@@ -330,7 +330,10 @@ class DocumentListView(LoginRequiredMixin, TemplateView):
     template_name = "doc_list.html"
 
     def get_queryset(self):
-        queryset = self.model.objects.all()
+        if self.request.user.role == 'ADMIN':
+            queryset = self.model.objects.all()
+        else:
+            queryset = self.model.objects.filter(status='active')
         request_post = self.request.POST
         if request_post:
             if request_post.get('doc_name'):
