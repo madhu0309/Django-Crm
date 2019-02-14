@@ -201,7 +201,6 @@ class CreateUserView(AdminRequiredMixin, CreateView):
             return JsonResponse({'error': True, 'errors': form.errors})
         return response
 
-
     def get_context_data(self, **kwargs):
         context = super(CreateUserView, self).get_context_data(**kwargs)
         context["user_form"] = context["form"]
@@ -493,6 +492,21 @@ def remove_comment(request):
         return JsonResponse(data)
 
 
+def change_passsword_by_admin(request):
+    if request.method == "POST":
+        user = get_object_or_404(User, id=request.POST.get("useer_id"))
+        user.set_password(request.POST.get("new_passwoord"))
+        user.save()
+        mail_subject = 'Crm Account Password Changed'
+        message = "<h3><b>hello</b> <i>" + user.username + "</i></h3><br><h2><p> <b>Your account password has been changed ! </b></p></h2>" + \
+            "<br> <p><b> New Password</b> : <b><i>" + \
+            request.POST.get("new_passwoord") + "</i><br></p>"
+        email = EmailMessage(mail_subject, message, to=[user.email])
+        email.content_subtype = "html"
+        email.send()
+        return HttpResponseRedirect('/users/list/')
+
+
 def google_login(request):
     if 'code' in request.GET:
         params = {
@@ -503,7 +517,8 @@ def google_login(request):
             'client_secret': settings.GP_CLIENT_SECRET
         }
 
-        info = requests.post("https://accounts.google.com/o/oauth2/token", data=params)
+        info = requests.post(
+            "https://accounts.google.com/o/oauth2/token", data=params)
         info = info.json()
         url = 'https://www.googleapis.com/oauth2/v1/userinfo'
         params = {'access_token': info['access_token']}
@@ -511,10 +526,13 @@ def google_login(request):
         response = requests.request('GET', url, **kw)
         user_document = response.json()
 
-        link = "https://plus.google.com/"+user_document['id']
-        dob = user_document['birthday'] if 'birthday' in user_document.keys() else ""
-        gender = user_document['gender'] if 'gender' in user_document.keys() else ""
-        link = user_document['link'] if 'link' in user_document.keys() else link
+        link = "https://plus.google.com/" + user_document['id']
+        dob = user_document['birthday'] if 'birthday' in user_document.keys(
+        ) else ""
+        gender = user_document['gender'] if 'gender' in user_document.keys(
+        ) else ""
+        link = user_document['link'] if 'link' in user_document.keys(
+        ) else link
         user = User.objects.filter(email=user_document['email'])
         if user:
             user = user[0]
@@ -527,7 +545,7 @@ def google_login(request):
                 first_name=user_document['given_name'],
                 last_name=user_document['family_name'],
                 role="User"
-                )
+            )
 
         google, created = Google.objects.get_or_create(user=user)
         google.user = user
@@ -556,6 +574,9 @@ def google_login(request):
             next_url = request.GET.get('next')
         else:
             next_url = '1235dfghjkf123'
-        rty = "https://accounts.google.com/o/oauth2/auth?client_id=" + settings.GP_CLIENT_ID + "&response_type=code"
-        rty += "&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email&redirect_uri=" + 'http://' + request.META['HTTP_HOST'] + reverse('common:google_login') + "&state="+next_url
+        rty = "https://accounts.google.com/o/oauth2/auth?client_id=" + \
+            settings.GP_CLIENT_ID + "&response_type=code"
+        rty += "&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email&redirect_uri=" + \
+            'http://' + request.META['HTTP_HOST'] + \
+            reverse('common:google_login') + "&state=" + next_url
         return HttpResponseRedirect(rty)
