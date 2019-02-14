@@ -91,6 +91,15 @@ class CreateContactView(LoginRequiredMixin, CreateView):
                 email = EmailMessage(mail_subject, message, to=[user.email])
                 email.content_subtype = "html"
                 email.send()
+
+        if self.request.FILES.get('contact_attachment'):
+            attachment = Attachments()
+            attachment.created_by = self.request.user
+            attachment.file_name = self.request.FILES.get('contact_attachment').name
+            attachment.contact = contact_obj
+            attachment.attachment = self.request.FILES.get('contact_attachment')
+            attachment.save()
+
         if self.request.is_ajax():
             return JsonResponse({'error': False})
         if self.request.POST.get("savenewform"):
@@ -204,6 +213,17 @@ class UpdateContactView(LoginRequiredMixin, UpdateView):
         else:
             contact_obj.assigned_to.clear()
 
+
+        if self.request.FILES.get('contact_attachment'):
+            attachment = Attachments()
+            attachment.created_by = self.request.user
+            attachment.file_name = self.request.FILES.get('contact_attachment').name
+            attachment.contact = contact_obj
+            attachment.attachment = self.request.FILES.get('contact_attachment')
+            attachment.save()
+        if self.request.POST.get('from_account'):
+            from_account = self.request.POST.get('from_account')
+            return redirect("accounts:view_account", pk=from_account)
         if self.request.is_ajax():
             return JsonResponse({'error': False})
         return redirect("contacts:list")
