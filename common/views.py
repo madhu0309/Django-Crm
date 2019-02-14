@@ -362,8 +362,14 @@ class DocumentListView(LoginRequiredMixin, TemplateView):
         if self.request.user.is_superuser or self.request.user.role == "ADMIN":
             queryset = queryset
         else:
-            queryset = queryset.filter(
-                Q(created_by=self.request.user)| Q(shared_to__id__in=[self.request.user.id]))
+            if self.request.user.documents():
+                doc_ids = self.request.user.documents().values_list('id', flat=True)
+                shared_ids = queryset.filter(
+                    Q(status='active') & Q(shared_to__id__in=[self.request.user.id])).values_list('id', flat=True)
+                queryset = queryset.filter(Q(id__in=doc_ids) | Q(id__in=shared_ids))
+            else:
+                queryset = queryset.filter(Q(status='active') & Q(shared_to__id__in=[self.request.user.id]))
+
 
         request_post = self.request.POST
         if request_post:

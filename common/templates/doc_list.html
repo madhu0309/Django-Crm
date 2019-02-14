@@ -93,7 +93,6 @@
                 {% paginate 10 documents %}
                 {% endif %}
                 {% for document in documents %}
-                  {% if document.is_active or request.user.is_superuser or request.user == document.created_by or request.user.role == "ADMIN" %}
                     <tr id="account_details{{each_account.id}}" class="text-center">
                       <td scope="row">{{ forloop.counter }}</td>
                       <td>{% if document.title %}<a href="{% url 'common:view_doc' document.id %}">{{ document.title }}</a>{% endif %}</td>
@@ -114,7 +113,6 @@
                         <a href="{% url 'common:remove_doc' document.id %}" class="btn btn-danger delete remove_document"><i class="fas fa-trash-alt"></i></a>
                       </td>
                     </tr>
-                  {% endif %}
                 {% endfor %}
               </tbody>
             </table>
