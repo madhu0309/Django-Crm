@@ -1,5 +1,7 @@
 import os
 import json
+import requests
+import datetime
 from django.contrib.auth import logout, authenticate, login
 from django.core.mail import EmailMessage
 from django.contrib.auth.hashers import check_password
@@ -8,10 +10,10 @@ from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http40
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import (
     CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
-from common.models import User, Document, Attachments, Comment
+from common.models import User, Document, Attachments, Comment, Google
 from common.forms import UserForm, LoginForm, ChangePasswordForm, PasswordResetEmailForm, DocumentForm, UserCommentForm
 from django.contrib.auth.views import PasswordResetView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.conf import settings
 from opportunity.models import Opportunity
 from cases.models import Case
@@ -84,6 +86,13 @@ class ProfileView(LoginRequiredMixin, TemplateView):
 
 class LoginView(TemplateView):
     template_name = "login.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(LoginView, self).get_context_data(**kwargs)
+        context["ENABLE_GOOGLE_LOGIN"] = settings.ENABLE_GOOGLE_LOGIN
+        context["GP_CLIENT_SECRET"] = settings.GP_CLIENT_SECRET
+        context["GP_CLIENT_ID"] = settings.GP_CLIENT_ID
+        return context
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -479,3 +488,71 @@ def remove_comment(request):
             return JsonResponse(data)
         data = {'error': "You don't have permission to delete this comment."}
         return JsonResponse(data)
+
+
+def google_login(request):
+    if 'code' in request.GET:
+        params = {
+            'grant_type': 'authorization_code',
+            'code': request.GET.get('code'),
+            'redirect_uri': 'http://' + request.META['HTTP_HOST'] + reverse('common:google_login'),
+            'client_id': settings.GP_CLIENT_ID,
+            'client_secret': settings.GP_CLIENT_SECRET
+        }
+
+        info = requests.post("https://accounts.google.com/o/oauth2/token", data=params)
+        info = info.json()
+        url = 'https://www.googleapis.com/oauth2/v1/userinfo'
+        params = {'access_token': info['access_token']}
+        kw = dict(params=params, headers={}, timeout=60)
+        response = requests.request('GET', url, **kw)
+        user_document = response.json()
+
+        link = "https://plus.google.com/"+user_document['id']
+        dob = user_document['birthday'] if 'birthday' in user_document.keys() else ""
+        gender = user_document['gender'] if 'gender' in user_document.keys() else ""
+        link = user_document['link'] if 'link' in user_document.keys() else link
+        user = User.objects.filter(email=user_document['email'])
+        if user:
+            user = user[0]
+            user.first_name = user_document['given_name']
+            user.last_name = user_document['family_name']
+        else:
+            user = User.objects.create(
+                username=user_document['email'],
+                email=user_document['email'],
+                first_name=user_document['given_name'],
+                last_name=user_document['family_name'],
+                role="User"
+                )
+
+        google, created = Google.objects.get_or_create(user=user)
+        google.user = user
+        google.google_url = link
+        google.verified_email = user_document['verified_email']
+        google.google_id = user_document['id']
+        google.family_name = user_document['family_name']
+        google.name = user_document['name']
+        google.given_name = user_document['given_name']
+        google.dob = dob
+        google.email = user_document['email']
+        google.gender = gender
+        google.save()
+
+        user.last_login = datetime.datetime.now()
+        user.save()
+
+        login(request, user)
+
+        if request.GET.get('state') != '1235dfghjkf123':
+            return HttpResponseRedirect(request.GET.get('state'))
+        else:
+            return HttpResponseRedirect(reverse("common:home"))
+    else:
+        if request.GET.get('next'):
+            next_url = request.GET.get('next')
+        else:
+            next_url = '1235dfghjkf123'
+        rty = "https://accounts.google.com/o/oauth2/auth?client_id=" + settings.GP_CLIENT_ID + "&response_type=code"
+        rty += "&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email&redirect_uri=" + 'http://' + request.META['HTTP_HOST'] + reverse('common:google_login') + "&state="+next_url
+        return HttpResponseRedirect(rty)
