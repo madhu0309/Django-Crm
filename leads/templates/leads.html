@@ -134,20 +134,18 @@
                         <td>{{ lead.get_status_display }}</td>
                         <td>
                           {% with lead_users=lead.assigned_to.all %}
-                          {% if lead_users %}
                           {% for user in lead_users %}
                           <span class="text-left">{{ user.email }}</span><br>
-                          {% endfor %}
-                          {% else %}
+                          {% empty %}
                           Not Assigned to Any
-                          {% endif %}
+                          {% endfor %}
                           {% endwith %}
                         </td>
-                        <td style="display: flex;">
+                        <td >
                           {% with tags=lead.tags.all %}
                           {% if tags %}
                           {% for tag in tags %}
-                          <span class="text-left color{{forloop.counter}}" id="list_tag">{{ tag.name }}</span><br>
+                          <span class="text-left color{{forloop.counter}}" id="list_tag">{{ tag.name }}</span>
                           {% endfor %}
                           {% else %}
                           No Tags
@@ -210,20 +208,18 @@
                         <td>{{ lead.get_status_display }}</td>
                         <td>
                           {% with lead_users=lead.assigned_to.all %}
-                          {% if lead_users %}
                           {% for user in lead_users %}
                           <span class="text-left">{{ user.email }}</span><br>
-                          {% endfor %}
-                          {% else %}
+                          {% empty %}
                           Not Assigned to Any
-                          {% endif %}
+                          {% endfor %}
                           {% endwith %}
                         </td>
-                        <td style="display: flex;">
+                        <td >
                           {% with tags=lead.tags.all %}
                           {% if tags %}
                           {% for tag in tags %}
-                          <span class="text-left color{{forloop.counter}}" id="list_tag">{{ tag.name }}</span><br>
+                          <span class="text-left color{{forloop.counter}}" id="list_tag">{{ tag.name }}</span>
                           {% endfor %}
                           {% else %}
                           No Tags

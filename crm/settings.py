@@ -194,3 +194,8 @@ try:
     from .dev_settings import *
 except ImportError:
     pass
+
+
+GP_CLIENT_ID = os.getenv('GP_CLIENT_ID', False)
+GP_CLIENT_SECRET = os.getenv('GP_CLIENT_SECRET', False)
+ENABLE_GOOGLE_LOGIN = os.getenv('ENABLE_GOOGLE_LOGIN', False)

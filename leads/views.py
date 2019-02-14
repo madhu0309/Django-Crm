@@ -132,6 +132,14 @@ class CreateLeadView(LoginRequiredMixin, CreateView):
                 email.content_subtype = "html"
                 email.send()
 
+        if self.request.FILES.get('lead_attachment'):
+            attachment = Attachments()
+            attachment.created_by = self.request.user
+            attachment.file_name = self.request.FILES.get('lead_attachment').name
+            attachment.lead = lead_obj
+            attachment.attachment = self.request.FILES.get('lead_attachment')
+            attachment.save()
+
         if self.request.POST.get('status') == "converted":
             account_object = Account.objects.create(
                 created_by=self.request.user, name=lead_obj.account_name,
@@ -307,6 +315,15 @@ class UpdateLeadView(LoginRequiredMixin, UpdateView):
             lead_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
         else:
             lead_obj.assigned_to.clear()
+
+
+        if self.request.FILES.get('lead_attachment'):
+            attachment = Attachments()
+            attachment.created_by = self.request.user
+            attachment.file_name = self.request.FILES.get('lead_attachment').name
+            attachment.lead = lead_obj
+            attachment.attachment = self.request.FILES.get('lead_attachment')
+            attachment.save()
 
         if self.request.POST.get('status') == "converted":
             account_object = Account.objects.create(
