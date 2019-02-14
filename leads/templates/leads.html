@@ -134,13 +134,11 @@
                         <td>{{ lead.get_status_display }}</td>
                         <td>
                           {% with lead_users=lead.assigned_to.all %}
-                          {% if lead_users %}
                           {% for user in lead_users %}
                           <span class="text-left">{{ user.email }}</span><br>
-                          {% endfor %}
-                          {% else %}
+                          {% empty %}
                           Not Assigned to Any
-                          {% endif %}
+                          {% endfor %}
                           {% endwith %}
                         </td>
                         <td >
@@ -210,13 +208,11 @@
                         <td>{{ lead.get_status_display }}</td>
                         <td>
                           {% with lead_users=lead.assigned_to.all %}
-                          {% if lead_users %}
                           {% for user in lead_users %}
                           <span class="text-left">{{ user.email }}</span><br>
-                          {% endfor %}
-                          {% else %}
+                          {% empty %}
                           Not Assigned to Any
-                          {% endif %}
+                          {% endfor %}
                           {% endwith %}
                         </td>
                         <td >

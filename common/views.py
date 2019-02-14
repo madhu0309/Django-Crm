@@ -478,3 +478,18 @@ def remove_comment(request):
             return JsonResponse(data)
         data = {'error': "You don't have permission to delete this comment."}
         return JsonResponse(data)
+
+
+def change_passsword_by_admin(request):
+    if request.method == "POST":
+        user = get_object_or_404(User, id=request.POST.get("useer_id"))
+        user.set_password(request.POST.get("new_passwoord"))
+        user.save()
+        mail_subject = 'Crm Account Password Changed'
+        message = "<h3><b>hello</b> <i>" + user.username + "</i></h3><br><h2><p> <b>Your account password has been changed ! </b></p></h2>" + \
+            "<br> <p><b> New Password</b> : <b><i>" + \
+            request.POST.get("new_passwoord") + "</i><br></p>"
+        email = EmailMessage(mail_subject, message, to=[user.email])
+        email.content_subtype = "html"
+        email.send()
+        return HttpResponseRedirect('/users/list/')
