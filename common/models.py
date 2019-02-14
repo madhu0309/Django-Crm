@@ -199,7 +199,9 @@ class Document(models.Model):
     document_file = models.FileField(upload_to=document_path, max_length=5000)
     created_by = models.ForeignKey(User, related_name='document_uploaded', on_delete=models.SET_NULL, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(choices=DOCUMENT_STATUS_CHOICE, max_length=64, default='active')
+    status = models.CharField(
+        choices=DOCUMENT_STATUS_CHOICE, max_length=64, default='active')
+    shared_to = models.ManyToManyField(User, related_name='document_shared_to')
 
     def file_type(self):
         name_ext_list = self.document_file.url.split(".")

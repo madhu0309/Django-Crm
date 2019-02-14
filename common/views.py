@@ -3,6 +3,7 @@ import json
 import requests
 import datetime
 from django.contrib.auth import logout, authenticate, login
+from django.db.models import Q
 from django.core.mail import EmailMessage
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
@@ -114,22 +115,34 @@ class LoginView(TemplateView):
                         return HttpResponseRedirect('/')
                     else:
                         return render(request, "login.html", {
+                            "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
+                            "GP_CLIENT_SECRET" : settings.GP_CLIENT_SECRET,
+                            "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                             "error": True,
                             "message": "Your username and password didn't match. Please try again."
                         })
                 else:
                     return render(request, "login.html", {
+                        "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
+                        "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
+                        "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                         "error": True,
                         "message": "Your Account is inactive. Please Contact Administrator"
                     })
             else:
                 return render(request, "login.html", {
+                    "ENABLE_GOOGLE_LOGIN" : settings.ENABLE_GOOGLE_LOGIN,
+                    "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
+                    "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                     "error": True,
                     "message": "Your Account is not Found. Please Contact Administrator"
                 })
 
         else:
             return render(request, "login.html", {
+                "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
+                "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
+                "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                 "error": True,
                 "message": "Your username and password didn't match. Please try again."
             })
@@ -299,10 +312,23 @@ class DocumentCreateView(LoginRequiredMixin, CreateView):
     form_class = DocumentForm
     template_name = "doc_create.html"
 
+
+    def dispatch(self, request, *args, **kwargs):
+        self.users = User.objects.filter(is_active=True).order_by('email')
+        return super(DocumentCreateView, self).dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super(DocumentCreateView, self).get_form_kwargs()
+        kwargs.update({'users': self.users})
+        return kwargs
+
     def form_valid(self, form):
         doc = form.save(commit=False)
         doc.created_by = self.request.user
         doc.save()
+        if self.request.POST.getlist('shared_to'):
+            doc.shared_to.add(*self.request.POST.getlist('shared_to'))
+
         if self.request.is_ajax():
             data = {'success_url': reverse_lazy(
                 'common:doc_list'), 'error': False}
@@ -318,6 +344,9 @@ class DocumentCreateView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(DocumentCreateView, self).get_context_data(**kwargs)
         context["doc_form"] = context["form"]
+        context["users"] = self.users
+        context["sharedto_list"] = [
+            int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
         if "errors" in kwargs:
             context["errors"] = kwargs["errors"]
         return context
@@ -329,10 +358,13 @@ class DocumentListView(LoginRequiredMixin, TemplateView):
     template_name = "doc_list.html"
 
     def get_queryset(self):
-        if self.request.user.role == 'ADMIN':
-            queryset = self.model.objects.all()
+        queryset = self.model.objects.all()
+        if self.request.user.is_superuser or self.request.user.role == "ADMIN":
+            queryset = queryset
         else:
-            queryset = self.model.objects.filter(status='active')
+            queryset = queryset.filter(
+                Q(created_by=self.request.user)| Q(shared_to__id__in=[self.request.user.id]), status="active")
+
         request_post = self.request.POST
         if request_post:
             if request_post.get('doc_name'):
@@ -340,12 +372,18 @@ class DocumentListView(LoginRequiredMixin, TemplateView):
                     title__icontains=request_post.get('doc_name'))
             if request_post.get('status'):
                 queryset = queryset.filter(status=request_post.get('status'))
+
+            if request_post.getlist('shared_to'):
+                queryset = queryset.filter(shared_to__id__in=request_post.getlist('shared_to'))
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super(DocumentListView, self).get_context_data(**kwargs)
+        context["users"] =  User.objects.filter(is_active=True).order_by('email')
         context["documents"] = self.get_queryset()
         context["status_choices"] = Document.DOCUMENT_STATUS_CHOICE
+        context["sharedto_list"] = [
+            int(i) for i in self.request.POST.getlist('shared_to', []) if i]
         context["per_page"] = self.request.POST.get('per_page')
         return context
 
@@ -368,9 +406,23 @@ class UpdateDocumentView(LoginRequiredMixin, UpdateView):
     form_class = DocumentForm
     template_name = "doc_create.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        self.users = User.objects.filter(is_active=True).order_by('email')
+        return super(UpdateDocumentView, self).dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super(UpdateDocumentView, self).get_form_kwargs()
+        kwargs.update({'users': self.users})
+        return kwargs
+
     def form_valid(self, form):
         doc = form.save(commit=False)
         doc.save()
+         
+        doc.shared_to.clear()
+        if self.request.POST.getlist('shared_to'):
+            doc.shared_to.add(*self.request.POST.getlist('shared_to'))
+
         if self.request.is_ajax():
             data = {'success_url': reverse_lazy(
                 'common:doc_list'), 'error': False}
@@ -387,6 +439,9 @@ class UpdateDocumentView(LoginRequiredMixin, UpdateView):
         context = super(UpdateDocumentView, self).get_context_data(**kwargs)
         context["doc_obj"] = self.object
         context["doc_form"] = context["form"]
+        context["users"] = self.users
+        context["sharedto_list"] = [
+            int(i) for i in self.request.POST.getlist('shared_to', []) if i]
         if "errors" in kwargs:
             context["errors"] = kwargs["errors"]
         return context
