@@ -115,22 +115,34 @@ class LoginView(TemplateView):
                         return HttpResponseRedirect('/')
                     else:
                         return render(request, "login.html", {
+                            "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
+                            "GP_CLIENT_SECRET" : settings.GP_CLIENT_SECRET,
+                            "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                             "error": True,
                             "message": "Your username and password didn't match. Please try again."
                         })
                 else:
                     return render(request, "login.html", {
+                        "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
+                        "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
+                        "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                         "error": True,
                         "message": "Your Account is inactive. Please Contact Administrator"
                     })
             else:
                 return render(request, "login.html", {
+                    "ENABLE_GOOGLE_LOGIN" : settings.ENABLE_GOOGLE_LOGIN,
+                    "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
+                    "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                     "error": True,
                     "message": "Your Account is not Found. Please Contact Administrator"
                 })
 
         else:
             return render(request, "login.html", {
+                "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
+                "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
+                "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                 "error": True,
                 "message": "Your username and password didn't match. Please try again."
             })
