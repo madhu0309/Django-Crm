@@ -235,7 +235,6 @@ class Google(models.Model):
     verified_email = models.CharField(max_length=200, default='')
     family_name = models.CharField(max_length=200, default='')
     name = models.CharField(max_length=200, default='')
-    picture = models.CharField(max_length=200, default='')
     gender = models.CharField(max_length=10, default='')
     dob = models.CharField(max_length=50, default='')
     given_name = models.CharField(max_length=200, default='')

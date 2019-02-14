@@ -1,5 +1,7 @@
 import os
 import json
+import requests
+import datetime
 from django.contrib.auth import logout, authenticate, login
 from django.core.mail import EmailMessage
 from django.contrib.auth.hashers import check_password
@@ -8,10 +10,10 @@ from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http40
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import (
     CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
-from common.models import User, Document, Attachments, Comment
+from common.models import User, Document, Attachments, Comment, Google
 from common.forms import UserForm, LoginForm, ChangePasswordForm, PasswordResetEmailForm, DocumentForm, UserCommentForm
 from django.contrib.auth.views import PasswordResetView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.conf import settings
 from opportunity.models import Opportunity
 from cases.models import Case
@@ -84,6 +86,13 @@ class ProfileView(LoginRequiredMixin, TemplateView):
 
 class LoginView(TemplateView):
     template_name = "login.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(LoginView, self).get_context_data(**kwargs)
+        context["ENABLE_GOOGLE_LOGIN"] = settings.ENABLE_GOOGLE_LOGIN
+        context["GP_CLIENT_SECRET"] = settings.GP_CLIENT_SECRET
+        context["GP_CLIENT_ID"] = settings.GP_CLIENT_ID
+        return context
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -481,22 +490,6 @@ def remove_comment(request):
         return JsonResponse(data)
 
 
-
-import requests
-from django.urls import reverse
-from django.conf import settings
-from django.http.response import HttpResponseRedirect
-import random
-import datetime
-import string
-import json
-from common.models import Google
-
-
-def rand_string(size=6, chars=string.ascii_letters + string.digits):
-    return ''.join(random.choice(chars) for x in range(size))
-
-
 def google_login(request):
     if 'code' in request.GET:
         params = {
@@ -516,7 +509,6 @@ def google_login(request):
         user_document = response.json()
 
         link = "https://plus.google.com/"+user_document['id']
-        picture = user_document['picture'] if 'picture' in user_document.keys() else ""
         dob = user_document['birthday'] if 'birthday' in user_document.keys() else ""
         gender = user_document['gender'] if 'gender' in user_document.keys() else ""
         link = user_document['link'] if 'link' in user_document.keys() else link
@@ -533,8 +525,7 @@ def google_login(request):
                 last_name=user_document['family_name'],
                 role="User"
                 )
-            rand_password = rand_string()
-            user.set_password(rand_password)
+
         google, created = Google.objects.get_or_create(user=user)
         google.user = user
         google.google_url = link
@@ -546,11 +537,9 @@ def google_login(request):
         google.dob = dob
         google.email = user_document['email']
         google.gender = gender
-        google.picture = picture
         google.save()
 
         user.last_login = datetime.datetime.now()
-        user.social_login = True
         user.save()
 
         login(request, user)
