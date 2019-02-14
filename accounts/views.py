@@ -73,10 +73,6 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         self.users = User.objects.filter(is_active=True).order_by('email')
-        # if Contact.objects.count() == 0:
-        #     return render(request, 'error_template.html')
-        # if Lead.objects.count() == 0:
-        #     return render(request, 'error_template.html')
         return super(CreateAccountView, self).dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
