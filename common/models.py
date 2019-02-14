@@ -199,7 +199,9 @@ class Document(models.Model):
     document_file = models.FileField(upload_to=document_path, max_length=5000)
     created_by = models.ForeignKey(User, related_name='document_uploaded', on_delete=models.SET_NULL, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(choices=DOCUMENT_STATUS_CHOICE, max_length=64, default='active')
+    status = models.CharField(
+        choices=DOCUMENT_STATUS_CHOICE, max_length=64, default='active')
+    shared_to = models.ManyToManyField(User, related_name='document_shared_to')
 
     def file_type(self):
         name_ext_list = self.document_file.url.split(".")
@@ -226,3 +228,16 @@ class Document(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Google(models.Model):
+    user = models.ForeignKey(User, related_name='google', on_delete=models.CASCADE)
+    google_id = models.CharField(max_length=200, default='')
+    google_url = models.CharField(max_length=1000, default='')
+    verified_email = models.CharField(max_length=200, default='')
+    family_name = models.CharField(max_length=200, default='')
+    name = models.CharField(max_length=200, default='')
+    gender = models.CharField(max_length=10, default='')
+    dob = models.CharField(max_length=50, default='')
+    given_name = models.CharField(max_length=200, default='')
+    email = models.CharField(max_length=200, default='', db_index=True)

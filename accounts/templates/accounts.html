@@ -112,7 +112,7 @@
                             {% with tags=each_account.tags.all %}
                             {% if tags %}
                             {% for tag in tags %}
-                            <span class="text-left" id="list_tag">{{ tag.name }}</span>
+                            <span class="text-left color{{forloop.counter}}" id="list_tag">{{ tag.name }}</span>
                             {% endfor %}
                             {% else %}
                             No Tags
@@ -177,7 +177,7 @@
                             {% with tags=each_account.tags.all %}
                             {% if tags %}
                             {% for tag in tags %}
-                            <span class="text-left" id="list_tag">{{ tag.name }}</span>
+                            <span class="text-left color{{forloop.counter}}" id="list_tag">{{ tag.name }}</span>
                             {% endfor %}
                             {% else %}
                             No Tags
