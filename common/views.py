@@ -363,7 +363,7 @@ class DocumentListView(LoginRequiredMixin, TemplateView):
             queryset = queryset
         else:
             queryset = queryset.filter(
-                Q(created_by=self.request.user)| Q(shared_to__id__in=[self.request.user.id]), status="active")
+                Q(created_by=self.request.user)| Q(shared_to__id__in=[self.request.user.id]))
 
         request_post = self.request.POST
         if request_post:
