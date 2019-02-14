@@ -172,6 +172,7 @@ class PasswordResetEmailForm(PasswordResetForm):
 class DocumentForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
+        users = kwargs.pop('users', [])
         super(DocumentForm, self).__init__(*args, **kwargs)
 
         for field in self.fields.values():
@@ -181,10 +182,12 @@ class DocumentForm(forms.ModelForm):
             (each[0], each[1]) for each in Document.DOCUMENT_STATUS_CHOICE]
         self.fields['status'].required = False
         self.fields['title'].required = True
+        self.fields['shared_to'].queryset = users
+        self.fields['shared_to'].required = False
 
     class Meta:
         model = Document
-        fields = ['title', 'document_file', 'status']
+        fields = ['title', 'document_file', 'status', 'shared_to']
 
 
 class UserCommentForm(forms.ModelForm):
