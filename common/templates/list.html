@@ -68,13 +68,18 @@
                   <td><a href="{% url 'common:view_user' user.id %}">{{ user.username }}</a></td>
                   <td>{{ user.email }}</td>
                   <td class="user_role">{% if user.is_superuser %} Admin {% else %} {{user.role}} {% endif %}</td>
-                  <td><a {% if user.is_active %} onclick="return confirm('Are you sure you want to deactivate this user?')" {% else %} onclick="return confirm('Are you sure you want to activate this user?')" {% endif %} href="{% url 'common:change_user_status' pk=user.id %}" class="on_off" style="color: #454545; text-decoration: none;">
+                  <td>
+                  {% ifnotequal request.user user  %}
+                  <a {% if user.is_active %} onclick="return confirm('Are you sure you want to deactivate this user?')" {% else %} onclick="return confirm('Are you sure you want to activate this user?')" {% endif %} href="{% url 'common:change_user_status' pk=user.id %}" class="on_off" style="color: #454545; text-decoration: none;">
                     {% if user.is_active == True %}
                     <i class="fa fa-toggle-on"></i> Active
                     {% else %}
                     <i class="fa fa-toggle-off"></i> InActive
                     {% endif %}
                     </a>
+                    {% else %}
+                    Active
+                  {% endifnotequal %}
                   </td>
                   <td class="actions">
                     <!-- <a href="{% url 'common:view_user' user.id %}" class="btn btn-info view"><i class="fas fa-eye"></i>View</a> -->
