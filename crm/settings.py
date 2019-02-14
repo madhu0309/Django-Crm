@@ -149,7 +149,8 @@ COMPRESS_ROOT = BASE_DIR + '/static/'
 COMPRESS_URL = STATIC_URL
 COMPRESS_ENABLED = True
 
-COMPRESS_CSS_FILTERS = ['compressor.filters.css_default.CssAbsoluteFilter', 'compressor.filters.cssmin.CSSMinFilter']
+COMPRESS_CSS_FILTERS = [
+    'compressor.filters.css_default.CssAbsoluteFilter', 'compressor.filters.cssmin.CSSMinFilter']
 COMPRESS_REBUILD_TIMEOUT = 5400
 
 COMPRESS_OUTPUT_DIR = 'CACHE'
@@ -167,6 +168,11 @@ COMPRESS_OFFLINE_CONTEXT = {
 }
 
 DEFAULT_FROM_EMAIL = 'no-reply@django-crm.micropyramid.com'
+
+# celery Tasks
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+
 MAIL_SENDER = 'AMAZON'
 INACTIVE_MAIL_SENDER = 'MANDRILL'
 

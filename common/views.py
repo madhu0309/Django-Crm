@@ -9,7 +9,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import (
     CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
 from common.models import User, Document, Attachments, Comment
-from common.forms import UserForm, LoginForm, ChangePasswordForm, PasswordResetEmailForm,DocumentForm, UserCommentForm
+from common.forms import UserForm, LoginForm, ChangePasswordForm, PasswordResetEmailForm, DocumentForm, UserCommentForm
 from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy
 from django.conf import settings
@@ -93,11 +93,13 @@ class LoginView(TemplateView):
     def post(self, request, *args, **kwargs):
         form = LoginForm(request.POST, request=request)
         if form.is_valid():
+
             user = User.objects.filter(email=request.POST.get('email')).first()
             # user = authenticate(username=request.POST.get('email'), password=request.POST.get('password'))
             if user is not None:
                 if user.is_active:
                     user = authenticate(username=request.POST.get('email'), password=request.POST.get('password'))
+
                     if user is not None:
                         login(request, user)
                         return HttpResponseRedirect('/')
@@ -179,7 +181,8 @@ class CreateUserView(AdminRequiredMixin, CreateView):
         email.send()
 
         if self.request.is_ajax():
-            data = {'success_url': reverse_lazy('common:users_list'), 'error': False}
+            data = {'success_url': reverse_lazy(
+                'common:users_list'), 'error': False}
             return JsonResponse(data)
         return super(CreateUserView, self).form_valid(form)
 
@@ -209,14 +212,14 @@ class UserDetailView(AdminRequiredMixin, DetailView):
         for each in User.objects.all():
             assigned_dict = {}
             assigned_dict['id'] = each.id
-            assigned_dict['name'] =  each.username
+            assigned_dict['name'] = each.username
             users_data.append(assigned_dict)
         context.update({
             "user_obj": user_obj,
             "opportunity_list": Opportunity.objects.filter(assigned_to=user_obj.id),
             "contacts": Contact.objects.filter(assigned_to=user_obj.id),
             "cases": Case.objects.filter(assigned_to=user_obj.id),
-            "accounts": Account.objects.filter(assigned_to=user_obj.id),
+            # "accounts": Account.objects.filter(assigned_to=user_obj.id),
             "assigned_data": json.dumps(users_data),
             "comments": user_obj.user_comments.all(),
         })
@@ -230,15 +233,21 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         user = form.save(commit=False)
+        if self.request.is_ajax():
+            if self.request.user.id != self.object.id:
+                data = {'error_403': True, 'error': True}
+                return JsonResponse(data)
         if user.role == "USER":
             user.is_superuser = False
         user.save()
         if self.request.user.role == "ADMIN" or self.request.user.is_superuser:
             if self.request.is_ajax():
-                data = {'success_url': reverse_lazy('common:users_list'), 'error': False}
+                data = {'success_url': reverse_lazy(
+                    'common:users_list'), 'error': False}
                 return JsonResponse(data)
         if self.request.is_ajax():
-            data = {'success_url': reverse_lazy('common:profile'), 'error': False}
+            data = {'success_url': reverse_lazy(
+                'common:profile'), 'error': False}
             return JsonResponse(data)
         return super(UpdateUserView, self).form_valid(form)
 
@@ -282,7 +291,8 @@ class DocumentCreateView(LoginRequiredMixin, CreateView):
         doc.created_by = self.request.user
         doc.save()
         if self.request.is_ajax():
-            data = {'success_url': reverse_lazy('common:doc_list'), 'error': False}
+            data = {'success_url': reverse_lazy(
+                'common:doc_list'), 'error': False}
             return JsonResponse(data)
         return super(DocumentCreateView, self).form_valid(form)
 
@@ -310,7 +320,8 @@ class DocumentListView(LoginRequiredMixin, TemplateView):
         request_post = self.request.POST
         if request_post:
             if request_post.get('doc_name'):
-                queryset = queryset.filter(title__icontains=request_post.get('doc_name'))
+                queryset = queryset.filter(
+                    title__icontains=request_post.get('doc_name'))
             if request_post.get('status'):
                 queryset = queryset.filter(status=request_post.get('status'))
         return queryset
@@ -345,7 +356,8 @@ class UpdateDocumentView(LoginRequiredMixin, UpdateView):
         doc = form.save(commit=False)
         doc.save()
         if self.request.is_ajax():
-            data = {'success_url': reverse_lazy('common:doc_list'), 'error': False}
+            data = {'success_url': reverse_lazy(
+                'common:doc_list'), 'error': False}
             return JsonResponse(data)
         return super(UpdateDocumentView, self).form_valid(form)
 
@@ -384,8 +396,10 @@ def download_document(request, pk):
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
-            response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
-            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            response = HttpResponse(
+                fh.read(), content_type="application/vnd.ms-excel")
+            response['Content-Disposition'] = 'inline; filename=' + \
+                os.path.basename(file_path)
             return response
     raise Http404
 
@@ -396,8 +410,10 @@ def download_attachment(request, pk):
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
-            response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
-            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            response = HttpResponse(
+                fh.read(), content_type="application/vnd.ms-excel")
+            response['Content-Disposition'] = 'inline; filename=' + \
+                os.path.basename(file_path)
             return response
     raise Http404
 
@@ -450,7 +466,8 @@ def edit_comment(request, pk):
 
 def remove_comment(request):
     if request.method == "POST":
-        comment_obj = get_object_or_404(Comment, id=request.POST.get('comment_id'))
+        comment_obj = get_object_or_404(
+            Comment, id=request.POST.get('comment_id'))
         if request.user == comment_obj.commented_by:
             comment_obj.delete()
             data = {"cid": request.POST.get("comment_id")}
