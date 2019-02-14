@@ -81,6 +81,7 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
 
     def get_form_kwargs(self):
         kwargs = super(CreateAccountView, self).get_form_kwargs()
+        kwargs.update({"account": True})
         return kwargs
 
     def post(self, request, *args, **kwargs):
@@ -179,6 +180,7 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_form_kwargs(self):
         kwargs = super(AccountUpdateView, self).get_form_kwargs()
+        kwargs.update({"account": True})
         return kwargs
 
     def post(self, request, *args, **kwargs):
