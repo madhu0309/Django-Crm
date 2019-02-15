@@ -36,6 +36,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.username
 
+    def documents(self):
+        return self.document_uploaded.all()
+
+
     def get_full_name(self):
         full_name = None
         if self.first_name or self.last_name:
