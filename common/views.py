@@ -22,6 +22,7 @@ from contacts.models import Contact
 from accounts.models import Account
 from leads.models import Lead
 from django.template.loader import render_to_string
+from django.core.exceptions import PermissionDenied
 
 
 def handler404(request, exception):
@@ -116,7 +117,7 @@ class LoginView(TemplateView):
                     else:
                         return render(request, "login.html", {
                             "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
-                            "GP_CLIENT_SECRET" : settings.GP_CLIENT_SECRET,
+                            "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
                             "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                             "error": True,
                             "message": "Your username and password didn't match. Please try again."
@@ -131,7 +132,7 @@ class LoginView(TemplateView):
                     })
             else:
                 return render(request, "login.html", {
-                    "ENABLE_GOOGLE_LOGIN" : settings.ENABLE_GOOGLE_LOGIN,
+                    "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
                     "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
                     "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                     "error": True,
@@ -312,7 +313,6 @@ class DocumentCreateView(LoginRequiredMixin, CreateView):
     form_class = DocumentForm
     template_name = "doc_create.html"
 
-
     def dispatch(self, request, *args, **kwargs):
         self.users = User.objects.filter(is_active=True).order_by('email')
         return super(DocumentCreateView, self).dispatch(request, *args, **kwargs)
@@ -366,10 +366,11 @@ class DocumentListView(LoginRequiredMixin, TemplateView):
                 doc_ids = self.request.user.documents().values_list('id', flat=True)
                 shared_ids = queryset.filter(
                     Q(status='active') & Q(shared_to__id__in=[self.request.user.id])).values_list('id', flat=True)
-                queryset = queryset.filter(Q(id__in=doc_ids) | Q(id__in=shared_ids))
+                queryset = queryset.filter(
+                    Q(id__in=doc_ids) | Q(id__in=shared_ids))
             else:
-                queryset = queryset.filter(Q(status='active') & Q(shared_to__id__in=[self.request.user.id]))
-
+                queryset = queryset.filter(Q(status='active') & Q(
+                    shared_to__id__in=[self.request.user.id]))
 
         request_post = self.request.POST
         if request_post:
@@ -380,12 +381,14 @@ class DocumentListView(LoginRequiredMixin, TemplateView):
                 queryset = queryset.filter(status=request_post.get('status'))
 
             if request_post.getlist('shared_to'):
-                queryset = queryset.filter(shared_to__id__in=request_post.getlist('shared_to'))
+                queryset = queryset.filter(
+                    shared_to__id__in=request_post.getlist('shared_to'))
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super(DocumentListView, self).get_context_data(**kwargs)
-        context["users"] =  User.objects.filter(is_active=True).order_by('email')
+        context["users"] = User.objects.filter(
+            is_active=True).order_by('email')
         context["documents"] = self.get_queryset()
         context["status_choices"] = Document.DOCUMENT_STATUS_CHOICE
         context["sharedto_list"] = [
@@ -424,7 +427,7 @@ class UpdateDocumentView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         doc = form.save(commit=False)
         doc.save()
-         
+
         doc.shared_to.clear()
         if self.request.POST.getlist('shared_to'):
             doc.shared_to.add(*self.request.POST.getlist('shared_to'))
@@ -554,18 +557,21 @@ def remove_comment(request):
 
 
 def change_passsword_by_admin(request):
-    if request.method == "POST":
-        user = get_object_or_404(User, id=request.POST.get("useer_id"))
-        user.set_password(request.POST.get("new_passwoord"))
-        user.save()
-        mail_subject = 'Crm Account Password Changed'
-        message = "<h3><b>hello</b> <i>" + user.username + "</i></h3><br><h2><p> <b>Your account password has been changed ! </b></p></h2>" + \
-            "<br> <p><b> New Password</b> : <b><i>" + \
-            request.POST.get("new_passwoord") + "</i><br></p>"
-        email = EmailMessage(mail_subject, message, to=[user.email])
-        email.content_subtype = "html"
-        email.send()
-        return HttpResponseRedirect('/users/list/')
+    if request.user.role == "ADMIN" or request.user.is_superuser:
+        if request.method == "POST":
+            user = get_object_or_404(User, id=request.POST.get("useer_id"))
+            user.set_password(request.POST.get("new_passwoord"))
+            user.save()
+            mail_subject = 'Crm Account Password Changed'
+            message = "<h3><b>hello</b> <i>" + user.username + "</i></h3><br><h2><p> <b>Your account password has been changed ! </b></p></h2>" + \
+                "<br> <p><b> New Password</b> : <b><i>" + \
+                request.POST.get("new_passwoord") + "</i><br></p>"
+            email = EmailMessage(mail_subject, message, to=[user.email])
+            email.content_subtype = "html"
+            email.send()
+            return HttpResponseRedirect('/users/list/')
+    else:
+        raise PermissionDenied
 
 
 def google_login(request):
