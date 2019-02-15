@@ -394,6 +394,15 @@ class DocumentListView(LoginRequiredMixin, TemplateView):
         context["sharedto_list"] = [
             int(i) for i in self.request.POST.getlist('shared_to', []) if i]
         context["per_page"] = self.request.POST.get('per_page')
+
+        search = False
+        if (
+            self.request.POST.get('doc_name') or self.request.POST.get('status') or 
+            self.request.POST.get('shared_to')
+        ):
+            search = True
+
+        context["search"] = search
         return context
 
     def post(self, request, *args, **kwargs):

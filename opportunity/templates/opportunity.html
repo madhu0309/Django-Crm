@@ -187,6 +187,13 @@
       $(".list_filter_row").toggle();    
     });    
   });  
+
+  search = "{{search}}"
+
+  if (search == 'True'){
+    $(".list_filter_row").show();
+  }
+
   $('.delete').click(function(e){
     e.preventDefault()
     url = $(this).attr('href')
