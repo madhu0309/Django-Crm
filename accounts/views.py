@@ -232,7 +232,8 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         context["users"] = self.users
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
-
+        context["contact_count"] = Contact.objects.count()
+        context["lead_count"] = Lead.objects.count()
         return context
 
 
