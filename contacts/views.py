@@ -41,7 +41,7 @@ class ContactsListView(LoginRequiredMixin, TemplateView):
 
         search = False
         if (
-            self.request_post.get('first_name') or self.request.POST.get('city') or
+            self.request.POST.get('first_name') or self.request.POST.get('city') or
             self.request.POST.get('phone') or self.request.POST.get('email')
         ):
             search = True
