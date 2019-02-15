@@ -87,8 +87,8 @@
                     <a href="{% url 'common:edit_user' user.id %}" class="btn btn-success edit action"><i class="fas fa-pencil-alt"></i>Edit</a>
                     {% endif %}
                     <a href="{% url 'common:remove_user' user.id %}" class="btn btn-danger trash action" {% if request.user.email == user.email %} style="visibility: hidden;" {% endif %}><i class="fas fa-trash-alt"></i>Delete</a>
-                    {% if user.email != admin_email  %}
-                    <span data-id="{{user.id}}" class="fa-passwd-reset fa-stack" style="margin-bottom: -11px;"><i class="fa fa-undo fa-stack-2x"></i><i class="fa fa-lock fa-stack-1x"></i></span>{% endif %}
+                    {% if user.email != admin_email or request.user != user %}
+                    <a style="color:black;margin-bottom: -11px;" data-id="{{user.id}}" href="" class="fa-passwd-reset fa-stack" ><i class="fa fa-undo fa-stack-2x"></i><i class="fa fa-lock fa-stack-1x"></i></a>{% endif %}
                   </td>
                 </tr>
                 {% endfor %}
@@ -124,15 +124,16 @@ $(document).ready(function(){
   $(".fa-passwd-reset").click(function(e){
     e.preventDefault();
     user_id = $(this).attr('data-id')
+    $("#password_eror").text("");
     $("#pass_change_div").modal();
   });
   $("#submit_password").click(function(e){
     e.preventDefault();
     if ($("#new_passwoord").val().length <4){
-      $("#password_eror").text("* Password must be at least 4 characters long! ")
+      $("#password_eror").text("* Password must be atleast 4 characters long! ")
     }
     else{
-      $("#password_eror").text();
+      $("#password_eror").text("");
       $('#useer_id').val(user_id);
       $("#chang_password_form").submit()
     }
