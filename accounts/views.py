@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views.generic import (
     CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
@@ -73,10 +73,6 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         self.users = User.objects.filter(is_active=True).order_by('email')
-        # if Contact.objects.count() == 0:
-        #     return JsonResponse({'message':'create Contact'})
-        # if Lead.objects.count() == 0:
-        #     return JsonResponse({'message':'create Lead'})
         return super(CreateAccountView, self).dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
@@ -107,6 +103,8 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
                 else:
                     tag = Tags.objects.create(name=t.lower())
                 account_object.tags.add(tag)
+        if self.request.POST.getlist('contacts', []):
+            account_object.contacts.add(*self.request.POST.getlist('contacts'))
         if self.request.FILES.get('account_attachment'):
             attachment = Attachments()
             attachment.created_by = self.request.user
@@ -114,6 +112,7 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
             attachment.account = account_object
             attachment.attachment = self.request.FILES.get('account_attachment')
             attachment.save()
+
         if self.request.POST.get("savenewform"):
             return redirect("accounts:new_account")
 
@@ -130,6 +129,8 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
         context["users"] = self.users
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
+        context["contact_count"] = Contact.objects.count()
+        context["lead_count"] = Lead.objects.count()
         return context
 
 
@@ -207,6 +208,9 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
                 else:
                     tag = Tags.objects.create(name=t.lower())
                 account_object.tags.add(tag)
+        if self.request.POST.getlist('contacts', []):
+            account_object.contacts.clear()
+            account_object.contacts.add(*self.request.POST.getlist('contacts'))
         if self.request.FILES.get('account_attachment'):
             attachment = Attachments()
             attachment.created_by = self.request.user
