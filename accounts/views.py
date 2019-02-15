@@ -49,7 +49,16 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
         context['close_accounts'] = close_accounts
         context["industries"] = INDCHOICES
         context["per_page"] = self.request.POST.get('per_page')
-        context['tags'] = Tags.objects.all()
+        context["tag"] = Tags.objects.all()
+
+        search = False
+        if (
+            self.request.POST.get('name') or self.request.POST.get('city') or 
+            self.request.POST.get('industry') or self.request.POST.get('tag')
+        ):
+            search = True
+
+        context["search"] = search
 
         tab_status = 'Open'
         if self.request.POST.get('tab_status'):
