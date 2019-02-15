@@ -46,7 +46,7 @@ class AdminRequiredMixin(AccessMixin):
 
 
 class HomeView(LoginRequiredMixin, TemplateView):
-    template_name = "index.html"
+    template_name = "sales/index.html"
 
     def get_context_data(self, **kwargs):
         context = super(HomeView, self).get_context_data(**kwargs)
@@ -109,8 +109,8 @@ class LoginView(TemplateView):
             # user = authenticate(username=request.POST.get('email'), password=request.POST.get('password'))
             if user is not None:
                 if user.is_active:
-                    user = authenticate(username=request.POST.get('email'),
-                                        password=request.POST.get('password'))
+                    user = authenticate(username=request.POST.get('email'), password=request.POST.get('password'))
+
                     if user is not None:
                         login(request, user)
                         return HttpResponseRedirect('/')
