@@ -1,3 +1,5 @@
+import binascii
+import os
 import time
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -234,6 +236,26 @@ class Document(models.Model):
         return self.title
 
 
+def generate_key():
+    return binascii.hexlify(os.urandom(8)).decode()
+
+
+class APISettings(models.Model):
+    title = models.CharField(max_length=1000)
+    apikey = models.CharField(max_length=16, blank=True)
+    lead_assigned_to = models.ManyToManyField(User, related_name='lead_assignee_users')
+    tags = models.ManyToManyField('accounts.Tags', blank=True)
+    created_by = models.ForeignKey(User, related_name='settings_created_by', on_delete=models.SET_NULL, null=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        self.apikey = generate_key()
+        super(APISettings, self).save(*args, **kwargs)
+
+
 class Google(models.Model):
     user = models.ForeignKey(User, related_name='google', on_delete=models.CASCADE)
     google_id = models.CharField(max_length=200, default='')
@@ -245,3 +267,6 @@ class Google(models.Model):
     dob = models.CharField(max_length=50, default='')
     given_name = models.CharField(max_length=200, default='')
     email = models.CharField(max_length=200, default='', db_index=True)
+
+    def __str__(self):
+        return self.email
