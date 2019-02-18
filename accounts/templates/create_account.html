@@ -15,7 +15,7 @@
 {% endblock %}
 {% block content %}
 {% if contact_count and lead_count %}
-<form id="formid" action='' method="POST" novalidate>
+<form id="formid" action='' method="POST" novalidate enctype="multipart/form-data">
   <div class="overview_form_block row marl justify-content-center">
     <div class="col-md-9">
       <div class="card">
@@ -147,10 +147,10 @@
                 <div class="form-group">
                   <label for="exampleInputEmail1">Attachment</label>
                   <input type="file" name="account_attachment">
-                  {% if case_obj.account_attachment.count %}
-                    {% for i in case_obj.account_attachment.all %}
+                  {% if account_obj.account_attachment.count %}
+                    {% for i in account_obj.account_attachment.all %}
                     <span id="attachment{{i.id}}">
-                      <a target="_blank" href="{{i.attachment.url}}">{{i.file_name}}</a>
+                      <a target="_blank" href="{{ i.attachment.url }}">{{ i.file_name }}</a>
                       <a class="action btn primary_btn"  onclick="remove_attachment({{i.id}})">X</a>
                     </span>
                     {% endfor %}

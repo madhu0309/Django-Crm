@@ -582,7 +582,6 @@ def add_api_settings(request):
     form = APISettingsForm(assign_to=users)
     assign_to_list = []
     if request.POST:
-        print ("request.POST", request.POST)
         form = APISettingsForm(request.POST, assign_to=users)
         assign_to_list = [
             int(i) for i in request.POST.getlist('lead_assigned_to', []) if i]
@@ -652,11 +651,15 @@ def update_api_settings(request, pk):
                 return redirect('common:add_api_settings')
             return redirect("common:api_settings")
         else:
-            data = {'form': form, "setting": api_settings,
-                    'users': users, 'assign_to_list': assign_to_list}
+            data = {
+                'form': form, "setting": api_settings, 'users': users, 'assign_to_list': assign_to_list,
+                'assigned_to_list': json.dumps([i.id for i in api_settings.lead_assigned_to.all() if i])
+            }
     else:
-        data = {'form': form, "setting": api_settings,
-                'users': users, 'assign_to_list': assign_to_list}
+        data = {
+            'form': form, "setting": api_settings, 'users': users, 'assign_to_list': assign_to_list,
+            'assigned_to_list': json.dumps([i.id for i in api_settings.lead_assigned_to.all() if i])
+        }
     return render(request, 'settings/update.html', data)
 
 
