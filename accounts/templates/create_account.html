@@ -106,7 +106,7 @@
                   </div>
                   <div class="filter_col col-md-12">
                     <div class="form-group ">
-                      <label for="exampleInputEmail1" class="required">Contacts{% if account_form.contacts.field.required %}<span class="error">*</span>{% endif %}</label>
+                      <label for="id_contacts" class="required">Contacts{% if account_form.contacts.field.required %}<span class="error">*</span>{% endif %}</label>
                       {{ account_form.contacts }}
                       <span class="error">{{ account_form.contacts.errors }}</span>
                     </div>
@@ -185,10 +185,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-tagsinput/1.3.6/jquery.tagsinput.min.js"></script>
 <script type="text/javascript">
 
+  // $(document).ready(function() {
+  //   $('.assigned_users').select2();
+  // });
   $(document).ready(function() {
-    $('.assigned_users').select2();
+    $("#id_contacts").select2();
   });
-
 
   $("#copy_billing_btn").click(function(){
     var address_line = $("#id_address_line").val();
