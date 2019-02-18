@@ -21,20 +21,17 @@
       <div class="card">
         <div class="card-body">
           <div class="card-title text-center">
-            {% if setting %}EDIT{% else %}CREATE{% endif %} SETTINGS
+            CREATE SETTINGS
           </div>
           <div class="row marl no-gutters">
             <div class="col-md-12">
               <div class="filter_col col-md-12">
                 <div class="form-group">
                   <label>Title{% if settings_form.title.field.required %}<span class="error">*</span>{% endif %}</label>
-                  <input type="text" name="title" class="form-control" value="{% if setting %}{{setting.title}}{% endif %}">
+                  <input type="text" name="title" class="form-control" value="">
                   <span class="error">{{ settings_form.title.errors }}</span>
                 </div>
               </div>
-            </div>
-            <div class="col-md-12">
-              {{ settings_form }}
             </div>
             <div class="col-md-12">
               <div class="filter_col col-md-12">
@@ -42,7 +39,7 @@
                   <label>Assigned Users</label>
                   <select class="assigned_users form-control" name="lead_assigned_to" multiple="multiple">
                   {% for user in users %}
-                    <option value="{{user.id}}" {% if auser in setting.lead_assigned_to.all or user.id in assign_to_list %} selected="" {% endif %}>{{user.email}}</option>
+                    <option value="{{user.id}}" {% if user in setting.lead_assigned_to.all or user.id in assign_to_list %} selected="" {% endif %}>{{user.email}}</option>
                   {% endfor %}
                   </select>
                   <span class="error">{{ settings_form.lead_assigned_to.errors }}</span>
