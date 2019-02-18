@@ -48,6 +48,16 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
         context["stages"] = STAGES
         context["sources"] = SOURCES
         context["per_page"] = self.request.POST.get('per_page')
+
+        search = False
+        if (
+            self.request.POST.get('name') or self.request.POST.get('stage') or 
+            self.request.POST.get('lead_source') or self.request.POST.get('account') or
+            self.request.POST.get('contacts')
+        ):
+            search = True
+
+        context["search"] = search
         return context
 
     def post(self, request, *args, **kwargs):

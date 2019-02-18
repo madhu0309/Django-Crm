@@ -11,17 +11,21 @@ from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http40
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import (
     CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
-from common.models import User, Document, Attachments, Comment, Google
-from common.forms import UserForm, LoginForm, ChangePasswordForm, PasswordResetEmailForm, DocumentForm, UserCommentForm
+from common.models import User, Document, Attachments, Comment, APISettings, Google
+from common.forms import (
+    UserForm, LoginForm, ChangePasswordForm, PasswordResetEmailForm, DocumentForm, UserCommentForm,
+    APISettingsForm
+)
 from django.contrib.auth.views import PasswordResetView
 from django.urls import reverse_lazy, reverse
 from django.conf import settings
 from opportunity.models import Opportunity
 from cases.models import Case
 from contacts.models import Contact
-from accounts.models import Account
+from accounts.models import Account, Tags
 from leads.models import Lead
 from django.template.loader import render_to_string
+from django.core.exceptions import PermissionDenied
 
 
 def handler404(request, exception):
@@ -45,7 +49,7 @@ class AdminRequiredMixin(AccessMixin):
 
 
 class HomeView(LoginRequiredMixin, TemplateView):
-    template_name = "index.html"
+    template_name = "sales/index.html"
 
     def get_context_data(self, **kwargs):
         context = super(HomeView, self).get_context_data(**kwargs)
@@ -108,15 +112,15 @@ class LoginView(TemplateView):
             # user = authenticate(username=request.POST.get('email'), password=request.POST.get('password'))
             if user is not None:
                 if user.is_active:
-                    user = authenticate(username=request.POST.get('email'),
-                                        password=request.POST.get('password'))
+                    user = authenticate(username=request.POST.get('email'), password=request.POST.get('password'))
+
                     if user is not None:
                         login(request, user)
                         return HttpResponseRedirect('/')
                     else:
                         return render(request, "login.html", {
                             "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
-                            "GP_CLIENT_SECRET" : settings.GP_CLIENT_SECRET,
+                            "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
                             "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                             "error": True,
                             "message": "Your username and password didn't match. Please try again."
@@ -131,7 +135,7 @@ class LoginView(TemplateView):
                     })
             else:
                 return render(request, "login.html", {
-                    "ENABLE_GOOGLE_LOGIN" : settings.ENABLE_GOOGLE_LOGIN,
+                    "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
                     "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
                     "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                     "error": True,
@@ -171,7 +175,7 @@ class UsersListView(AdminRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(UsersListView, self).get_context_data(**kwargs)
-        context["users"] = self.get_queryset().exclude(id=self.request.user.id)
+        context["users"] = self.get_queryset()
         context["per_page"] = self.request.POST.get('per_page')
         context['admin_email'] = settings.ADMIN_EMAIL
         return context
@@ -312,7 +316,6 @@ class DocumentCreateView(LoginRequiredMixin, CreateView):
     form_class = DocumentForm
     template_name = "doc_create.html"
 
-
     def dispatch(self, request, *args, **kwargs):
         self.users = User.objects.filter(is_active=True).order_by('email')
         return super(DocumentCreateView, self).dispatch(request, *args, **kwargs)
@@ -362,8 +365,15 @@ class DocumentListView(LoginRequiredMixin, TemplateView):
         if self.request.user.is_superuser or self.request.user.role == "ADMIN":
             queryset = queryset
         else:
-            queryset = queryset.filter(
-                Q(created_by=self.request.user)| Q(shared_to__id__in=[self.request.user.id]), status="active")
+            if self.request.user.documents():
+                doc_ids = self.request.user.documents().values_list('id', flat=True)
+                shared_ids = queryset.filter(
+                    Q(status='active') & Q(shared_to__id__in=[self.request.user.id])).values_list('id', flat=True)
+                queryset = queryset.filter(
+                    Q(id__in=doc_ids) | Q(id__in=shared_ids))
+            else:
+                queryset = queryset.filter(Q(status='active') & Q(
+                    shared_to__id__in=[self.request.user.id]))
 
         request_post = self.request.POST
         if request_post:
@@ -374,17 +384,28 @@ class DocumentListView(LoginRequiredMixin, TemplateView):
                 queryset = queryset.filter(status=request_post.get('status'))
 
             if request_post.getlist('shared_to'):
-                queryset = queryset.filter(shared_to__id__in=request_post.getlist('shared_to'))
+                queryset = queryset.filter(
+                    shared_to__id__in=request_post.getlist('shared_to'))
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super(DocumentListView, self).get_context_data(**kwargs)
-        context["users"] =  User.objects.filter(is_active=True).order_by('email')
+        context["users"] = User.objects.filter(
+            is_active=True).order_by('email')
         context["documents"] = self.get_queryset()
         context["status_choices"] = Document.DOCUMENT_STATUS_CHOICE
         context["sharedto_list"] = [
             int(i) for i in self.request.POST.getlist('shared_to', []) if i]
         context["per_page"] = self.request.POST.get('per_page')
+
+        search = False
+        if (
+            self.request.POST.get('doc_name') or self.request.POST.get('status') or 
+            self.request.POST.get('shared_to')
+        ):
+            search = True
+
+        context["search"] = search
         return context
 
     def post(self, request, *args, **kwargs):
@@ -418,7 +439,7 @@ class UpdateDocumentView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         doc = form.save(commit=False)
         doc.save()
-         
+
         doc.shared_to.clear()
         if self.request.POST.getlist('shared_to'):
             doc.shared_to.add(*self.request.POST.getlist('shared_to'))
@@ -547,19 +568,117 @@ def remove_comment(request):
         return JsonResponse(data)
 
 
+def api_settings(request):
+    api_settings = APISettings.objects.all()
+    data = {'settings': api_settings}
+    return render(request, 'settings/list.html', data)
+
+
+def add_api_settings(request):
+    users = User.objects.filter(is_active=True).order_by('email')
+    form = APISettingsForm(assign_to=users)
+    assign_to_list = []
+    if request.POST:
+        print ("request.POST", request.POST)
+        form = APISettingsForm(request.POST, assign_to=users)
+        assign_to_list = [
+            int(i) for i in request.POST.getlist('lead_assigned_to', []) if i]
+        if form.is_valid():
+            settings_obj = form.save(commit=False)
+            settings_obj.created_by = request.user
+            settings_obj.save()
+            if request.POST.get('tags', ''):
+                tags = request.POST.get("tags")
+                splitted_tags = tags.split(",")
+                for t in splitted_tags:
+                    tag = Tags.objects.filter(name=t)
+                    if tag:
+                        tag = tag[0]
+                    else:
+                        tag = Tags.objects.create(name=t)
+                    settings_obj.tags.add(tag)
+            if assign_to_list:
+                settings_obj.lead_assigned_to.add(*assign_to_list)
+            if request.POST.get("savenewform"):
+                return redirect('common:add_api_settings')
+            return redirect("common:api_settings")
+        else:
+            print (form.errors)
+            data = {'form': form, "setting": api_settings, 'users': users, 'assign_to_list': assign_to_list}
+    else:
+        data = {'form': form, "setting": api_settings, 'users': users, 'assign_to_list': assign_to_list}
+    return render(request, 'settings/create.html', data)
+
+
+def view_api_settings(request, pk):
+    api_settings = APISettings.objects.filter(pk=pk).first()
+    data = {"setting": api_settings}
+    return render(request, 'settings/view.html', data)
+
+
+def update_api_settings(request, pk):
+    api_settings = APISettings.objects.filter(pk=pk).first()
+    users = User.objects.filter(is_active=True).order_by('email')
+    form = APISettingsForm(instance=api_settings, assign_to=users)
+    assign_to_list = []
+    if request.POST:
+        form = APISettingsForm(request.POST, instance=api_settings, assign_to=users)
+        assign_to_list = [
+            int(i) for i in request.POST.getlist('lead_assigned_to', []) if i]
+        if form.is_valid():
+            settings_obj = form.save(commit=False)
+            settings_obj.save()
+            if request.POST.get('tags', ''):
+                settings_obj.tags.clear()
+                tags = request.POST.get("tags")
+                splitted_tags = tags.split(",")
+                for t in splitted_tags:
+                    tag = Tags.objects.filter(name=t)
+                    if tag:
+                        tag = tag[0]
+                    else:
+                        tag = Tags.objects.create(name=t)
+                    settings_obj.tags.add(tag)
+            if assign_to_list:
+                settings_obj.lead_assigned_to.clear()
+                settings_obj.lead_assigned_to.add(*assign_to_list)
+            if request.POST.get("savenewform"):
+                return redirect('common:add_api_settings')
+            return redirect("common:api_settings")
+        else:
+            data = {'form': form, "setting": api_settings, 'users': users, 'assign_to_list': assign_to_list}
+    else:
+        data = {'form': form, "setting": api_settings, 'users': users, 'assign_to_list': assign_to_list}
+    return render(request, 'settings/update.html', data)
+
+
+def delete_api_settings(request, pk):
+    api_settings = APISettings.objects.filter(pk=pk).first()
+    if api_settings:
+        api_settings.delete()
+        data = {"error": False, "response": "Successfully Deleted!"}
+    else:
+        data = {"error": True, "response": "Object Not Found!"}
+    # return JsonResponse(data)
+    return redirect('common:api_settings')
+
+
 def change_passsword_by_admin(request):
-    if request.method == "POST":
-        user = get_object_or_404(User, id=request.POST.get("useer_id"))
-        user.set_password(request.POST.get("new_passwoord"))
-        user.save()
-        mail_subject = 'Crm Account Password Changed'
-        message = "<h3><b>hello</b> <i>" + user.username + "</i></h3><br><h2><p> <b>Your account password has been changed ! </b></p></h2>" + \
-            "<br> <p><b> New Password</b> : <b><i>" + \
-            request.POST.get("new_passwoord") + "</i><br></p>"
-        email = EmailMessage(mail_subject, message, to=[user.email])
-        email.content_subtype = "html"
-        email.send()
-        return HttpResponseRedirect('/users/list/')
+    if request.user.role == "ADMIN" or request.user.is_superuser:
+        if request.method == "POST":
+            user = get_object_or_404(User, id=request.POST.get("useer_id"))
+            user.set_password(request.POST.get("new_passwoord"))
+            user.save()
+            mail_subject = 'Crm Account Password Changed'
+            message = "<h3><b>hello</b> <i>" + user.username + "</i></h3><br><h2><p> <b>Your account password has been changed ! </b></p></h2>" + \
+                "<br> <p><b> New Password</b> : <b><i>" + \
+                request.POST.get("new_passwoord") + "</i><br></p>"
+            email = EmailMessage(mail_subject, message, to=[user.email])
+            email.content_subtype = "html"
+            email.send()
+            return HttpResponseRedirect('/users/list/')
+    else:
+        raise PermissionDenied
 
 
 def google_login(request):
