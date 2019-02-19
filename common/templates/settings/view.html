@@ -58,7 +58,7 @@
                 </div>
               </div>
               {% endif %}
-              {% if setting.tags %}
+              {% if setting.tags.all|length > 0 %}
               <div class="filter_col col-md-12">
                 <div class="form-group">
                   <label class="acc_field_label" for="id_website" data-name="name">Tags</label>
