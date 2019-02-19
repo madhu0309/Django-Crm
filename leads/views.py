@@ -12,7 +12,7 @@ from django.views.generic import (
     CreateView, UpdateView, DetailView, ListView, TemplateView, View)
 
 from accounts.models import Account, Tags
-from common.models import User, Comment, Attachments
+from common.models import User, Comment, Attachments, APISettings
 from common.utils import LEAD_STATUS, LEAD_SOURCE, COUNTRIES
 from common import status
 from contacts.models import Contact
@@ -581,7 +581,7 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         self.object = get_object_or_404(Attachments, id=request.POST.get("attachment_id"))
         if (
-            request.user == self.object.created_by or request.user.is_superuser or 
+            request.user == self.object.created_by or request.user.is_superuser or
             request.user.role == 'ADMIN'
         ):
             self.object.delete()
@@ -594,6 +594,13 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
 
 def create_lead_from_site(request):
 
+    site_address = request.scheme + '://' + request.META['HTTP_HOST']
+    # api_setting = APISettings.objects.filter(website_url=site_address).first()
+    # if not api_setting:
+    #     return JsonResponse({
+    #         'error': True, 'message': "You don't have permission, please contact the admin!."},
+    #         status=status.HTTP_400_BAD_REQUEST)
+
     if request.POST.get("email") and request.POST.get("full_name"):
         user = User.objects.filter(is_admin=True, is_active=True).first()
         lead = Lead.objects.create(
@@ -604,7 +611,7 @@ def create_lead_from_site(request):
             is_active=True, created_by=user)
         lead.assigned_to.add(user)
         # Send Email to Assigned Users
-        site_address = request.scheme + '://' + request.META['HTTP_HOST']
+        # site_address = request.scheme + '://' + request.META['HTTP_HOST']
         send_lead_assigned_emails.delay(lead.id, [user.id], site_address)
         # Create Contact
         contact = Contact.objects.create(
