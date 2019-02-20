@@ -149,7 +149,7 @@ class CreateLeadView(LoginRequiredMixin, CreateView):
                 })
                 email = EmailMessage(mail_subject, message, to=[user.email])
                 email.content_subtype = "html"
-                # email.send()
+                email.send()
 
         if self.request.FILES.get('lead_attachment'):
             attachment = Attachments()
@@ -192,7 +192,7 @@ class CreateLeadView(LoginRequiredMixin, CreateView):
                     email = EmailMessage(
                         mail_subject, message, to=[user.email])
                     email.content_subtype = "html"
-                    # email.send()
+                    email.send()
 
             account_object.save()
         if self.request.POST.get("savenewform"):
