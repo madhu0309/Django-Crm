@@ -10,7 +10,7 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{% url 'common:api_settings' %}">Settings</a></li>
-    <li class="breadcrumb-item active">{% if setting %}Edit{% else %}Create{% endif %}</li>
+    <li class="breadcrumb-item active">Create</li>
   </ol>
 </nav>
 {% endblock %}
@@ -30,6 +30,15 @@
                   <label>Title{% if settings_form.title.field.required %}<span class="error">*</span>{% endif %}</label>
                   <input type="text" name="title" class="form-control" value="">
                   <span class="error">{{ settings_form.title.errors }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="filter_col col-md-12">
+                <div class="form-group">
+                  <label>Website{% if settings_form.website.field.required %}<span class="error">*</span>{% endif %} <span class="help-text">Example: http://google.com</span></label>
+                  <input type="text" name="website" class="form-control" value="">
+                  <span class="error">{{ settings_form.website.errors }}</span>
                 </div>
               </div>
             </div>
