@@ -42,7 +42,7 @@ def email_template_edit(request):
 
 
 def email_template_detail(request):
-    return render(request, 'marketing/email_template/detail.html')
+    return render(request, 'marketing/email_template/details.html')
 
 
 def campaign_list(request):

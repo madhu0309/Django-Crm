@@ -24,7 +24,7 @@ class EmailSentEdit(UserCreation, TestCase):
                                'to_email': "xyz@mp.com",
                                'subject': "hello hi",
                                'message': 'simple mail'})
-        print('yes')
+        # print('yes')
         self.assertTrue(form.is_valid())
 
     def test_edit_form_invalid(self):
@@ -32,7 +32,7 @@ class EmailSentEdit(UserCreation, TestCase):
                                'to_email': "",
                                'subject': "hello hi",
                                'message': 'simple mail'})
-        print('yes2')
+        # print('yes2')
         self.assertFalse(form.is_valid())
 
 

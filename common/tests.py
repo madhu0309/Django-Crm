@@ -133,20 +133,20 @@ class LoginViewTestCase(ObjectsCreation, TestCase):
 class UserTestCase(ObjectsCreation, TestCase):
     def test_user_create_url(self):
         response = self.client.get('/users/create/', {
-            'first_name': 'meghana',
-            'last_name': "reddy",
-            'username': 'meghana',
-            'email': 'meghana@micropyramid.com',
-            'password': 'meghana123'})
+            'first_name': 'micheal',
+            'last_name': "clark",
+            'username': 'micheal',
+            'email': 'micheal@micropyramid.com',
+            'password': 'micheal123'})
         self.assertEqual(response.status_code, 200)
 
     def test_user_create_html(self):
         response = self.client.get('/users/create/', {
-            'first_name': 'meghana',
+            'first_name': 'micheal',
             'last_name': "",
-            'username': 'meghana',
+            'username': 'micheal',
             'email': '',
-            'password': 'meghana123'})
+            'password': 'micheal123'})
 
         self.assertTemplateUsed(response, 'create.html')
 
@@ -193,7 +193,7 @@ class UserUpdateTestCase(ObjectsCreation, TestCase):
 
     def test_accounts_update_post(self):
         response = self.client.post('/users/' + str(self.user.id) + '/edit/',
-                                    {'first_name': "meghana", 'user_name': 'meghana',
+                                    {'first_name': "micheal", 'user_name': 'micheal',
                                      'email': "abc@micropyramid",
                                      'role': "USER", 'is_superuser': False})
         self.assertEqual(response.status_code, 200)
@@ -248,9 +248,9 @@ class CreateCommentFile(TestCase):
     def test_invalid_user_form(self):
         fields = ['email', 'first_name', 'last_name',
                   'username', 'role', 'profile_pic']
-        user1 = User.objects.create(username='teja',
-                                    first_name='teja',
-                                    last_name='reddy',
+        user1 = User.objects.create(username='robert',
+                                    first_name='robert',
+                                    last_name='clark',
                                     email='tr@mp.com',
                                     role='USER',
                                     profile_pic="",
@@ -261,7 +261,7 @@ class CreateCommentFile(TestCase):
                 'profile_pic': user1.profile_pic,
                 'password': user1.password}
         form = UserForm(data=data)
-        userr = User.objects.get(username='teja')
+        userr = User.objects.get(username='robert')
         # print(userr)
         self.assertEqual(len(userr.password), 3)
         self.assertFalse(form.is_valid())
