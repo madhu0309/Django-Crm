@@ -243,6 +243,6 @@ class TestTemplates(TestLeadModel, TestCase):
         self.assertEqual(resp.status_code, 200)
         # print(resp.name)
         # self.assertTrue(resp.name)
-    
-    def test_lead_from_site(self):
-        resp = self.client.get()
+
+    # def test_lead_from_site(self):
+    #     resp = self.client.get()

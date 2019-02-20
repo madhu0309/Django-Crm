@@ -4,7 +4,7 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{% url 'common:api_settings' %}">Settings</a></li>
-    <li class="breadcrumb-item active">View</li>
+    <li class="breadcrumb-item active">{{ setting.title }} - View</li>
   </ol>
 </nav>
 {% endblock %}
@@ -39,6 +39,14 @@
                 </div>
               </div>
               {% endif %}
+              {% if setting.website %}
+              <div class="filter_col col-md-12" id="iname">
+                <div class="form-group" >
+                  <label class="acc_field_label" for="id_name" data-name="name">Website</label>
+                  <div class="account_field" id="account_name" data-name="name">{{ setting.website }}</div>
+                </div>
+              </div>
+              {% endif %}
               {% if setting.apikey %}
               <div class="filter_col col-md-12">
                 <div class="form-group">
@@ -58,7 +66,7 @@
                 </div>
               </div>
               {% endif %}
-              {% if setting.tags %}
+              {% if setting.tags.all|length > 0 %}
               <div class="filter_col col-md-12">
                 <div class="form-group">
                   <label class="acc_field_label" for="id_website" data-name="name">Tags</label>
