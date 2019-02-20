@@ -352,7 +352,6 @@ class UpdateLeadView(LoginRequiredMixin, UpdateView):
             for tag in lead_obj.tags.all():
                 account_object.tags.add(tag)
             if self.request.POST.getlist('assigned_to', []):
-                account_object.assigned_to.add(*self.request.POST.getlist('assigned_to'))
                 assigned_to_list = self.request.POST.getlist('assigned_to')
                 current_site = get_current_site(self.request)
                 for assigned_to_user in assigned_to_list:
@@ -428,6 +427,8 @@ class ConvertLeadView(LoginRequiredMixin, View):
             assignedto_list = lead_obj.assigned_to.all().values_list('id', flat=True)
             account_object.assigned_to.add(*assignedto_list)
             account_object.save()
+            print('account object id')
+            print(account_object.id)
             current_site = get_current_site(self.request)
             for assigned_to_user in assignedto_list:
                 user = get_object_or_404(User, pk=assigned_to_user)
