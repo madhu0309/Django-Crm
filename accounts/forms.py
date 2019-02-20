@@ -1,37 +1,52 @@
 from django import forms
 from .models import Account
-from common.models import Comment
+from common.models import Comment, Attachments
 
 
 class AccountForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
-        assigned_users = kwargs.pop('assigned_to', [])
+        account_view = kwargs.pop('account', False)
         super(AccountForm, self).__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs = {"class": "form-control"}
-        self.fields['description'].widget.attrs.update({
-            'rows': '8'})
-        self.fields['assigned_to'].queryset = assigned_users
-        self.fields['assigned_to'].required = False
-        self.fields['teams'].required = False
+        self.fields['description'].widget.attrs.update({'rows': '8'})
+        self.fields['status'].choices = [(each[0], each[1]) for each in Account.ACCOUNT_STATUS_CHOICE]
+        self.fields['status'].required = False
+        for key, value in self.fields.items():
+            if key == 'phone':
+                value.widget.attrs['placeholder'] = "+91-123-456-7890"
+            else:
+                value.widget.attrs['placeholder'] = value.label
+
+        self.fields['billing_address_line'].widget.attrs.update({
+            'placeholder': 'Address Line'})
+        self.fields['billing_street'].widget.attrs.update({
+            'placeholder': 'Street'})
+        self.fields['billing_city'].widget.attrs.update({
+            'placeholder': 'City'})
+        self.fields['billing_state'].widget.attrs.update({
+            'placeholder': 'State'})
+        self.fields['billing_postcode'].widget.attrs.update({
+            'placeholder': 'Postcode'})
+        self.fields["billing_country"].choices = [
+            ("", "--Country--"), ] + list(self.fields["billing_country"].choices)[1:]
+
+        if account_view:
+            self.fields['billing_address_line'].required = True
+            self.fields['billing_street'].required = True
+            self.fields['billing_city'].required = True
+            self.fields['billing_state'].required = True
+            self.fields['billing_postcode'].required = True
+            self.fields['billing_country'].required = True
 
     class Meta:
         model = Account
-        fields = ('assigned_to', 'teams', 'name', 'phone', 'email', 'website', 'industry',
-                  'billing_address', 'shipping_address', 'description')
-
-    def clean_phone(self):
-        client_phone = self.cleaned_data.get('phone', None)
-        try:
-            if int(client_phone) and not client_phone.isalpha():
-                ph_length = str(client_phone)
-                if len(ph_length) < 10 or len(ph_length) > 13:
-                    raise forms.ValidationError('Phone number must be minimum 10 Digits and maximum of 13 Digits')
-
-        except (ValueError, TypeError):
-            raise forms.ValidationError('Phone Number should contain only Numbers')
-        return client_phone
+        fields = ('name', 'phone', 'email', 'website', 'industry',
+                  'description', 'status',
+                  'billing_address_line', 'billing_street',
+                  'billing_city', 'billing_state',
+                  'billing_postcode', 'billing_country', 'lead', 'contacts')
 
 
 class AccountCommentForm(forms.ModelForm):
@@ -40,3 +55,11 @@ class AccountCommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ('comment', 'account', 'commented_by')
+
+
+class AccountAttachmentForm(forms.ModelForm):
+    attachment = forms.FileField(max_length=1001, required=True)
+
+    class Meta:
+        model = Attachments
+        fields = ('attachment', 'account')

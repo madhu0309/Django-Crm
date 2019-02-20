@@ -1,6 +1,6 @@
 from django import forms
 from cases.models import Case
-from common.models import Comment
+from common.models import Comment, Attachments
 
 
 class CaseForm(forms.ModelForm):
@@ -18,12 +18,13 @@ class CaseForm(forms.ModelForm):
         self.fields['account'].queryset = case_accounts
         self.fields['contacts'].queryset = case_contacts
         self.fields['assigned_to'].required = False
-        self.fields['teams'].required = False
         self.fields['contacts'].required = False
+        for key, value in self.fields.items():
+            value.widget.attrs['placeholder'] = value.label
 
     class Meta:
         model = Case
-        fields = ('assigned_to', 'teams', 'name', 'status',
+        fields = ('assigned_to', 'name', 'status',
                   'priority', 'case_type', 'account',
                   'contacts', 'closed_on', 'description')
 
@@ -32,7 +33,8 @@ class CaseForm(forms.ModelForm):
         case = Case.objects.filter(name__iexact=name).exclude(id=self.instance.id)
         if case:
             raise forms.ValidationError("Case Already Exists with this Name")
-        return name
+        else:
+            return name
 
 
 class CaseCommentForm(forms.ModelForm):
@@ -40,4 +42,13 @@ class CaseCommentForm(forms.ModelForm):
 
     class Meta:
         model = Comment
+
         fields = ('comment', 'case', 'commented_by', )
+
+
+class CaseAttachmentForm(forms.ModelForm):
+    attachment = forms.FileField(max_length=1001, required=True)
+
+    class Meta:
+        model = Attachments
+        fields = ('attachment', 'case')

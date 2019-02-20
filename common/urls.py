@@ -1,25 +1,77 @@
-from django.conf.urls import url
-from common import views
 from django.contrib.auth import views as auth_views
+
+from django.urls import path
+from common.views import (
+    HomeView, LoginView, ForgotPasswordView, LogoutView, ChangePasswordView, ProfileView,
+    UsersListView, CreateUserView, UpdateUserView, UserDetailView, UserDeleteView, PasswordResetView,
+    DocumentListView, DocumentCreateView, UpdateDocumentView, DocumentDetailView, DocumentDeleteView,
+    download_document, change_user_status, download_attachment, add_comment, edit_comment, remove_comment,
+    api_settings, add_api_settings, view_api_settings, update_api_settings, delete_api_settings,
+    change_passsword_by_admin, google_login
+)
+from django.conf.urls.static import static
+from django.conf import settings
+
 
 app_name = 'common'
 
 
 urlpatterns = [
-    url(r'^$', views.home, name="home"),
-    url(r'^login/$', views.login_crm, name="login"),
-    url(r'^forgot-password/$', views.forgot_password, name="forgot_password"),
-    url(r'^logout/$', views.logout_crm, name="logout"),
-    url(r'^change-password/$', views.change_pass, name="change_pass"),
-    url(r'^profile/$', views.profile, name="profile"),
-    url(r'^users/list$', views.users_list, name="users_list"),
-    url(r'^users/create$', views.create_user, name="create_user"),
-    url(r'^users/(?P<user_id>\d*)/view/$', views.view_user, name="view_user"),
-    url(r'^users/(?P<user_id>\d*)/edit/$', views.edit_user, name="edit_user"),
-    url(r'^user/(?P<user_id>\d*)/delete/$', views.remove_user, name="remove_user"),
-     url(r'^password_reset/$',auth_views.password_reset,name='password_reset'),
-    url(r'^passowrd-reset/done/$',auth_views.password_reset_done,name='password_reset_done'),
-    url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-        auth_views.password_reset_confirm, name='password_reset_confirm'),
-     url(r'^reset/done/$', auth_views.password_reset_complete, name='password_reset_complete'),
-]
+    path('', HomeView.as_view(), name='home'),
+    path('login/', LoginView.as_view(), name='login'),
+    path('forgot-password/', ForgotPasswordView.as_view(), name='forgot_password'),
+    path('logout/', LogoutView.as_view(), name='logout'),
+    path('change-password/', ChangePasswordView.as_view(), name='change_password'),
+    path('profile/', ProfileView.as_view(), name='profile'),
+
+    # User views
+    path('users/list/', UsersListView.as_view(), name='users_list'),
+    path('users/create/', CreateUserView.as_view(), name='create_user'),
+    path('users/<int:pk>/edit/', UpdateUserView.as_view(), name="edit_user"),
+    path('users/<int:pk>/view/', UserDetailView.as_view(), name='view_user'),
+    path('users/<int:pk>/delete/', UserDeleteView.as_view(), name='remove_user'),
+
+    path(
+        'password-reset/', PasswordResetView.as_view(), name='password_reset'),
+    path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(),
+         name='password_reset_done'),
+    path(
+        'reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(),
+         name='password_reset_complete'),
+
+    # Document
+    path('documents/list/', DocumentListView.as_view(), name='doc_list'),
+    path('documents/create/', DocumentCreateView.as_view(), name='create_doc'),
+    path('documents/<int:pk>/edit/', UpdateDocumentView.as_view(), name="edit_doc"),
+    path('documents/<int:pk>/view/', DocumentDetailView.as_view(), name='view_doc'),
+    path('documents/<int:pk>/delete/',
+         DocumentDeleteView.as_view(), name='remove_doc'),
+
+    # download
+    path('documents/<int:pk>/download/',
+         download_document, name='download_document'),
+
+    # download_attachment
+    path('attachments/<int:pk>/download/',
+         download_attachment, name='download_attachment'),
+
+    path('user/status/<int:pk>/', change_user_status, name='change_user_status'),
+
+    path('comment/add/', add_comment, name="add_comment"),
+    path('comment/<int:pk>/edit/', edit_comment, name="edit_comment"),
+    path('comment/remove/', remove_comment, name="remove_comment"),
+
+    # settings
+    path('api/settings/', api_settings, name="api_settings"),
+    path('api/settings/add/', add_api_settings, name="add_api_settings"),
+    path('api/settings/<int:pk>/', view_api_settings, name="view_api_settings"),
+    path('api/settings/<int:pk>/update/', update_api_settings, name="update_api_settings"),
+    path('api/settings/<int:pk>/delete/', delete_api_settings, name="delete_api_settings"),
+
+    path('change-password-by-admin/', change_passsword_by_admin,
+         name="change_passsword_by_admin"),
+    path('google/login/', google_login, name="google_login"),
+
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,16 +1,20 @@
+import re
 from django import forms
 from django.contrib.auth import authenticate
-
-from common.models import Address, User
+from django.contrib.auth.forms import PasswordResetForm
+from common.models import Address, User, Document, Comment, APISettings
 
 
 class BillingAddressForm(forms.ModelForm):
 
     class Meta:
         model = Address
-        fields = ('address_line', 'street', 'city', 'state', 'postcode', 'country')
+        fields = ('address_line', 'street', 'city',
+                  'state', 'postcode', 'country')
 
     def __init__(self, *args, **kwargs):
+        account_view = kwargs.pop('account', False)
+
         super(BillingAddressForm, self).__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs = {"class": "form-control"}
@@ -24,13 +28,23 @@ class BillingAddressForm(forms.ModelForm):
             'placeholder': 'State'})
         self.fields['postcode'].widget.attrs.update({
             'placeholder': 'Postcode'})
-        self.fields["country"].choices = [("", "--Country--"), ] + list(self.fields["country"].choices)[1:]
+        self.fields["country"].choices = [
+            ("", "--Country--"), ] + list(self.fields["country"].choices)[1:]
+
+        if account_view:
+            self.fields['address_line'].required = True
+            self.fields['street'].required = True
+            self.fields['city'].required = True
+            self.fields['state'].required = True
+            self.fields['postcode'].required = True
+            self.fields['country'].required = True
 
 
 class ShippingAddressForm(forms.ModelForm):
     class Meta:
         model = Address
-        fields = ('address_line', 'street', 'city', 'state', 'postcode', 'country')
+        fields = ('address_line', 'street', 'city',
+                  'state', 'postcode', 'country')
 
     def __init__(self, *args, **kwargs):
         super(ShippingAddressForm, self).__init__(*args, **kwargs)
@@ -46,7 +60,8 @@ class ShippingAddressForm(forms.ModelForm):
             'placeholder': 'State'})
         self.fields['postcode'].widget.attrs.update({
             'placeholder': 'Postcode'})
-        self.fields["country"].choices = [("", "--Country--"), ] + list(self.fields["country"].choices)[1:]
+        self.fields["country"].choices = [
+            ("", "--Country--"), ] + list(self.fields["country"].choices)[1:]
 
 
 class UserForm(forms.ModelForm):
@@ -55,17 +70,27 @@ class UserForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'username', 'role']
+        fields = ['email', 'first_name', 'last_name',
+                  'username', 'role', 'profile_pic']
 
     def __init__(self, *args, **kwargs):
         super(UserForm, self).__init__(*args, **kwargs)
 
         self.fields['first_name'].required = True
-        self.fields['username'].required = True
-        self.fields['email'].required = True
-
         if not self.instance.pk:
             self.fields['password'].required = True
+
+        # self.fields['password'].required = True
+
+    # def __init__(self, args: object, kwargs: object) -> object:
+    #     super(UserForm, self).__init__(*args, **kwargs)
+    #
+    #     self.fields['first_name'].required = True
+    #     self.fields['username'].required = True
+    #     self.fields['email'].required = True
+    #
+        # if not self.instance.pk:
+        #     self.fields['password'].required = True
 
     def clean_password(self):
         password = self.cleaned_data.get('password')
@@ -81,15 +106,13 @@ class UserForm(forms.ModelForm):
             if self.instance.email != email:
                 if not User.objects.filter(email=self.cleaned_data.get("email")).exists():
                     return self.cleaned_data.get("email")
-                else:
-                    raise forms.ValidationError('Email already exists')
+                raise forms.ValidationError('Email already exists')
             else:
                 return self.cleaned_data.get("email")
         else:
             if not User.objects.filter(email=self.cleaned_data.get("email")).exists():
-                    return self.cleaned_data.get("email")
-            else:
-                raise forms.ValidationError('User already exists with this email')
+                return self.cleaned_data.get("email")
+            raise forms.ValidationError('User already exists with this email')
 
 
 class LoginForm(forms.ModelForm):
@@ -109,12 +132,14 @@ class LoginForm(forms.ModelForm):
         password = self.cleaned_data.get("password")
 
         if email and password:
-            self.user = authenticate(email=email, password=password)
+            self.user = authenticate(username=email, password=password)
             if self.user:
                 if not self.user.is_active:
-                    raise forms.ValidationError("User is Inactive")
+                    pass
+                    # raise forms.ValidationError("User is Inactive")
             else:
-                raise forms.ValidationError("Invalid email and password")
+                pass
+                # raise forms.ValidationError("Invalid email and password")
         return self.cleaned_data
 
 
@@ -134,3 +159,83 @@ class ChangePasswordForm(forms.Form):
             raise forms.ValidationError(
                 'Confirm password do not match with new password')
         return self.data.get('confirm')
+
+
+class PasswordResetEmailForm(PasswordResetForm):
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if not User.objects.filter(email__iexact=email, is_active=True).exists():
+            raise forms.ValidationError("User doesn't exist with this Email")
+        return email
+
+
+class DocumentForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        users = kwargs.pop('users', [])
+        super(DocumentForm, self).__init__(*args, **kwargs)
+
+        for field in self.fields.values():
+            field.widget.attrs = {"class": "form-control"}
+
+        self.fields['status'].choices = [
+            (each[0], each[1]) for each in Document.DOCUMENT_STATUS_CHOICE]
+        self.fields['status'].required = False
+        self.fields['title'].required = True
+        self.fields['shared_to'].queryset = users
+        self.fields['shared_to'].required = False
+
+    class Meta:
+        model = Document
+        fields = ['title', 'document_file', 'status', 'shared_to']
+
+
+class UserCommentForm(forms.ModelForm):
+    comment = forms.CharField(max_length=64, required=True)
+
+    class Meta:
+        model = Comment
+        fields = ('comment', 'user', 'commented_by')
+
+
+def find_urls(string):
+    # website_regex = "^((http|https)://)?([A-Za-z0-9.-]+\.[A-Za-z]{2,63})?$"  # (http(s)://)google.com or google.com
+    # website_regex = "^https?://([A-Za-z0-9.-]+\.[A-Za-z]{2,63})?$"  # (http(s)://)google.com
+    website_regex = "^https?://[A-Za-z0-9.-]+\.[A-Za-z]{2,63}$"  # http(s)://google.com
+    website_regex_port = "^https?://[A-Za-z0-9.-]+\.[A-Za-z]{2,63}:[0-9]{2,4}$"  # http(s)://google.com:8000
+    url = re.findall(website_regex, string)
+    url_port = re.findall(website_regex_port, string)
+    if len(url) > 0 and url[0] != '':
+        return url
+    else:
+        return url_port
+
+
+class APISettingsForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        assigned_users = kwargs.pop('assign_to', [])
+        super(APISettingsForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs = {"class": "form-control"}
+        self.fields['lead_assigned_to'].queryset = assigned_users
+        self.fields['lead_assigned_to'].required = False
+
+        # self.fields['title'].widget.attrs.update({
+        #     'placeholder': 'Project Name'})
+        # self.fields['lead_assigned_to'].widget.attrs.update({
+        #     'placeholder': 'Assign Leads To'})
+
+    class Meta:
+        model = APISettings
+        fields = ('title', 'lead_assigned_to', 'website')
+
+    def clean_website(self):
+        website = self.data.get('website')
+        if website and not (website.startswith('http://') or website.startswith('https://')):
+            raise forms.ValidationError("Please provide valid schema")
+        if not len(find_urls(website)) > 0:
+            raise forms.ValidationError(
+                "Please provide a valid URL with schema and without trailing slash - Example: http://google.com")
+        return website

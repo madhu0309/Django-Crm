@@ -6,7 +6,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 
 from leads.models import Lead
 from contacts.models import Contact
-from common.models import User, Team
+from common.models import User
 from common.utils import EVENT_PARENT_TYPE, EVENT_STATUS
 
 
@@ -37,15 +37,18 @@ class Event(models.Model):
         pgettext_lazy("status of the Event", "Status"), choices=EVENT_STATUS,
         max_length=64, blank=True)
     direction = models.CharField(max_length=20, blank=True)  # only for calls
-    start_date = models.DateTimeField(default=None)
-    close_date = models.DateTimeField(default=None, null=True)
+    # start_date = models.DateTimeField(default=None)
+    # close_date = models.DateTimeField(default=None, null=True)
+    start_date = models.DateField(default=None)
+    close_date = models.DateField(default=None, null=True)
+
     duration = models.IntegerField(pgettext_lazy("Duration of the Event in Seconds", "Durations"), default=None,
                                    null=True)  # not for tasks
     reminders = models.ManyToManyField(Reminder, blank=True)
     priority = models.CharField(max_length=10, blank=True)  # only for task
     updated_on = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(
-        User, on_delete=models.CASCADE, null=True, blank=True, related_name='updated_user')
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name='updated_user')
     attendees_user = models.ManyToManyField(User, blank=True,
                                             related_name='attendees_user')
     attendees_contacts = models.ManyToManyField(Contact, blank=True,
@@ -53,9 +56,8 @@ class Event(models.Model):
     attendees_leads = models.ManyToManyField(Lead, blank=True,
                                              related_name='attendees_lead')
     created_on = models.DateTimeField(_("Created on"), auto_now_add=True)
-    created_by = models.ForeignKey(User, related_name='event_created_by', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, related_name='event_created_by', on_delete=models.SET_NULL, null=True)
     assigned_to = models.ManyToManyField(User, blank=True, related_name='event_assigned_users')
-    teams = models.ManyToManyField(Team, blank=True)
     description = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=False)
 
