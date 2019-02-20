@@ -374,14 +374,7 @@ class UpdateLeadView(LoginRequiredMixin, UpdateView):
             for tag in lead_obj.tags.all():
                 account_object.tags.add(tag)
             if self.request.POST.getlist('assigned_to', []):
-
-
-<< << << < HEAD
-                account_object.assigned_to.add(
-                    *self.request.POST.getlist('assigned_to'))
-== == == =
                 # account_object.assigned_to.add(*self.request.POST.getlist('assigned_to'))
->>>>>> > d2d52a1e8f6b438f1d494dd2fecbcd78fac76902
                 assigned_to_list = self.request.POST.getlist('assigned_to')
                 current_site = get_current_site(self.request)
                 for assigned_to_user in assigned_to_list:
