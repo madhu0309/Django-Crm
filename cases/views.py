@@ -322,7 +322,7 @@ class RemoveCaseView(LoginRequiredMixin, View):
         if request.GET.get('view_account'):
             account = request.GET.get('view_account')
             return redirect("accounts:view_account", pk=account)
-        if self.request.user.role == "ADMIN" and self.request.user.is_superuser and self.request.user == self.object.created_by:
+        if self.request.user.role == "ADMIN" or self.request.user.is_superuser or self.request.user == self.object.created_by:
             self.object.delete()
             return redirect("cases:list")
         else:
@@ -331,13 +331,16 @@ class RemoveCaseView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         case_id = kwargs.get("case_id")
         self.object = get_object_or_404(Case, id=case_id)
-        self.object.delete()
-        if request.is_ajax():
-            return JsonResponse({'error': False})
-        count = Case.objects.filter(
-            Q(assigned_to__in=[request.user]) | Q(created_by=request.user)).distinct().count()
-        data = {"case_id": case_id, "count": count}
-        return JsonResponse(data)
+        if self.request.user.role == "ADMIN" or self.request.user.is_superuser or self.request.user == self.object.created_by:
+            self.object.delete()
+            if request.is_ajax():
+                return JsonResponse({'error': False})
+            count = Case.objects.filter(
+                Q(assigned_to__in=[request.user]) | Q(created_by=request.user)).distinct().count()
+            data = {"case_id": case_id, "count": count}
+            return JsonResponse(data)
+        else:
+            raise PermissionDenied
 
 
 class CloseCaseView(LoginRequiredMixin, View):
@@ -345,7 +348,7 @@ class CloseCaseView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         case_id = request.POST.get("case_id")
         self.object = get_object_or_404(Case, id=case_id)
-        if self.request.user.role == "ADMIN" and self.request.user.is_superuser and self.request.user == self.object.created_by:
+        if self.request.user.role == "ADMIN" or self.request.user.is_superuser or self.request.user == self.object.created_by:
             self.object.status = "Closed"
             self.object.save()
             data = {'status': "Closed", "cid": case_id}
