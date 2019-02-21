@@ -53,10 +53,25 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(HomeView, self).get_context_data(**kwargs)
-        context["accounts"] = Account.objects.filter(status="open")
-        context["contacts_count"] = Contact.objects.count()
-        context["leads_count"] = Lead.objects.exclude(status='converted')
-        context["opportunities"] = Opportunity.objects.all()
+        accounts = Account.objects.filter(status="open")
+        contacts = Contact.objects.all()
+        leads = Lead.objects.exclude(status='converted')
+        opportunities = Opportunity.objects.all()
+        if self.request.user.role == "ADMIN" or self.request.user.is_superuser:
+            pass
+        else:
+            accounts = accounts.filter(created_by=self.request.user.id)
+            contacts = contacts.filter(
+                Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
+            leads = leads.filter(
+                Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
+            opportunities = opportunities.filter(
+                Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
+
+        context["accounts"] = accounts
+        context["contacts_count"] = contacts.count()
+        context["leads_count"] = leads
+        context["opportunities"] = opportunities
         return context
 
 
