@@ -78,6 +78,11 @@ class HomeView(LoginRequiredMixin, TemplateView):
 class ChangePasswordView(LoginRequiredMixin, TemplateView):
     template_name = "change_password.html"
 
+    def get_context_data(self, **kwargs):
+        context = super(ChangePasswordView, self).get_context_data(**kwargs)
+        context["change_password_form"] = ChangePasswordForm()
+        return context
+
     def post(self, request, *args, **kwargs):
         error, errors = "", ""
         form = ChangePasswordForm(request.POST)
@@ -92,7 +97,7 @@ class ChangePasswordView(LoginRequiredMixin, TemplateView):
                 return HttpResponseRedirect('/')
         else:
             errors = form.errors
-        return render(request, "change_password.html", {'error': error, 'errors': errors})
+        return render(request, "change_password.html", {'error': error, 'errors': errors,'change_password_form':form})
 
 
 class ProfileView(LoginRequiredMixin, TemplateView):
