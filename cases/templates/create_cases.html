@@ -166,7 +166,6 @@
     data:$('#submitForm').serialize(),
     beforeSubmit:  disableButton,
     beforeSend: function() {
-      console.log("Called submit")
       var percentVal = '0%';
       bar.width(percentVal);
       percent.html(percentVal);
@@ -182,14 +181,10 @@
       }
     },
     success: function(data) {
-      console.log("data", data)
       if(data.error){
         $('#progress_bar').hide()
         $('.error_message').html('')
         for (var key in data.errors) {
-          console.log(key)
-          console.log(data.errors[key][0])
-          console.log($('#error_id_'+key))
           $('#error_id_'+key).html("<p>" + data.errors[key][0] + "</p>");
         };
         $('#submit_btn').removeAttr('disabled')
@@ -203,7 +198,6 @@
 
   $('#submit_btn').click(function() {
     var file = $('#case_attachment')[0].files[0];
-    console.log(file)
     if(file && file.name.length>0){
       var percentVal = '0%';
       bar.width(percentVal);
