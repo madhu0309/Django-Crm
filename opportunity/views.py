@@ -79,6 +79,11 @@ class CreateOpportunityView(LoginRequiredMixin, CreateView):
         self.users = User.objects.filter(is_active=True).order_by('email')
         self.accounts = Account.objects.all()
         self.contacts = Contact.objects.all()
+        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+            self.accounts = Account.objects.filter(
+                created_by=self.request.user)
+            self.contacts = Contact.objects.filter(
+                Q(assigned_to=self.request.user) | Q(created_by=self.request.user))
         return super(CreateOpportunityView, self).dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
@@ -216,6 +221,11 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
         self.users = User.objects.filter(is_active=True).order_by('email')
         self.accounts = Account.objects.all()
         self.contacts = Contact.objects.all()
+        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+            self.accounts = Account.objects.filter(
+                created_by=self.request.user)
+            self.contacts = Contact.objects.filter(
+                Q(assigned_to=self.request.user) | Q(created_by=self.request.user))
         return super(UpdateOpportunityView, self).dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):

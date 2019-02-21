@@ -33,7 +33,7 @@ class LeadListView(LoginRequiredMixin, TemplateView):
         queryset = self.model.objects.all().exclude(status='converted')
         if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
             queryset = queryset.filter(
-                Q(assigned_to=self.request.user.id) | Q(created_by=self.request.user.id))
+                Q(assigned_to=self.request.user) | Q(created_by=self.request.user))
         request_post = self.request.POST
         if request_post:
             if request_post.get('name'):
