@@ -27,7 +27,7 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
 
     def get_queryset(self):
         queryset = self.model.objects.all()
-        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             queryset = queryset.filter(created_by=self.request.user.id)
         request_post = self.request.POST
         if request_post:
@@ -94,7 +94,7 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
     def get_form_kwargs(self):
         kwargs = super(CreateAccountView, self).get_form_kwargs()
         kwargs.update({"account": True})
-        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             kwargs.update({"request_user": self.request.user})
         return kwargs
 
@@ -151,11 +151,10 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
         context["contact_count"] = Contact.objects.count()
-        if self.request.user.role == "ADMIN" or self.request.user.is_superuser:
-            context["lead_count"] = Lead.objects.count()
-        else:
+        context["lead_count"] = Lead.objects.count()
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             context["lead_count"] = Lead.objects.filter(
-                Q(assigned_to=self.request.user) | Q(created_by=self.request.user)).exclude(status='dead').count()
+                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user)).exclude(status='dead').count()
         return context
 
 
@@ -167,7 +166,7 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super(AccountDetailView, self).get_context_data(**kwargs)
         account_record = context["account_record"]
-        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             if self.request.user != account_record.created_by:
                 raise PermissionDenied
         if (
@@ -209,6 +208,8 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
     def get_form_kwargs(self):
         kwargs = super(AccountUpdateView, self).get_form_kwargs()
         kwargs.update({"account": True})
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+            kwargs.update({"request_user": self.request.user})
         return kwargs
 
     def post(self, request, *args, **kwargs):
@@ -259,7 +260,7 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super(AccountUpdateView, self).get_context_data(**kwargs)
         context["account_obj"] = self.object
-        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             if self.request.user != context['account_obj'].created_by:
                 raise PermissionDenied
         context["account_form"] = context["form"]
@@ -268,6 +269,9 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         context["countries"] = COUNTRIES
         context["contact_count"] = Contact.objects.count()
         context["lead_count"] = Lead.objects.count()
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+            context["lead_count"] = Lead.objects.filter(
+                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user)).exclude(status='dead').count()
         return context
 
 
@@ -277,7 +281,7 @@ class AccountDeleteView(LoginRequiredMixin, DeleteView):
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
-        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             if self.request.user != self.object.created_by:
                 raise PermissionDenied
         self.object.delete()
