@@ -25,7 +25,7 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
     def get_queryset(self):
         queryset = self.model.objects.all().prefetch_related("contacts", "account")
         if (self.request.user.role == "ADMIN" or self.request.user.is_superuser):
-            queryset = queryset
+            pass
         else:
             queryset = queryset.filter(
                 Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
