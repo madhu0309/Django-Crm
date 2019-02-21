@@ -500,20 +500,21 @@ class DocumentDetailView(LoginRequiredMixin, DetailView):
 
 
 def download_document(request, pk):
-    if not request.user.role == 'ADMIN':
-        if (not request.user == Document.objects.get(id=pk).created_by and
-            request.user not in Document.objects.get(id=pk).shared_to.all()):
-            raise PermissionDenied
     doc_obj = Document.objects.filter(id=pk).last()
-    path = doc_obj.document_file.path
-    file_path = os.path.join(settings.MEDIA_ROOT, path)
-    if os.path.exists(file_path):
-        with open(file_path, 'rb') as fh:
-            response = HttpResponse(
-                fh.read(), content_type="application/vnd.ms-excel")
-            response['Content-Disposition'] = 'inline; filename=' + \
-                os.path.basename(file_path)
-            return response
+    if doc_obj:
+        if not request.user.role == 'ADMIN':
+            if (not request.user == doc_obj.created_by and
+                request.user not in doc_obj.shared_to.all()):
+                raise PermissionDenied
+        path = doc_obj.document_file.path
+        file_path = os.path.join(settings.MEDIA_ROOT, path)
+        if os.path.exists(file_path):
+            with open(file_path, 'rb') as fh:
+                response = HttpResponse(
+                    fh.read(), content_type="application/vnd.ms-excel")
+                response['Content-Disposition'] = 'inline; filename=' + \
+                    os.path.basename(file_path)
+                return response
     raise Http404
 
 
