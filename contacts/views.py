@@ -45,17 +45,24 @@ class ContactsListView(LoginRequiredMixin, TemplateView):
             if request_post.get('email'):
                 queryset = queryset.filter(
                     email__icontains=request_post.get('email'))
+            if request_post.getlist('assigned_to'):
+                queryset = queryset.filter(
+                    assigned_to__id__in=request_post.getlist('assigned_to'))
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super(ContactsListView, self).get_context_data(**kwargs)
         context["contact_obj_list"] = self.get_queryset()
         context["per_page"] = self.request.POST.get('per_page')
-
+        context["users"] = User.objects.filter(
+            is_active=True).order_by('email')
+        context["assignedto_list"] = [
+            int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
         search = False
         if (
             self.request.POST.get('first_name') or self.request.POST.get('city') or
-            self.request.POST.get('phone') or self.request.POST.get('email')
+            self.request.POST.get('phone') or self.request.POST.get(
+                'email') or self.request.POST.get('assigned_to')
         ):
             search = True
         context["search"] = search
