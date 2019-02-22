@@ -65,6 +65,7 @@
     e.preventDefault();
     email = $("#exampleInputEmail1").val();
     pass = $("#exampleInputPassword1").val();
+    $(".error").text("")
     $("#email_error").text("")
     $("#password_error").text("")
     if (regex.test(email) && pass.length > 3){
