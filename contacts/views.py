@@ -25,11 +25,9 @@ class ContactsListView(LoginRequiredMixin, TemplateView):
 
     def get_queryset(self):
         queryset = self.model.objects.all()
-        if (self.request.user.role == "ADMIN" or self.request.user.is_superuser):
-            pass
-        else:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             queryset = queryset.filter(
-                Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
+                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user))
 
         request_post = self.request.POST
         if request_post:
@@ -181,7 +179,7 @@ class ContactDetailView(LoginRequiredMixin, DetailView):
         user_assgn_list = [i.id for i in context['object'].assigned_to.all()]
         if self.request.user == context['object'].created_by:
             user_assgn_list.append(self.request.user.id)
-        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             if self.request.user.id not in user_assgn_list:
                 raise PermissionDenied
         assigned_data = []
@@ -290,7 +288,7 @@ class UpdateContactView(LoginRequiredMixin, UpdateView):
             i.id for i in context["contact_obj"].assigned_to.all()]
         if self.request.user == context['contact_obj'].created_by:
             user_assgn_list.append(self.request.user.id)
-        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             if self.request.user.id not in user_assgn_list:
                 raise PermissionDenied
         context["address_obj"] = self.object.address
@@ -319,15 +317,15 @@ class RemoveContactView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         contact_id = kwargs.get("pk")
         self.object = get_object_or_404(Contact, id=contact_id)
-        if self.request.user.role == "ADMIN" or self.request.user.is_superuser or self.request.user == self.object.created_by:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser and self.request.user != self.object.created_by:
+            raise PermissionDenied
+        else:
             if self.object.address_id:
                 self.object.address.delete()
             self.object.delete()
             if self.request.is_ajax():
                 return JsonResponse({'error': False})
             return redirect("contacts:list")
-        else:
-            raise PermissionDenied
 
 
 class AddCommentView(LoginRequiredMixin, CreateView):
