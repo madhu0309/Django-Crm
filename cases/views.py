@@ -28,6 +28,7 @@ class CasesListView(LoginRequiredMixin, TemplateView):
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             queryset = queryset.filter(
                 Q(assigned_to__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
+
         request_post = self.request.POST
         if request_post:
             if request_post.get('name'):

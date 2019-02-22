@@ -29,6 +29,7 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
         queryset = self.model.objects.all()
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             queryset = queryset.filter(created_by=self.request.user.id)
+
         request_post = self.request.POST
         if request_post:
             if request_post.get('name'):
