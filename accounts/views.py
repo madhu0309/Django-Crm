@@ -14,7 +14,7 @@ from common.utils import INDCHOICES, COUNTRIES, CURRENCY_CODES, CASE_TYPE, PRIOR
 from contacts.models import Contact
 from opportunity.models import Opportunity, STAGES, SOURCES
 from cases.models import Case
-from django.urls import reverse
+from django.urls import reverse_lazy, reverse
 from leads.models import Lead
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
@@ -138,9 +138,16 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
         if self.request.POST.get("savenewform"):
             return redirect("accounts:new_account")
 
+        if self.request.is_ajax():
+            data = {'success_url': reverse_lazy(
+                'accounts:list'), 'error': False}
+            return JsonResponse(data)
+
         return redirect("accounts:list")
 
     def form_invalid(self, form):
+        if self.request.is_ajax():
+            return JsonResponse({'error': True, 'errors': form.errors})
         return self.render_to_response(
             self.get_context_data(form=form)
         )
@@ -251,9 +258,16 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
             attachment.attachment = self.request.FILES.get(
                 'account_attachment')
             attachment.save()
+
+        if self.request.is_ajax():
+            data = {'success_url': reverse_lazy(
+                'accounts:list'), 'error': False}
+            return JsonResponse(data)
         return redirect("accounts:list")
 
     def form_invalid(self, form):
+        if self.request.is_ajax():
+            return JsonResponse({'error': True, 'errors': form.errors})
         return self.render_to_response(
             self.get_context_data(form=form)
         )
