@@ -24,12 +24,9 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
 
     def get_queryset(self):
         queryset = self.model.objects.all().prefetch_related("contacts", "account")
-        if (self.request.user.role == "ADMIN" or self.request.user.is_superuser):
-            pass
-        else:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             queryset = queryset.filter(
-                Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
-
+                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user.id))
         request_post = self.request.POST
         if request_post:
             if request_post.get('name'):
@@ -82,6 +79,11 @@ class CreateOpportunityView(LoginRequiredMixin, CreateView):
         self.users = User.objects.filter(is_active=True).order_by('email')
         self.accounts = Account.objects.all()
         self.contacts = Contact.objects.all()
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+            self.accounts = Account.objects.filter(
+                created_by=self.request.user)
+            self.contacts = Contact.objects.filter(
+                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user))
         return super(CreateOpportunityView, self).dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
@@ -193,7 +195,7 @@ class OpportunityDetailView(LoginRequiredMixin, DetailView):
         user_assgn_list = [i.id for i in context['object'].assigned_to.all()]
         if self.request.user == context['object'].created_by:
             user_assgn_list.append(self.request.user.id)
-        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             if self.request.user.id not in user_assgn_list:
                 raise PermissionDenied
         assigned_data = []
@@ -219,6 +221,11 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
         self.users = User.objects.filter(is_active=True).order_by('email')
         self.accounts = Account.objects.all()
         self.contacts = Contact.objects.all()
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+            self.accounts = Account.objects.filter(
+                created_by=self.request.user)
+            self.contacts = Contact.objects.filter(
+                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user))
         return super(UpdateOpportunityView, self).dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
@@ -313,7 +320,7 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
             i.id for i in context["opportunity_obj"].assigned_to.all()]
         if self.request.user == context['opportunity_obj'].created_by:
             user_assgn_list.append(self.request.user.id)
-        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             if self.request.user.id not in user_assgn_list:
                 raise PermissionDenied
         context["opportunity_form"] = context["form"]

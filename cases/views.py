@@ -25,11 +25,9 @@ class CasesListView(LoginRequiredMixin, TemplateView):
 
     def get_queryset(self):
         queryset = self.model.objects.all().select_related("account")
-        if (self.request.user.role == "ADMIN" or self.request.user.is_superuser):
-            pass
-        else:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             queryset = queryset.filter(
-                Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
+                Q(assigned_to__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
 
         request_post = self.request.POST
         if request_post:
@@ -85,6 +83,11 @@ class CreateCaseView(LoginRequiredMixin, CreateView):
         self.users = User.objects.filter(is_active=True).order_by('email')
         self.accounts = Account.objects.all()
         self.contacts = Contact.objects.all()
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+            self.accounts = Account.objects.filter(
+                created_by=self.request.user)
+            self.contacts = Contact.objects.filter(
+                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user))
         return super(CreateCaseView, self).dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
@@ -180,7 +183,7 @@ class CaseDetailView(LoginRequiredMixin, DetailView):
         user_assgn_list = [i.id for i in context['object'].assigned_to.all()]
         if self.request.user == context['object'].created_by:
             user_assgn_list.append(self.request.user.id)
-        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             if self.request.user.id not in user_assgn_list:
                 raise PermissionDenied
         assigned_data = []
@@ -205,6 +208,11 @@ class UpdateCaseView(LoginRequiredMixin, UpdateView):
         self.users = User.objects.filter(is_active=True).order_by('email')
         self.accounts = Account.objects.all()
         self.contacts = Contact.objects.all()
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+            self.accounts = Account.objects.filter(
+                created_by=self.request.user)
+            self.contacts = Contact.objects.filter(
+                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user))
         return super(UpdateCaseView, self).dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
@@ -287,7 +295,7 @@ class UpdateCaseView(LoginRequiredMixin, UpdateView):
             i.id for i in context["case_obj"].assigned_to.all()]
         if self.request.user == context['case_obj'].created_by:
             user_assgn_list.append(self.request.user.id)
-        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             if self.request.user.id not in user_assgn_list:
                 raise PermissionDenied
         context["case_form"] = context["form"]
@@ -304,8 +312,6 @@ class UpdateCaseView(LoginRequiredMixin, UpdateView):
             int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
         context["contacts_list"] = [
             int(i) for i in self.request.POST.getlist('contacts', []) if i]
-
-        # import pdb; pdb.set_trace()
         return context
 
 
@@ -326,13 +332,16 @@ class RemoveCaseView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         case_id = kwargs.get("case_id")
         self.object = get_object_or_404(Case, id=case_id)
-        self.object.delete()
-        if request.is_ajax():
-            return JsonResponse({'error': False})
-        count = Case.objects.filter(
-            Q(assigned_to=request.user) | Q(created_by=request.user)).distinct().count()
-        data = {"case_id": case_id, "count": count}
-        return JsonResponse(data)
+        if self.request.user.role == "ADMIN" or self.request.user.is_superuser or self.request.user == self.object.created_by:
+            self.object.delete()
+            if request.is_ajax():
+                return JsonResponse({'error': False})
+            count = Case.objects.filter(
+                Q(assigned_to__in=[request.user]) | Q(created_by=request.user)).distinct().count()
+            data = {"case_id": case_id, "count": count}
+            return JsonResponse(data)
+        else:
+            raise PermissionDenied
 
 
 class CloseCaseView(LoginRequiredMixin, View):

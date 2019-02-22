@@ -78,6 +78,11 @@ class HomeView(LoginRequiredMixin, TemplateView):
 class ChangePasswordView(LoginRequiredMixin, TemplateView):
     template_name = "change_password.html"
 
+    def get_context_data(self, **kwargs):
+        context = super(ChangePasswordView, self).get_context_data(**kwargs)
+        context["change_password_form"] = ChangePasswordForm()
+        return context
+
     def post(self, request, *args, **kwargs):
         error, errors = "", ""
         form = ChangePasswordForm(request.POST)
@@ -92,7 +97,7 @@ class ChangePasswordView(LoginRequiredMixin, TemplateView):
                 return HttpResponseRedirect('/')
         else:
             errors = form.errors
-        return render(request, "change_password.html", {'error': error, 'errors': errors})
+        return render(request, "change_password.html", {'error': error, 'errors': errors,'change_password_form':form})
 
 
 class ProfileView(LoginRequiredMixin, TemplateView):
@@ -276,14 +281,14 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         user = form.save(commit=False)
         if self.request.is_ajax():
-            if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+            if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
                 if self.request.user.id != self.object.id:
                     data = {'error_403': True, 'error': True}
                     return JsonResponse(data)
         if user.role == "USER":
             user.is_superuser = False
         user.save()
-        if self.request.user.role == "ADMIN" or self.request.user.is_superuser:
+        if self.request.user.role == "ADMIN" and self.request.user.is_superuser:
             if self.request.is_ajax():
                 data = {'success_url': reverse_lazy(
                     'common:users_list'), 'error': False}
