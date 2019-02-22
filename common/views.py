@@ -159,6 +159,7 @@ class LoginView(TemplateView):
                 })
 
         else:
+            print(request.POST)
             return render(request, "login.html", {
                 "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
                 "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
