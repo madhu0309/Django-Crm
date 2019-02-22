@@ -97,7 +97,7 @@ class ChangePasswordView(LoginRequiredMixin, TemplateView):
                 return HttpResponseRedirect('/')
         else:
             errors = form.errors
-        return render(request, "change_password.html", {'error': error, 'errors': errors,'change_password_form':form})
+        return render(request, "change_password.html", {'error': error, 'errors': errors, 'change_password_form': form})
 
 
 class ProfileView(LoginRequiredMixin, TemplateView):
@@ -168,8 +168,9 @@ class LoginView(TemplateView):
                 "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
                 "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
                 "GP_CLIENT_ID": settings.GP_CLIENT_ID,
-                "error": True,
-                "message": "Your username and password didn't match. Please try again."
+                # "error": True,
+                # "message": "Your username and password didn't match. Please try again."
+                "errors": form.errors
             })
 
 
@@ -522,7 +523,7 @@ class DocumentDetailView(LoginRequiredMixin, DetailView):
 def download_document(request, pk):
     if not request.user.role == 'ADMIN':
         if (not request.user == Document.objects.get(id=pk).created_by and
-            request.user not in Document.objects.get(id=pk).shared_to.all()):
+                request.user not in Document.objects.get(id=pk).shared_to.all()):
             raise PermissionDenied
     doc_obj = Document.objects.filter(id=pk).last()
     path = doc_obj.document_file.path

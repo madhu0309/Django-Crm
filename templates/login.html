@@ -18,9 +18,7 @@
     {% compress css %}
     <link href="{% static 'css/main.scss' %}" type="text/x-scss" rel="stylesheet">
     {% endcompress %}
-    {% block extralinks %}
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    {% endblock %}
+    {% block extralinks %}{% endblock %}
   </head>
   <body class="login_register_body">
     <div class="container">
@@ -29,14 +27,14 @@
           <div class="login_block">
             <div class="login_form_block">
               <div class="welcome">Django CRM</div>
-              <form id="login_form" method="POST" action="">
+              <form method="POST" action="">
                 <div class="form-group">
                   <input type="text" class="form-control" id="exampleInputEmail1" placeholder="Email" name="email">
-                   <p id="email_error" style="color:red"></p>
+                   <p >{{ errors.email }}</p>
                 </div>
                 <div class="form-group">
                   <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" name="password">
-                  <p id="password_error" style="color:red"></p>
+                  <p>{{ errors.password }}</p>
                 </div>
                 <div class="forgot">Forgot Password <a href="{% url "common:password_reset" %}">Click Here?</a></div>
                 {% if error %}
@@ -58,30 +56,5 @@
         </div>
       </div>
     </div>
-    <script type="text/javascript">
-    var regex = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-    $( document ).ready(function() {
-    $("#login_form").on("submit", function(e){
-    e.preventDefault();
-    email = $("#exampleInputEmail1").val();
-    pass = $("#exampleInputPassword1").val();
-    $(".error").text("")
-    $("#email_error").text("")
-    $("#password_error").text("")
-    if (regex.test(email) && pass.length > 3){
-        this.submit()
-        }
-    if(email.length ==0){
-      $("#email_error").text("Please enter the email ")
-    }
-    if( email.length >0 && !(regex.test(email))){
-      $("#email_error").text(" Please enter a Valid email ")
-    }
-    if (pass.length < 4){
-      $("#password_error").text("Password should be atleast 4 character's") 
-      }
-    });
-    });
-    </script>
   </body>
 </html>
