@@ -31,9 +31,10 @@ class LeadListView(LoginRequiredMixin, TemplateView):
 
     def get_queryset(self):
         queryset = self.model.objects.all().exclude(status='converted')
-        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             queryset = queryset.filter(
-                Q(assigned_to=self.request.user.id) | Q(created_by=self.request.user.id))
+                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user))
+
         request_post = self.request.POST
         if request_post:
             if request_post.get('name'):
@@ -212,7 +213,7 @@ class LeadDetailView(LoginRequiredMixin, DetailView):
         user_assgn_list = [i.id for i in context['object'].assigned_to.all()]
         if self.request.user == context['object'].created_by:
             user_assgn_list.append(self.request.user.id)
-        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             if self.request.user.id not in user_assgn_list:
                 raise PermissionDenied
         comments = Comment.objects.filter(
@@ -374,7 +375,7 @@ def update_lead(request, pk):
             i.id for i in lead_record.assigned_to.all()]
         if request.user == lead_record.created_by:
             user_assgn_list.append(request.user.id)
-        if request.user.role != "ADMIN" or not request.user.is_superuser:
+        if request.user.role != "ADMIN" and not request.user.is_superuser:
             if request.user.id not in user_assgn_list:
                 raise PermissionDenied
         context["lead_form"] = form
