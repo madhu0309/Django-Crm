@@ -28,6 +28,7 @@ class ContactsListView(LoginRequiredMixin, TemplateView):
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             queryset = queryset.filter(
                 Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user))
+
         request_post = self.request.POST
         if request_post:
             if request_post.get('first_name'):
