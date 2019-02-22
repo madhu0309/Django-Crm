@@ -61,7 +61,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  {% for account in accounts|slice:"15" %}
+                  {% for account in accounts|slice:"10" %}
                   <tr>
                     <td><a href="{% url 'accounts:view_account' account.id %}">{{account.name}}</a></td>
                     <td style="display: block;">
@@ -71,7 +71,7 @@
                       <span class="text-left">No Tags</span>
                     {% endfor %}
                     {% if account.tags.all|length > 3 %}
-                    <span class="text-left" id="list_tag">{{account.tags.all|length|subtract:'3'}}<span>+</span></span>
+                    <span class="text-left" id="list_tag">{{account.tags.all|length|subtract:'3'}}<span> more </span></span>
                     {% endif %}
                     </td>
                   </tr>
@@ -97,7 +97,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  {% for opportunity in opportunities|slice:"15" %}
+                  {% for opportunity in opportunities|slice:"10" %}
                   <tr>
                     <td><a href="{% url 'opportunity:opp_view' opportunity.id %}">{{opportunity.name}}</a></td>
                     <td style="display: block;">
@@ -107,7 +107,7 @@
                       <span class="text-left">No Tags</span>
                       {% endfor %}
                       {% if opportunity.tags.all|length > 3 %}
-                      {{opportunity.tags.all|length|subtract:'3'}}<span>+</span>
+                      <span class="text-left" id="list_tag">{{opportunity.tags.all|length|subtract:'3'}}<span> more </span></span>
                       {% endif %}
                     </td>
                   </tr>

@@ -41,7 +41,7 @@
           <div class="card-title list text-right">
             <span class="float-left">Users - {% if show_pageitems %} {% show_pageitems %}{% else %} {{ users|length }}{% endif %}</span>
             <span class="filter_toggle">
-            <a href="#" class="primary_btn"></a>
+            <a style="padding:0px 10px;" href="#" class="primary_btn"></a>
             </span>
           </div>
           <div class="table-responsive ">
@@ -68,13 +68,18 @@
                   <td><a href="{% url 'common:view_user' user.id %}">{{ user.username }}</a></td>
                   <td>{{ user.email }}</td>
                   <td class="user_role">{% if user.is_superuser %} Admin {% else %} {{user.role}} {% endif %}</td>
-                  <td><a {% if user.is_active %} onclick="return confirm('Are you sure you want to deactivate this user?')" {% else %} onclick="return confirm('Are you sure you want to activate this user?')" {% endif %} href="{% url 'common:change_user_status' pk=user.id %}" class="on_off" style="color: #454545; text-decoration: none;">
+                  <td>
+                  {% ifnotequal request.user user  %}
+                  <a {% if user.is_active %} onclick="return confirm('Are you sure you want to deactivate this user?')" {% else %} onclick="return confirm('Are you sure you want to activate this user?')" {% endif %} href="{% url 'common:change_user_status' pk=user.id %}" class="on_off" style="color: #454545; text-decoration: none;">
                     {% if user.is_active == True %}
                     <i class="fa fa-toggle-on"></i> Active
                     {% else %}
                     <i class="fa fa-toggle-off"></i> InActive
                     {% endif %}
                     </a>
+                    {% else %}
+                    Active
+                  {% endifnotequal %}
                   </td>
                   <td class="actions">
                     <!-- <a href="{% url 'common:view_user' user.id %}" class="btn btn-info view"><i class="fas fa-eye"></i>View</a> -->
@@ -82,8 +87,8 @@
                     <a href="{% url 'common:edit_user' user.id %}" class="btn btn-success edit action"><i class="fas fa-pencil-alt"></i>Edit</a>
                     {% endif %}
                     <a href="{% url 'common:remove_user' user.id %}" class="btn btn-danger trash action" {% if request.user.email == user.email %} style="visibility: hidden;" {% endif %}><i class="fas fa-trash-alt"></i>Delete</a>
-                    {% if user.email != admin_email  %}
-                    <a data-id="{{user.id}}" class="fa-passwd-reset fa-stack"><i class="fa fa-undo fa-stack-2x"></i><i class="fa fa-lock fa-stack-1x"></i></a>{% endif %}
+                    {% if user.email != admin_email or request.user != user %}
+                    <a style="color:black;margin-bottom: -11px;" data-id="{{user.id}}" href="" class="fa-passwd-reset fa-stack" ><i class="fa fa-undo fa-stack-2x"></i><i class="fa fa-lock fa-stack-1x"></i></a>{% endif %}
                   </td>
                 </tr>
                 {% endfor %}
@@ -119,15 +124,16 @@ $(document).ready(function(){
   $(".fa-passwd-reset").click(function(e){
     e.preventDefault();
     user_id = $(this).attr('data-id')
+    $("#password_eror").text("");
     $("#pass_change_div").modal();
   });
   $("#submit_password").click(function(e){
     e.preventDefault();
     if ($("#new_passwoord").val().length <4){
-      $("#password_eror").text("* Password must be at least 4 characters long! ")
+      $("#password_eror").text("* Password must be atleast 4 characters long! ")
     }
     else{
-      $("#password_eror").text();
+      $("#password_eror").text("");
       $('#useer_id').val(user_id);
       $("#chang_password_form").submit()
     }

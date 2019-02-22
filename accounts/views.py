@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views.generic import (
     CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
@@ -25,15 +25,19 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
 
     def get_queryset(self):
         queryset = self.model.objects.all()
+        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+            queryset = queryset.filter(created_by=self.request.user.id)
         request_post = self.request.POST
         if request_post:
             if request_post.get('name'):
-                queryset = queryset.filter(name__icontains=request_post.get('name'))
+                queryset = queryset.filter(
+                    name__icontains=request_post.get('name'))
             if request_post.get('city'):
                 queryset = queryset.filter(
                     billing_city__contains=request_post.get('city'))
             if request_post.get('industry'):
-                queryset = queryset.filter(industry__icontains=request_post.get('industry'))
+                queryset = queryset.filter(
+                    industry__icontains=request_post.get('industry'))
             if request_post.get('tag'):
                 queryset = queryset.filter(tags__in=request_post.get('tag'))
 
@@ -44,12 +48,22 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
         open_accounts = self.get_queryset().filter(status='open')
         close_accounts = self.get_queryset().filter(status='close')
         context["accounts_list"] = self.get_queryset()
-        context["users"] = User.objects.filter(is_active=True).order_by('email')
+        context["users"] = User.objects.filter(
+            is_active=True).order_by('email')
         context['open_accounts'] = open_accounts
         context['close_accounts'] = close_accounts
         context["industries"] = INDCHOICES
         context["per_page"] = self.request.POST.get('per_page')
-        context['tags'] = Tags.objects.all()
+        context["tag"] = Tags.objects.all()
+
+        search = False
+        if (
+            self.request.POST.get('name') or self.request.POST.get('city') or
+            self.request.POST.get('industry') or self.request.POST.get('tag')
+        ):
+            search = True
+
+        context["search"] = search
 
         tab_status = 'Open'
         if self.request.POST.get('tab_status'):
@@ -73,14 +87,11 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         self.users = User.objects.filter(is_active=True).order_by('email')
-        # if Contact.objects.count() == 0:
-        #     return JsonResponse({'message':'create Contact'})
-        # if Lead.objects.count() == 0:
-        #     return JsonResponse({'message':'create Lead'})
         return super(CreateAccountView, self).dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super(CreateAccountView, self).get_form_kwargs()
+        kwargs.update({"account": True})
         return kwargs
 
     def post(self, request, *args, **kwargs):
@@ -107,13 +118,18 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
                 else:
                     tag = Tags.objects.create(name=t.lower())
                 account_object.tags.add(tag)
+        if self.request.POST.getlist('contacts', []):
+            account_object.contacts.add(*self.request.POST.getlist('contacts'))
         if self.request.FILES.get('account_attachment'):
             attachment = Attachments()
             attachment.created_by = self.request.user
-            attachment.file_name = self.request.FILES.get('account_attachment').name
+            attachment.file_name = self.request.FILES.get(
+                'account_attachment').name
             attachment.account = account_object
-            attachment.attachment = self.request.FILES.get('account_attachment')
+            attachment.attachment = self.request.FILES.get(
+                'account_attachment')
             attachment.save()
+
         if self.request.POST.get("savenewform"):
             return redirect("accounts:new_account")
 
@@ -130,6 +146,8 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
         context["users"] = self.users
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
+        context["contact_count"] = Contact.objects.count()
+        context["lead_count"] = Lead.objects.count()
         return context
 
 
@@ -179,6 +197,7 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_form_kwargs(self):
         kwargs = super(AccountUpdateView, self).get_form_kwargs()
+        kwargs.update({"account": True})
         return kwargs
 
     def post(self, request, *args, **kwargs):
@@ -207,12 +226,17 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
                 else:
                     tag = Tags.objects.create(name=t.lower())
                 account_object.tags.add(tag)
+        if self.request.POST.getlist('contacts', []):
+            account_object.contacts.clear()
+            account_object.contacts.add(*self.request.POST.getlist('contacts'))
         if self.request.FILES.get('account_attachment'):
             attachment = Attachments()
             attachment.created_by = self.request.user
-            attachment.file_name = self.request.FILES.get('account_attachment').name
+            attachment.file_name = self.request.FILES.get(
+                'account_attachment').name
             attachment.account = account_object
-            attachment.attachment = self.request.FILES.get('account_attachment')
+            attachment.attachment = self.request.FILES.get(
+                'account_attachment')
             attachment.save()
         return redirect("accounts:list")
 
@@ -228,7 +252,8 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         context["users"] = self.users
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
-
+        context["contact_count"] = Contact.objects.count()
+        context["lead_count"] = Lead.objects.count()
         return context
 
 
@@ -249,7 +274,8 @@ class AddCommentView(LoginRequiredMixin, CreateView):
 
     def post(self, request, *args, **kwargs):
         self.object = None
-        self.account = get_object_or_404(Account, id=request.POST.get('accountid'))
+        self.account = get_object_or_404(
+            Account, id=request.POST.get('accountid'))
         if (
             request.user == self.account.created_by or request.user.is_superuser or
             request.user.role == 'ADMIN'
@@ -281,14 +307,15 @@ class UpdateCommentView(LoginRequiredMixin, View):
     http_method_names = ["post"]
 
     def post(self, request, *args, **kwargs):
-        self.comment_obj = get_object_or_404(Comment, id=request.POST.get("commentid"))
+        self.comment_obj = get_object_or_404(
+            Comment, id=request.POST.get("commentid"))
         if request.user == self.comment_obj.commented_by:
             form = AccountCommentForm(request.POST, instance=self.comment_obj)
             if form.is_valid():
                 return self.form_valid(form)
-            
+
             return self.form_invalid(form)
-        
+
         data = {'error': "You don't have permission to edit this comment."}
         return JsonResponse(data)
 
@@ -307,12 +334,13 @@ class UpdateCommentView(LoginRequiredMixin, View):
 class DeleteCommentView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
-        self.object = get_object_or_404(Comment, id=request.POST.get("comment_id"))
+        self.object = get_object_or_404(
+            Comment, id=request.POST.get("comment_id"))
         if request.user == self.object.commented_by:
             self.object.delete()
             data = {"cid": request.POST.get("comment_id")}
             return JsonResponse(data)
-        
+
         data = {'error': "You don't have permission to delete this comment."}
         return JsonResponse(data)
 
@@ -324,7 +352,8 @@ class AddAttachmentView(LoginRequiredMixin, CreateView):
 
     def post(self, request, *args, **kwargs):
         self.object = None
-        self.account = get_object_or_404(Account, id=request.POST.get('accountid'))
+        self.account = get_object_or_404(
+            Account, id=request.POST.get('accountid'))
         if (
             request.user == self.account.created_by or request.user.is_superuser or
             request.user.role == 'ADMIN'
@@ -332,10 +361,11 @@ class AddAttachmentView(LoginRequiredMixin, CreateView):
             form = self.get_form()
             if form.is_valid():
                 return self.form_valid(form)
-            
+
             return self.form_invalid(form)
-        
-        data = {'error': "You don't have permission to add attachment for this account."}
+
+        data = {
+            'error': "You don't have permission to add attachment for this account."}
         return JsonResponse(data)
 
     def form_valid(self, form):
@@ -348,7 +378,7 @@ class AddAttachmentView(LoginRequiredMixin, CreateView):
             "attachment_id": attachment.id,
             "attachment": attachment.file_name,
             "attachment_url": attachment.attachment.url,
-            "download_url": reverse('common:download_attachment', kwargs={'pk':attachment.id}),
+            "download_url": reverse('common:download_attachment', kwargs={'pk': attachment.id}),
             "attachment_display": attachment.get_file_type_display(),
             "created_on": attachment.created_on,
             "created_by": attachment.created_by.email
@@ -361,14 +391,15 @@ class AddAttachmentView(LoginRequiredMixin, CreateView):
 class DeleteAttachmentsView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
-        self.object = get_object_or_404(Attachments, id=request.POST.get("attachment_id"))
+        self.object = get_object_or_404(
+            Attachments, id=request.POST.get("attachment_id"))
         if (
-            request.user == self.object.created_by or request.user.is_superuser or 
+            request.user == self.object.created_by or request.user.is_superuser or
             request.user.role == 'ADMIN'
         ):
             self.object.delete()
             data = {"acd": request.POST.get("attachment_id")}
             return JsonResponse(data)
-        
+
         data = {'error': "You don't have permission to delete this attachment."}
         return JsonResponse(data)

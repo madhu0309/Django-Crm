@@ -13,6 +13,8 @@ from contacts.models import Contact
 from opportunity.forms import OpportunityForm, OpportunityCommentForm, OpportunityAttachmentForm
 from opportunity.models import Opportunity
 from django.urls import reverse
+from django.db.models import Q
+from django.core.exceptions import PermissionDenied
 
 
 class OpportunityListView(LoginRequiredMixin, TemplateView):
@@ -22,6 +24,9 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
 
     def get_queryset(self):
         queryset = self.model.objects.all().prefetch_related("contacts", "account")
+        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+            queryset = queryset.filter(
+                Q(assigned_to=self.request.user.id) | Q(created_by=self.request.user.id))
         request_post = self.request.POST
         if request_post:
             if request_post.get('name'):
@@ -48,6 +53,16 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
         context["stages"] = STAGES
         context["sources"] = SOURCES
         context["per_page"] = self.request.POST.get('per_page')
+
+        search = False
+        if (
+            self.request.POST.get('name') or self.request.POST.get('stage') or
+            self.request.POST.get('lead_source') or self.request.POST.get('account') or
+            self.request.POST.get('contacts')
+        ):
+            search = True
+
+        context["search"] = search
         return context
 
     def post(self, request, *args, **kwargs):
@@ -172,7 +187,12 @@ class OpportunityDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(OpportunityDetailView, self).get_context_data(**kwargs)
-
+        user_assgn_list = [i.id for i in context['object'].assigned_to.all()]
+        if self.request.user == context['object'].created_by:
+            user_assgn_list.append(self.request.user.id)
+        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+            if self.request.user.id not in user_assgn_list:
+                raise PermissionDenied
         assigned_data = []
         for each in context['opportunity_record'].assigned_to.all():
             assigned_dict = {}
@@ -286,6 +306,13 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super(UpdateOpportunityView, self).get_context_data(**kwargs)
         context["opportunity_obj"] = self.object
+        user_assgn_list = [
+            i.id for i in context["opportunity_obj"].assigned_to.all()]
+        if self.request.user == context['opportunity_obj'].created_by:
+            user_assgn_list.append(self.request.user.id)
+        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+            if self.request.user.id not in user_assgn_list:
+                raise PermissionDenied
         context["opportunity_form"] = context["form"]
         context["accounts"] = self.accounts
         if self.request.GET.get('view_account'):
@@ -311,15 +338,18 @@ class DeleteOpportunityView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         self.object = get_object_or_404(Opportunity, id=kwargs.get("pk"))
-        self.object.delete()
-        if request.is_ajax():
-            return JsonResponse({'error': False})
+        if self.request.user.role == "ADMIN" or self.request.user.is_superuser or self.request.user == self.object.created_by:
+            self.object.delete()
+            if request.is_ajax():
+                return JsonResponse({'error': False})
 
-        if request.GET.get('view_account'):
-            account = request.GET.get('view_account')
-            return redirect("accounts:view_account", pk=account)
+            if request.GET.get('view_account'):
+                account = request.GET.get('view_account')
+                return redirect("accounts:view_account", pk=account)
 
-        return redirect("opportunities:list")
+            return redirect("opportunities:list")
+        else:
+            raise PermissionDenied
 
 
 class GetContactView(LoginRequiredMixin, View):

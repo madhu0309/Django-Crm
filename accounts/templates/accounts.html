@@ -244,6 +244,13 @@
   $(".reset").click(function(e){
     window.location = "{% url 'accounts:list'%}"
   });
+
+
+  search = "{{search}}"
+
+  if (search == 'True'){
+    $(".list_filter_row").show();
+  }
   
   $(document).ready(function(){    
     $(".filter_toggle").click(function(){    

@@ -1,6 +1,7 @@
 {% extends 'sales/base.html' %}
 {% load staticfiles %}
 {% load paginate %}
+{% load thumbnail %}
 {% block extralinks %}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
 {% endblock %}
@@ -113,6 +114,7 @@
                       <tr>
                         <th width="5%">ID</th>
                         <th width="10%">Name</th>
+                        <th width="10%">Source</th>
                         <th width="10%">Status</th>
                         <th width="20%">Assigned User</th>
                         <th width="20%">Tags</th>
@@ -131,11 +133,18 @@
                       <tr class="text-center">
                         <td scope="row">{{ forloop.counter }}</td>
                         <td><a href="{% url 'leads:view_lead' lead.id %}">{{ lead.first_name }} {{ lead.last_name }}</a></td>
+                        <td>{{ lead.source }}</td>
                         <td>{{ lead.get_status_display }}</td>
                         <td>
                           {% with lead_users=lead.assigned_to.all %}
                           {% for user in lead_users %}
-                          <span class="text-left">{{ user.email }}</span><br>
+                          {% if user.profile_pic %}
+                            {% thumbnail user.profile_pic "40x40" crop="center" as im %}
+                                <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" title="{{ user.email }}">
+                            {% endthumbnail %}
+                          {% else %}
+                                <img src="{% static 'images/user.png' %}" title="{{ user.email }}" width="40" height="40">
+                          {% endif %}
                           {% empty %}
                           Not Assigned to Any
                           {% endfor %}
@@ -155,7 +164,9 @@
                         <td>{{ lead.created_on }}</td>
                         <td class="actions"> 
                           <a href="{% url 'leads:edit_lead' lead.id %}" class="btn btn-success edit"><i class="fas fa-pencil-alt"></i></a>
+                          {% if request.user == lead.created_by or request.user.role == "ADMIN" or request.user.is_superuser %}
                           <a href="{% url 'leads:remove_lead' lead.id %}" class="btn btn-danger delete remove_account"><i class="fas fa-trash-alt"></i></a>
+                          {% endif %}
                         </td>
                       </tr>
                       {% endfor %}
@@ -187,6 +198,7 @@
                       <tr>
                         <th width="5%">ID</th>
                         <th width="10%">Name</th>
+                        <th width="10%">Source</th>
                         <th width="10%">Status</th>
                         <th width="20%">Assigned User</th>
                         <th width="20%">Tags</th>
@@ -205,6 +217,7 @@
                       <tr class="text-center">
                         <td scope="row">{{ forloop.counter }}</td>
                         <td><a href="{% url 'leads:view_lead' lead.id %}">{{ lead.first_name }} {{ lead.last_name }}</a></td>
+                        <td>{{ lead.source }}</td>
                         <td>{{ lead.get_status_display }}</td>
                         <td>
                           {% with lead_users=lead.assigned_to.all %}
@@ -229,7 +242,9 @@
                         <td>{{ lead.created_on }}</td>
                         <td class="actions"> 
                           <a href="{% url 'leads:edit_lead' lead.id %}" class="btn btn-success edit"><i class="fas fa-pencil-alt"></i></a>
+                          {% if request.user == lead.created_by %}
                           <a href="{% url 'leads:remove_lead' lead.id %}" class="btn btn-danger delete remove_account"><i class="fas fa-trash-alt"></i></a>
+                          {% endif %}
                         </td>
                       </tr>
                       {% endfor %}
@@ -237,7 +252,7 @@
                   </table>
                 </div>
                 {%ifequal close_leads|length 0%}
-                <h6 class="text-center">No Dead Lead Records Found</h6>
+                <h6 class="text-center">No Closed Lead Records Found</h6>
                 {%endifequal%}
                 <div class="marl row text-center">
                   {% show_pages %}
@@ -260,6 +275,12 @@
       $(".list_filter_row").toggle();    
     });    
   });
+
+  search = "{{search}}"
+
+  if (search == 'True'){
+    $(".list_filter_row").show();
+  }
   
   $("#close-tab").click(function(e){
     $("#tab_status").val('Closed')

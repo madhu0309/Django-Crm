@@ -73,11 +73,12 @@
                   <label for="exampleInputEmail1" class="required">Email Address{% if lead_form.email.field.required %}<span class="error">*</span>{% endif %}</label>
                   {{ lead_form.email }}
                   <span class="error">{{ lead_form.email.errors }}</span>
+                  {% if error %}
+                  <span class="error">{{ error }}</span>
+                  {% endif %}
                 </div>
               </div>
-<<<<<<< HEAD
 
-=======
               <div class="filter_col col-md-12">
               <div class="form-group">
                 <label for="exampleInputEmail1">Attachment</label>
@@ -94,7 +95,6 @@
                 </div>
               </div>
             </div>
->>>>>>> d9b877f1db08a3866f06a9c7e8750fafc8ccae7d
             <div class="col-md-4">
               <div class="filter_col col-md-12">
                 <div class="form-group">
@@ -141,28 +141,28 @@
               <div class="filter_col col-md-12">
                 <div class="form-group">
                   <label for="exampleInputEmail1" >Address</label>
-                  {{ address_form.address_line }}
-                  <span class="error">{{ address_form.address_line.errors }}</span>
+                  {{ lead_form.address_line }}
+                  <span class="error">{{ lead_form.address_line.errors }}</span>
                 </div>
-                {{ address_form.street }}
-                <span class="error">{{ address_form.street.errors }}</span>
+                {{ lead_form.street }}
+                <span class="error">{{ lead_form.street.errors }}</span>
                 <div class="row" style="margin-top:10px;">
                   <div class="col-md-4">
-                    {{ address_form.city }}
-                    <span class="error">{{ address_form.city.errors }}</span>
+                    {{ lead_form.city }}
+                    <span class="error">{{ lead_form.city.errors }}</span>
                   </div>
                   <div class="col-md-4">
-                    {{ address_form.state }}
-                    <span class="error">{{ address_form.state.errors }}</span>
+                    {{ lead_form.state }}
+                    <span class="error">{{ lead_form.state.errors }}</span>
                   </div>
 
                   <div class="col-md-4">
-                    {{ address_form.postcode }}
-                    <span class="error">{{ address_form.postcode.errors }}</span>
+                    {{ lead_form.postcode }}
+                    <span class="error">{{ lead_form.postcode.errors }}</span>
                   </div>
                   <div class="col-md-12" style="margin-top:10px;">
-                    {{ address_form.country }}
-                    <span class="error">{{ address_form.country.errors }}</span>
+                    {{ lead_form.country }}
+                    <span class="error">{{ lead_form.country.errors }}</span>
                   </div>
                 </div>
               </div>
