@@ -78,6 +78,11 @@ class HomeView(LoginRequiredMixin, TemplateView):
 class ChangePasswordView(LoginRequiredMixin, TemplateView):
     template_name = "change_password.html"
 
+    def get_context_data(self, **kwargs):
+        context = super(ChangePasswordView, self).get_context_data(**kwargs)
+        context["change_password_form"] = ChangePasswordForm()
+        return context
+
     def post(self, request, *args, **kwargs):
         error, errors = "", ""
         form = ChangePasswordForm(request.POST)
@@ -92,7 +97,7 @@ class ChangePasswordView(LoginRequiredMixin, TemplateView):
                 return HttpResponseRedirect('/')
         else:
             errors = form.errors
-        return render(request, "change_password.html", {'error': error, 'errors': errors})
+        return render(request, "change_password.html", {'error': error, 'errors': errors,'change_password_form':form})
 
 
 class ProfileView(LoginRequiredMixin, TemplateView):
@@ -276,14 +281,14 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         user = form.save(commit=False)
         if self.request.is_ajax():
-            if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+            if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
                 if self.request.user.id != self.object.id:
                     data = {'error_403': True, 'error': True}
                     return JsonResponse(data)
         if user.role == "USER":
             user.is_superuser = False
         user.save()
-        if self.request.user.role == "ADMIN" or self.request.user.is_superuser:
+        if self.request.user.role == "ADMIN" and self.request.user.is_superuser:
             if self.request.is_ajax():
                 data = {'success_url': reverse_lazy(
                     'common:users_list'), 'error': False}
@@ -433,6 +438,9 @@ class DocumentDeleteView(LoginRequiredMixin, DeleteView):
     model = Document
 
     def get(self, request, *args, **kwargs):
+        if not request.user.role == 'ADMIN':
+            if not request.user == Document.objects.get(id=kwargs['pk']).created_by:
+                raise PermissionDenied
         self.object = self.get_object()
         self.object.delete()
         return redirect("common:doc_list")
@@ -444,6 +452,10 @@ class UpdateDocumentView(LoginRequiredMixin, UpdateView):
     template_name = "doc_create.html"
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.role == 'ADMIN':
+            if not request.user == Document.objects.get(id=kwargs['pk']).created_by:
+                raise PermissionDenied
+
         self.users = User.objects.filter(is_active=True).order_by('email')
         return super(UpdateDocumentView, self).dispatch(request, *args, **kwargs)
 
@@ -490,6 +502,13 @@ class DocumentDetailView(LoginRequiredMixin, DetailView):
     model = Document
     template_name = "doc_detail.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.role == 'ADMIN':
+            if (not request.user == Document.objects.get(id=kwargs['pk']).created_by):
+                raise PermissionDenied
+
+        return super(DocumentDetailView, self).dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(DocumentDetailView, self).get_context_data(**kwargs)
         # documents = Document.objects.all()
@@ -501,6 +520,10 @@ class DocumentDetailView(LoginRequiredMixin, DetailView):
 
 
 def download_document(request, pk):
+    if not request.user.role == 'ADMIN':
+        if (not request.user == Document.objects.get(id=pk).created_by and
+            request.user not in Document.objects.get(id=pk).shared_to.all()):
+            raise PermissionDenied
     doc_obj = Document.objects.filter(id=pk).last()
     path = doc_obj.document_file.path
     file_path = os.path.join(settings.MEDIA_ROOT, path)
@@ -734,30 +757,38 @@ def google_login(request):
         ) else ""
         link = user_document['link'] if 'link' in user_document.keys(
         ) else link
+
+        verified_email = user_document['verified_email'] if 'verified_email' in user_document.keys() else ''
+        name = user_document['name'] if 'name' in user_document.keys() else 'name'
+        first_name = user_document['given_name'] if 'given_name' in user_document.keys() else 'first_name'
+        last_name = user_document['family_name'] if 'family_name' in user_document.keys() else 'last_name'
+        email = user_document['email'] if 'email' in user_document.keys() else 'email@dummy.com'
+
         user = User.objects.filter(email=user_document['email'])
+
         if user:
             user = user[0]
-            user.first_name = user_document['given_name']
-            user.last_name = user_document['family_name']
+            user.first_name = first_name
+            user.last_name = last_name
         else:
             user = User.objects.create(
-                username=user_document['email'],
-                email=user_document['email'],
-                first_name=user_document['given_name'],
-                last_name=user_document['family_name'],
+                username=email,
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
                 role="User"
             )
 
         google, created = Google.objects.get_or_create(user=user)
         google.user = user
         google.google_url = link
-        google.verified_email = user_document['verified_email']
+        google.verified_email = verified_email
         google.google_id = user_document['id']
-        google.family_name = user_document['family_name']
-        google.name = user_document['name']
-        google.given_name = user_document['given_name']
+        google.family_name = last_name
+        google.name = name
+        google.given_name = first_name
         google.dob = dob
-        google.email = user_document['email']
+        google.email = email
         google.gender = gender
         google.save()
 
