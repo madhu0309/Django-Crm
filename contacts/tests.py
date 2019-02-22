@@ -53,8 +53,8 @@ class ContactObjectsCreation_Count(ContactObjectsCreation, TestCase):
     def test_contact_object_creation(self):
         c = Contact.objects.count()
         con = Contact.objects.filter(id=self.contact.id)
-        print(self.contact.first_name)
-        self.assertEqual(con, self.contact.first_name)
+        # print(self.contact.first_name)
+        self.assertEqual(str(con.last()), self.contact.first_name)
         self.assertEqual(c, 1)
 
     def test_address_object_creation(self):
