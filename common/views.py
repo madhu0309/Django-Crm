@@ -159,7 +159,6 @@ class LoginView(TemplateView):
                 })
 
         else:
-            print(request.POST)
             return render(request, "login.html", {
                 "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
                 "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
@@ -736,11 +735,16 @@ def google_login(request):
         link = user_document['link'] if 'link' in user_document.keys(
         ) else link
 
-        verified_email = user_document['verified_email'] if 'verified_email' in user_document.keys() else ''
-        name = user_document['name'] if 'name' in user_document.keys() else 'name'
-        first_name = user_document['given_name'] if 'given_name' in user_document.keys() else 'first_name'
-        last_name = user_document['family_name'] if 'family_name' in user_document.keys() else 'last_name'
-        email = user_document['email'] if 'email' in user_document.keys() else 'email@dummy.com'
+        verified_email = user_document['verified_email'] if 'verified_email' in user_document.keys(
+        ) else ''
+        name = user_document['name'] if 'name' in user_document.keys(
+        ) else 'name'
+        first_name = user_document['given_name'] if 'given_name' in user_document.keys(
+        ) else 'first_name'
+        last_name = user_document['family_name'] if 'family_name' in user_document.keys(
+        ) else 'last_name'
+        email = user_document['email'] if 'email' in user_document.keys(
+        ) else 'email@dummy.com'
 
         user = User.objects.filter(email=user_document['email'])
 
