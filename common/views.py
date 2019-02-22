@@ -433,6 +433,9 @@ class DocumentDeleteView(LoginRequiredMixin, DeleteView):
     model = Document
 
     def get(self, request, *args, **kwargs):
+        if not request.user.role == 'ADMIN':
+            if not request.user == Document.objects.get(id=kwargs['pk']).created_by:
+                raise PermissionDenied
         self.object = self.get_object()
         self.object.delete()
         return redirect("common:doc_list")
@@ -444,6 +447,10 @@ class UpdateDocumentView(LoginRequiredMixin, UpdateView):
     template_name = "doc_create.html"
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.role == 'ADMIN':
+            if not request.user == Document.objects.get(id=kwargs['pk']).created_by:
+                raise PermissionDenied
+
         self.users = User.objects.filter(is_active=True).order_by('email')
         return super(UpdateDocumentView, self).dispatch(request, *args, **kwargs)
 
@@ -490,6 +497,13 @@ class DocumentDetailView(LoginRequiredMixin, DetailView):
     model = Document
     template_name = "doc_detail.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.role == 'ADMIN':
+            if (not request.user == Document.objects.get(id=kwargs['pk']).created_by):
+                raise PermissionDenied
+
+        return super(DocumentDetailView, self).dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(DocumentDetailView, self).get_context_data(**kwargs)
         # documents = Document.objects.all()
@@ -501,6 +515,10 @@ class DocumentDetailView(LoginRequiredMixin, DetailView):
 
 
 def download_document(request, pk):
+    if not request.user.role == 'ADMIN':
+        if (not request.user == Document.objects.get(id=pk).created_by and
+            request.user not in Document.objects.get(id=pk).shared_to.all()):
+            raise PermissionDenied
     doc_obj = Document.objects.filter(id=pk).last()
     path = doc_obj.document_file.path
     file_path = os.path.join(settings.MEDIA_ROOT, path)
