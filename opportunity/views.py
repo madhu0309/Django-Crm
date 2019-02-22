@@ -25,15 +25,19 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
         request_post = self.request.POST
         if request_post:
             if request_post.get('name'):
-                queryset = queryset.filter(name__icontains=request_post.get('name'))
+                queryset = queryset.filter(
+                    name__icontains=request_post.get('name'))
             if request_post.get('stage'):
                 queryset = queryset.filter(stage=request_post.get('stage'))
             if request_post.get('lead_source'):
-                queryset = queryset.filter(lead_source=request_post.get('lead_source'))
+                queryset = queryset.filter(
+                    lead_source=request_post.get('lead_source'))
             if request_post.get('account'):
-                queryset = queryset.filter(account_id=request_post.get('account'))
+                queryset = queryset.filter(
+                    account_id=request_post.get('account'))
             if request_post.get('contacts'):
-                queryset = queryset.filter(contacts=request_post.get('contacts'))
+                queryset = queryset.filter(
+                    contacts=request_post.get('contacts'))
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -82,7 +86,8 @@ class CreateOpportunityView(LoginRequiredMixin, CreateView):
             opportunity_obj.closed_by = self.request.user
         opportunity_obj.save()
         if self.request.POST.getlist('assigned_to', []):
-            opportunity_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+            opportunity_obj.assigned_to.add(
+                *self.request.POST.getlist('assigned_to'))
             assigned_to_list = self.request.POST.getlist('assigned_to')
             current_site = get_current_site(self.request)
             for assigned_to_user in assigned_to_list:
@@ -98,17 +103,27 @@ class CreateOpportunityView(LoginRequiredMixin, CreateView):
                 email.content_subtype = "html"
                 email.send()
         if self.request.POST.getlist('contacts', []):
-            opportunity_obj.contacts.add(*self.request.POST.getlist('contacts'))
+            opportunity_obj.contacts.add(
+                *self.request.POST.getlist('contacts'))
         if self.request.POST.get('tags', ''):
-                tags = self.request.POST.get("tags")
-                splitted_tags = tags.split(",")
-                for t in splitted_tags:
-                    tag = Tags.objects.filter(name=t.lower())
-                    if tag:
-                        tag = tag[0]
-                    else:
-                        tag = Tags.objects.create(name=t.lower())
-                    opportunity_obj.tags.add(tag)
+            tags = self.request.POST.get("tags")
+            splitted_tags = tags.split(",")
+            for t in splitted_tags:
+                tag = Tags.objects.filter(name=t.lower())
+                if tag:
+                    tag = tag[0]
+                else:
+                    tag = Tags.objects.create(name=t.lower())
+                opportunity_obj.tags.add(tag)
+        if self.request.FILES.get('oppurtunity_attachment'):
+            attachment = Attachments()
+            attachment.created_by = self.request.user
+            attachment.file_name = self.request.FILES.get(
+                'oppurtunity_attachment').name
+            attachment.opportunity = opportunity_obj
+            attachment.attachment = self.request.FILES.get(
+                'oppurtunity_attachment')
+            attachment.save()
         if self.request.is_ajax():
             return JsonResponse({'error': False})
         if self.request.POST.get("savenewform"):
@@ -162,7 +177,7 @@ class OpportunityDetailView(LoginRequiredMixin, DetailView):
         for each in context['opportunity_record'].assigned_to.all():
             assigned_dict = {}
             assigned_dict['id'] = each.id
-            assigned_dict['name'] =  each.email
+            assigned_dict['name'] = each.email
             assigned_data.append(assigned_dict)
 
         comments = context["opportunity_record"].opportunity_comments.all()
@@ -207,8 +222,10 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
         all_members_list = []
         if self.request.POST.getlist('assigned_to', []):
             current_site = get_current_site(self.request)
-            assigned_form_users = form.cleaned_data.get('assigned_to').values_list('id', flat=True)
-            all_members_list = list(set(list(assigned_form_users)) - set(list(assigned_to_ids)))
+            assigned_form_users = form.cleaned_data.get(
+                'assigned_to').values_list('id', flat=True)
+            all_members_list = list(
+                set(list(assigned_form_users)) - set(list(assigned_to_ids)))
             if len(all_members_list):
                 for assigned_to_user in all_members_list:
                     user = get_object_or_404(User, pk=assigned_to_user)
@@ -219,17 +236,20 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
                         'protocol': self.request.scheme,
                         'opportunity': opportunity_obj
                     })
-                    email = EmailMessage(mail_subject, message, to=[user.email])
+                    email = EmailMessage(
+                        mail_subject, message, to=[user.email])
                     email.content_subtype = "html"
                     email.send()
 
             opportunity_obj.assigned_to.clear()
-            opportunity_obj.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+            opportunity_obj.assigned_to.add(
+                *self.request.POST.getlist('assigned_to'))
         else:
             opportunity_obj.assigned_to.clear()
 
         if self.request.POST.getlist('contacts', []):
-            opportunity_obj.contacts.add(*self.request.POST.getlist('contacts'))
+            opportunity_obj.contacts.add(
+                *self.request.POST.getlist('contacts'))
         opportunity_obj.tags.clear()
         if self.request.POST.get('tags', ''):
             tags = self.request.POST.get("tags")
@@ -241,6 +261,15 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
                 else:
                     tag = Tags.objects.create(name=t.lower())
                 opportunity_obj.tags.add(tag)
+        if self.request.FILES.get('oppurtunity_attachment'):
+            attachment = Attachments()
+            attachment.created_by = self.request.user
+            attachment.file_name = self.request.FILES.get(
+                'oppurtunity_attachment').name
+            attachment.opportunity = opportunity_obj
+            attachment.attachment = self.request.FILES.get(
+                'oppurtunity_attachment')
+            attachment.save()
         if self.request.POST.get('from_account'):
             from_account = self.request.POST.get('from_account')
             return redirect("accounts:view_account", pk=from_account)
@@ -271,6 +300,7 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
             int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
         context["contacts_list"] = [
             int(i) for i in self.request.POST.getlist('contacts', []) if i]
+
         return context
 
 
@@ -284,11 +314,11 @@ class DeleteOpportunityView(LoginRequiredMixin, View):
         self.object.delete()
         if request.is_ajax():
             return JsonResponse({'error': False})
-    
+
         if request.GET.get('view_account'):
             account = request.GET.get('view_account')
             return redirect("accounts:view_account", pk=account)
-        
+
         return redirect("opportunities:list")
 
 
@@ -312,7 +342,8 @@ class AddCommentView(LoginRequiredMixin, CreateView):
 
     def post(self, request, *args, **kwargs):
         self.object = None
-        self.opportunity = get_object_or_404(Opportunity, id=request.POST.get('opportunityid'))
+        self.opportunity = get_object_or_404(
+            Opportunity, id=request.POST.get('opportunityid'))
         if (
                 request.user in self.opportunity.assigned_to.all() or
                 request.user == self.opportunity.created_by or request.user.is_superuser or
@@ -322,7 +353,7 @@ class AddCommentView(LoginRequiredMixin, CreateView):
             if form.is_valid():
                 return self.form_valid(form)
             return self.form_invalid(form)
- 
+
         data = {'error': "You don't have permission to comment."}
         return JsonResponse(data)
 
@@ -345,9 +376,11 @@ class UpdateCommentView(LoginRequiredMixin, View):
     http_method_names = ["post"]
 
     def post(self, request, *args, **kwargs):
-        self.comment_obj = get_object_or_404(Comment, id=request.POST.get("commentid"))
+        self.comment_obj = get_object_or_404(
+            Comment, id=request.POST.get("commentid"))
         if request.user == self.comment_obj.commented_by:
-            form = OpportunityCommentForm(request.POST, instance=self.comment_obj)
+            form = OpportunityCommentForm(
+                request.POST, instance=self.comment_obj)
             if form.is_valid():
                 return self.form_valid(form)
             return self.form_invalid(form)
@@ -370,12 +403,13 @@ class UpdateCommentView(LoginRequiredMixin, View):
 class DeleteCommentView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
-        self.object = get_object_or_404(Comment, id=request.POST.get("comment_id"))
+        self.object = get_object_or_404(
+            Comment, id=request.POST.get("comment_id"))
         if request.user == self.object.commented_by:
             self.object.delete()
             data = {"cid": request.POST.get("comment_id")}
             return JsonResponse(data)
-    
+
         data = {'error': "You don't have permission to delete this comment."}
         return JsonResponse(data)
 
@@ -398,7 +432,8 @@ class AddAttachmentsView(LoginRequiredMixin, CreateView):
 
     def post(self, request, *args, **kwargs):
         self.object = None
-        self.opportunity = get_object_or_404(Opportunity, id=request.POST.get('opportunityid'))
+        self.opportunity = get_object_or_404(
+            Opportunity, id=request.POST.get('opportunityid'))
         if (
                 request.user in self.opportunity.assigned_to.all() or
                 request.user == self.opportunity.created_by or request.user.is_superuser or
@@ -408,7 +443,7 @@ class AddAttachmentsView(LoginRequiredMixin, CreateView):
             if form.is_valid():
                 return self.form_valid(form)
             return self.form_invalid(form)
-        
+
         data = {'error': "You don't have permission to add attachment."}
         return JsonResponse(data)
 
@@ -424,7 +459,7 @@ class AddAttachmentsView(LoginRequiredMixin, CreateView):
             "attachment_url": attachment.attachment.url,
             "created_on": attachment.created_on,
             "created_by": attachment.created_by.email,
-            "download_url": reverse('common:download_attachment', kwargs={'pk':attachment.id}),
+            "download_url": reverse('common:download_attachment', kwargs={'pk': attachment.id}),
             "attachment_display": attachment.get_file_type_display()
         })
 
@@ -435,7 +470,8 @@ class AddAttachmentsView(LoginRequiredMixin, CreateView):
 class DeleteAttachmentsView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
-        self.object = get_object_or_404(Attachments, id=request.POST.get("attachment_id"))
+        self.object = get_object_or_404(
+            Attachments, id=request.POST.get("attachment_id"))
         if (request.user == self.object.created_by or request.user.is_superuser or request.user.role == 'ADMIN'):
             self.object.delete()
             data = {"aid": request.POST.get("attachment_id")}

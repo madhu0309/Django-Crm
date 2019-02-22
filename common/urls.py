@@ -5,7 +5,7 @@ from common.views import (
     HomeView, LoginView, ForgotPasswordView, LogoutView, ChangePasswordView, ProfileView,
     UsersListView, CreateUserView, UpdateUserView, UserDetailView, UserDeleteView, PasswordResetView,
     DocumentListView, DocumentCreateView, UpdateDocumentView, DocumentDetailView, DocumentDeleteView,
-    download_document, change_user_status, download_attachment, add_comment, edit_comment, remove_comment)
+    download_document, change_user_status, download_attachment, add_comment, edit_comment, remove_comment, change_passsword_by_admin, google_login)
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -58,5 +58,8 @@ urlpatterns = [
     path('comment/add/', add_comment, name="add_comment"),
     path('comment/<int:pk>/edit/', edit_comment, name="edit_comment"),
     path('comment/remove/', remove_comment, name="remove_comment"),
+    path('change-password-by-admin/', change_passsword_by_admin,
+         name="change_passsword_by_admin"),
+    path('google/login/', google_login, name="google_login"),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
