@@ -9,11 +9,11 @@ class UserCreation(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create(
-            first_name="navaneetha", username='navaneetha', email="n@mp.com", role="ADMIN")
+            first_name="nicole", username='nicole', email="n@mp.com", role="ADMIN")
         self.user.set_password('navi123')
         self.user.save()
         self.email = Email.objects.create(
-            from_email="admin@micropyramid.com", to_email="meghana@micropyramid.com", subject="wish", message="haii",
+            from_email="admin@micropyramid.com", to_email="nike@micropyramid.com", subject="wish", message="haii",
             important=False)
         self.client.login(username='n@mp.com', password='navi123')
 
@@ -39,8 +39,9 @@ class EmailSentEdit(UserCreation, TestCase):
 class EmailListTestCase(UserCreation, TestCase):
     def test_email_list(self):
         url = "/emails/list/"
-        response = self.client.get(url)
+        response = self.client.get(url,{'from_date': "2018-01-12"})
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(Email.objects.get('from_date'))
 
 
 class EmailTestCase(UserCreation, TestCase):

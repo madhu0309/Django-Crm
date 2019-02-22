@@ -8,13 +8,20 @@ from common.forms import *
 class ObjectsCreation(object):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create(first_name="admin", username='admin', email='admin@micropyramid.com',
-                                        is_staff=True, is_admin=True, is_superuser=True, is_active=True)
+        self.user = User.objects.create(first_name="admin",
+                                        username='admin',
+                                        email='admin@micropyramid.com',
+                                        is_staff=True,
+                                        is_admin=True,
+                                        is_superuser=True, is_active=True)
         self.user.set_password('admin123')
         self.user.save()
-        self.user = User.objects.create(first_name="pavan", username='pavan', email='pavan@micropyramid.com',
-                                        is_staff=True, is_admin=True, is_superuser=True, is_active=False)
-        self.user.set_password('pavan123')
+        self.user = User.objects.create(first_name="paul",
+                                        username='paul',
+                                        email='paul@micropyramid.com',
+                                        is_staff=True, is_admin=True,
+                                        is_superuser=True, is_active=False)
+        self.user.set_password('paul123')
         self.user.save()
         # self.user
         user_login = self.client.login(
@@ -92,7 +99,7 @@ class ForgotPasswordViewTestCase(ObjectsCreation, TestCase):
 
 
 class LoginViewTestCase(ObjectsCreation, TestCase):
-    # user2 = User.objects.create(first_name="pavan", username='pavan', email='pavan@micropyramid.com',
+    # user2 = User.objects.create(first_name="paul", username='paul', email='paul@micropyramid.com',
     #                                     is_staff=True, is_admin=True, is_superuser=True, is_active=False)
     def test_login_post(self):
         self.client.logout()

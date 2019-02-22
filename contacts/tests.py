@@ -10,16 +10,16 @@ class ContactObjectsCreation(object):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create(
-            first_name="navaneetha",
-            username='navaneetha',
+            first_name="Nathan",
+            username='Nathan',
             email="n@mp.com",
             role="ADMIN")
         self.user.set_password('navi123')
         self.user.save()
         self.address = Address.objects.create(
-            street="kphb 5th phase",
-            city="hyd",
-            state="telanagana",
+            street="5th phase",
+            city="Orlando",
+            state="Florida",
             postcode=502279, country="AD")
 
         self.contact = Contact.objects.create(
@@ -31,7 +31,7 @@ class ContactObjectsCreation(object):
             created_by=self.user)
         self.contact.assigned_to.add(self.user)
         self.case = Case.objects.create(
-            name="raghu",
+            name="lucy",
             case_type="Problem",
             status="New",
             priority="Low",
@@ -76,7 +76,7 @@ class ContactViewsTestCase(ContactObjectsCreation, TestCase):
     def test_contacts_create(self):
         response = self.client.post('/contacts/create/', {
             'first_name': 'contact',
-            'last_name': 'reddy',
+            'last_name': 'george',
             'email': 'meg@gmail.com',
             'phone': '+917898901234',
             'address': self.address.id,
@@ -104,7 +104,7 @@ class ContactViewsTestCase(ContactObjectsCreation, TestCase):
     def test_contacts_edit(self):
         response = self.client.post(
             '/contacts/' + str(self.contact.id) + '/edit/', {
-                'name': 'priya',
+                'name': 'Preston',
                 'email': 'contact@gmail.com',
                 'phone': '12345',
                 'pk': self.contact.id,
@@ -114,7 +114,7 @@ class ContactViewsTestCase(ContactObjectsCreation, TestCase):
     def test_contacts_edit_html(self):
         response = self.client.post(
             '/contacts/' + str(self.contact.id) + '/edit/', {
-                'name': 'priya',
+                'name': 'Preston',
                 'email': 'contact@gmail.com',
                 'phone': '12345',
                 'pk': self.contact.id,
@@ -149,7 +149,7 @@ class ContactsListTestCase(ContactObjectsCreation, TestCase):
 
     def test_contacts_list_queryset(self):
         data = {'fist_name': 'contact',
-                'city': "hyd", 'phone': '12345', 'email': "contact@gmail.com"}
+                'city': "Orlando", 'phone': '12345', 'email': "contact@gmail.com"}
         response = self.client.post('/contacts/list/', data)
 
         self.assertEqual(response.status_code, 200)
