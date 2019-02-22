@@ -48,7 +48,7 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super(OpportunityListView, self).get_context_data(**kwargs)
         context["opportunity_list"] = self.get_queryset()
-        context["accounts"] = Account.objects.all()
+        context["accounts"] = Account.objects.filter(status="open")
         context["contacts"] = Contact.objects.all()
         context["stages"] = STAGES
         context["sources"] = SOURCES
@@ -77,7 +77,7 @@ class CreateOpportunityView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         self.users = User.objects.filter(is_active=True).order_by('email')
-        self.accounts = Account.objects.all()
+        self.accounts = Account.objects.filter(status="open")
         self.contacts = Contact.objects.all()
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             self.accounts = Account.objects.filter(
@@ -219,7 +219,7 @@ class UpdateOpportunityView(LoginRequiredMixin, UpdateView):
 
     def dispatch(self, request, *args, **kwargs):
         self.users = User.objects.filter(is_active=True).order_by('email')
-        self.accounts = Account.objects.all()
+        self.accounts = Account.objects.filter(status="open")
         self.contacts = Contact.objects.all()
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             self.accounts = Account.objects.filter(
