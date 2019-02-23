@@ -99,6 +99,11 @@ class ContactViewsTestCase(ContactObjectsCreation, TestCase):
         response = self.client.get(reverse("contacts:list"))
         self.assertEqual(response.status_code, 200)
 
+    def test_contacts_delete_get(self):
+        response = self.client.get(
+            '/contacts/' + str(self.contact.id) + '/delete/')
+        self.assertEqual(response.status_code, 302)
+
     def test_contacts_delete_location_checking(self):
         response = self.client.post(
             '/contacts/' + str(self.contact.id) + '/delete/')
@@ -152,7 +157,8 @@ class ContactsListTestCase(ContactObjectsCreation, TestCase):
 
     def test_contacts_list_queryset(self):
         data = {'fist_name': 'contact',
-                'city': "Orlando", 'phone': '12345', 'email': "contact@gmail.com"}
+                'city': "Orlando", 'phone': '12345',
+                'email': "contact@gmail.com"}
         response = self.client.post('/contacts/list/', data)
 
         self.assertEqual(response.status_code, 200)
@@ -165,6 +171,11 @@ class CommentTestCase(ContactObjectsCreation, TestCase):
             '/contacts/comment/add/', {'contactid': self.contact.id})
         self.assertEqual(response.status_code, 200)
 
+    # def test_GetContactsView(self):
+    #     response = self.client.get('/get/list/')
+    #     # self.assertEqual(response.status_code, 200)
+        # self.assertIsNone(response.context['contacts'])
+
     def test_comment_edit(self):
         response = self.client.post(
             '/contacts/comment/edit/', {'commentid': self.comment.id})
@@ -174,6 +185,13 @@ class CommentTestCase(ContactObjectsCreation, TestCase):
         response = self.client.post(
             '/contacts/comment/remove/', {'comment_id': self.comment.id})
         self.assertEqual(response.status_code, 200)
+
+    def test_form_valid(self):
+        response = self.client.post(
+            '/contacts/comment/add/', {'contactid': self.contact.id, 'comment': 'hello'})
+        # print(response , "response")
+        self.assertEqual(response.status_code, 200)
+
 
 
 class AttachmentTestCase(ContactObjectsCreation, TestCase):

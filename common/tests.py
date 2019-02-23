@@ -237,6 +237,15 @@ class ProfileViewTestCase(ObjectsCreation, TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
+    # def test_context_data(self):
+    #     user_login = self.client.login(
+    #         username='admin@micropyramid.com', password='admin123')
+    #     url = "/profile/"
+    #     response = self.client.get(url)
+    #     print(response, "hello")
+    #     self.assertContains(response,'admin@micropyramid.com')
+
+
 
 class UserDetailView(ObjectsCreation, TestCase):
     def test_user_detail(self):
