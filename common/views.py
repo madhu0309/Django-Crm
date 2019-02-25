@@ -782,7 +782,7 @@ def google_login(request):
                 email=email,
                 first_name=first_name,
                 last_name=last_name,
-                role="User"
+                role="USER"
             )
 
         google, created = Google.objects.get_or_create(user=user)
