@@ -193,7 +193,6 @@ class CommentTestCase(ContactObjectsCreation, TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-
 class AttachmentTestCase(ContactObjectsCreation, TestCase):
     def test_attachment_add(self):
         response = self.client.post(
