@@ -1,9 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.db import models
-# from django.utils.translation import ugettext_lazy as _
+from django.utils.timesince import timesince
+from django.utils.translation import ugettext_lazy as _
 from django.core.validators import RegexValidator
-# from django.db.models import Sum
-# from django.template.defaultfilters import slugify
+from django.db.models import Sum
+from django.template.defaultfilters import slugify
+from common.models import User
 
 
 class Tag(models.Model):
@@ -13,13 +15,13 @@ class Tag(models.Model):
 
     @property
     def created_by_user(self):
-        return self.created_by.serialized_data() if self.created_by else None
+        return self.created_by if self.created_by else None
 
 
 def attachment_url(self, filename):
     file_extension = filename.split('.')[-1]
-    return "%s/Documents/%s" % (
-        self.company, "attachment_" + str(slugify(datetime.now())) + "." + file_extension)
+    return "documents/%s" % (
+        "attachment_" + str(slugify(datetime.now())) + "." + file_extension)
     # file_split = filename.split('.')
     # file_extension = file_split[-1]
     # path = "%s_%s_%s" % (file_split[0], self.profile.user.email, str(datetime.now()))
@@ -31,7 +33,8 @@ class Document(models.Model):
     title = models.CharField(max_length=155)
     description = models.CharField(max_length=2500, blank=True, null=True)
     document_file = models.FileField(upload_to=attachment_url)
-    created_by = models.ForeignKey(User, related_name="created_marketing_documents", null=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey(
+        User, related_name="created_marketing_documents", null=True, on_delete=models.SET_NULL)
     created_on = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 
@@ -183,7 +186,8 @@ class Document(models.Model):
 
 
 class EmailTemplate(models.Model):
-    created_by = models.ForeignKey(User, related_name="marketing_emailtemplates", null=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey(
+        User, related_name="marketing_emailtemplates", null=True, on_delete=models.SET_NULL)
     created_on = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=5000)
     subject = models.CharField(max_length=5000)
@@ -194,11 +198,12 @@ class EmailTemplate(models.Model):
 
     @property
     def created_by_user(self):
-        return self.created_by.serialized_data() if self.created_by else None
+        return self.created_by if self.created_by else None
 
 
 class ContactList(models.Model):
-    created_by = models.ForeignKey(User, related_name="marketing_contactlist", null=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey(
+        User, related_name="marketing_contactlist", null=True, on_delete=models.SET_NULL)
     created_on = models.DateTimeField(auto_now_add=True)
     name = models.CharField(max_length=500)
     tags = models.ManyToManyField(Tag)
@@ -209,18 +214,17 @@ class ContactList(models.Model):
 
     @property
     def created_by_user(self):
-        return self.created_by.serialized_data() if self.created_by else None
+        return self.created_by if self.created_by else None
 
     @property
     def created_by_user_profile(self):
         if self.created_by is not None:
-            profile = Profile.objects.filter(
-                user=self.created_by, company=self.company).last()
+            profile = User.objects.filter(
+                user=self.created_by).last()
             if profile is not None:
-                return Skinner().parse(profile, fields=[
-                    'employee_name', 'userid', 'profile_pic_path', 'employee_id'])
+                return profile
             else:
-                return self.created_by.serialized_data()
+                return self.created_by
         else:
             return None
 
@@ -230,16 +234,20 @@ class ContactList(models.Model):
 
     @property
     def created_on_since(self):
-        return created_since(self.created_on)
+        now = datetime.now()
+        difference = now.replace(tzinfo=None) - self.created_on.replace(tzinfo=None)
+
+        if difference <= timedelta(minutes=1):
+            return 'just now'
+        return '%(time)s ago' % {'time': timesince(self.created_on).split(', ')[0]}
 
     @property
     def created_by_company(self):
-        return self.company.serialized_data() if self.company else None
+        return self.company if self.company else None
 
     @property
     def tags_data(self):
-        return Skinner().parse(
-            self.tags.all(), fields=["id", "name", "color"])['data']
+        return self.tags.all()
 
     @property
     def no_of_contacts(self):
@@ -269,7 +277,8 @@ class Contact(models.Model):
         regex=r'^\+?1?\d{9,15}$',
         message="Phone number must be entered in the format: '+999999999'. Up to 20 digits allowed."
     )
-    created_by = models.ForeignKey(User, related_name="marketing_contacts_created_by", null=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey(
+        User, related_name="marketing_contacts_created_by", null=True, on_delete=models.SET_NULL)
     created_on = models.DateTimeField(auto_now_add=True)
     contact_list = models.ManyToManyField(ContactList, related_name="contacts")
     name = models.CharField(max_length=500)
@@ -297,7 +306,8 @@ class Campaign(models.Model):
     )
 
     title = models.CharField(max_length=5000)
-    created_by = models.ForeignKey(User, related_name="marketing_campaigns_created_by", null=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey(
+        User, related_name="marketing_campaigns_created_by", null=True, on_delete=models.SET_NULL)
     created_on = models.DateTimeField(auto_now_add=True)
     contact_lists = models.ManyToManyField(ContactList, related_name="campaigns")
     email_template = models.ForeignKey(EmailTemplate, blank=True, null=True, on_delete=models.SET_NULL)
