@@ -719,7 +719,7 @@ def update_api_settings(request, pk):
     else:
         data = {
             'form': form, "setting": api_settings, 'users': users, 'assign_to_list': assign_to_list,
-            'assigned_to_list': json.dumps([setting.id for setting in api_settings.lead_assigned_to.all() if i])
+            'assigned_to_list': json.dumps([setting.id for setting in api_settings.lead_assigned_to.all() if setting])
         }
     return render(request, 'settings/update.html', data)
 
