@@ -27,7 +27,7 @@ class CasesListView(LoginRequiredMixin, TemplateView):
         queryset = self.model.objects.all().select_related("account")
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             queryset = queryset.filter(
-                Q(assigned_to__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
+                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user))
 
         request_post = self.request.POST
         if request_post:
@@ -47,7 +47,7 @@ class CasesListView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super(CasesListView, self).get_context_data(**kwargs)
         context["cases"] = self.get_queryset()
-        context["accounts"] = Account.objects.all()
+        context["accounts"] = Account.objects.filter(status="open")
         context["per_page"] = self.request.POST.get('per_page')
         context["acc"] = int(self.request.POST.get(
             "account")) if self.request.POST.get("account") else None
@@ -76,7 +76,7 @@ class CasesListView(LoginRequiredMixin, TemplateView):
 
 def create_case(request):
     users = User.objects.filter(is_active=True).order_by('email')
-    accounts = Account.objects.all()
+    accounts = Account.objects.filter(status="open")
     contacts = Contact.objects.all()
     if request.user.role != "ADMIN" and not request.user.is_superuser:
         accounts = Account.objects.filter(
@@ -162,7 +162,7 @@ class CaseDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(CaseDetailView, self).get_context_data(**kwargs)
-        user_assgn_list = [i.id for i in context['object'].assigned_to.all()]
+        user_assgn_list = [assigned_to.id for assigned_to in context['object'].assigned_to.all()]
         if self.request.user == context['object'].created_by:
             user_assgn_list.append(self.request.user.id)
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
@@ -184,7 +184,7 @@ class CaseDetailView(LoginRequiredMixin, DetailView):
 def update_case(request, pk):
     case_object = Case.objects.filter(pk=pk).first()
     users = User.objects.filter(is_active=True).order_by('email')
-    accounts = Account.objects.all()
+    accounts = Account.objects.filter(status="open")
     contacts = Contact.objects.all()
     if request.user.role != "ADMIN" and not request.user.is_superuser:
         accounts = Account.objects.filter(
@@ -257,7 +257,7 @@ def update_case(request, pk):
         context = {}
         context["case_obj"] = case_object
         user_assgn_list = [
-            i.id for i in context["case_obj"].assigned_to.all()]
+            assgined_to.id for assgined_to in context["case_obj"].assigned_to.all()]
 
         if request.user == case_object.created_by:
             user_assgn_list.append(request.user.id)
@@ -338,7 +338,7 @@ def select_contact(request):
         contacts = account.contacts.all()
     else:
         contacts = Contact.objects.all()
-    data = {i.pk: i.first_name for i in contacts.distinct()}
+    data = {contact.pk: contact.first_name for contact in contacts.distinct()}
     return JsonResponse(data)
 
 

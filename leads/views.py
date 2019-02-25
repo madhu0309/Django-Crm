@@ -192,7 +192,7 @@ def create_lead(request):
     else:
         context = {}
         context["lead_form"] = form
-        context["accounts"] = Account.objects.all()
+        context["accounts"] = Account.objects.filter(status="open")
         context["users"] = users
         context["countries"] = COUNTRIES
         context["status"] = LEAD_STATUS
@@ -210,7 +210,7 @@ class LeadDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(LeadDetailView, self).get_context_data(**kwargs)
-        user_assgn_list = [i.id for i in context['object'].assigned_to.all()]
+        user_assgn_list = [assigned_to.id for assigned_to in context['object'].assigned_to.all()]
         if self.request.user == context['object'].created_by:
             user_assgn_list.append(self.request.user.id)
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
@@ -372,14 +372,15 @@ def update_lead(request, pk):
         context = {}
         context["lead_obj"] = lead_record
         user_assgn_list = [
-            i.id for i in lead_record.assigned_to.all()]
+            assigned_to.id for assigned_to in lead_record.assigned_to.all()]
         if request.user == lead_record.created_by:
             user_assgn_list.append(request.user.id)
         if request.user.role != "ADMIN" and not request.user.is_superuser:
             if request.user.id not in user_assgn_list:
                 raise PermissionDenied
+
         context["lead_form"] = form
-        context["accounts"] = Account.objects.all()
+        context["accounts"] = Account.objects.filter(status="open")
         context["users"] = users
         context["countries"] = COUNTRIES
         context["status"] = LEAD_STATUS

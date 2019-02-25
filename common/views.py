@@ -55,7 +55,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context = super(HomeView, self).get_context_data(**kwargs)
         accounts = Account.objects.filter(status="open")
         contacts = Contact.objects.all()
-        leads = Lead.objects.exclude(status='converted')
+        leads = Lead.objects.exclude(status='converted' and 'dead')
         opportunities = Opportunity.objects.all()
         if self.request.user.role == "ADMIN" or self.request.user.is_superuser:
             pass
@@ -64,7 +64,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
             contacts = contacts.filter(
                 Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
             leads = leads.filter(
-                Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
+                Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id)).exclude(status='dead')
             opportunities = opportunities.filter(
                 Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
 
@@ -97,7 +97,7 @@ class ChangePasswordView(LoginRequiredMixin, TemplateView):
                 return HttpResponseRedirect('/')
         else:
             errors = form.errors
-        return render(request, "change_password.html", {'error': error, 'errors': errors,'change_password_form':form})
+        return render(request, "change_password.html", {'error': error, 'errors': errors, 'change_password_form': form})
 
 
 class ProfileView(LoginRequiredMixin, TemplateView):
@@ -719,7 +719,7 @@ def update_api_settings(request, pk):
     else:
         data = {
             'form': form, "setting": api_settings, 'users': users, 'assign_to_list': assign_to_list,
-            'assigned_to_list': json.dumps([i.id for i in api_settings.lead_assigned_to.all() if i])
+            'assigned_to_list': json.dumps([setting.id for setting in api_settings.lead_assigned_to.all() if i])
         }
     return render(request, 'settings/update.html', data)
 

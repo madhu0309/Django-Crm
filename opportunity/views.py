@@ -27,6 +27,7 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             queryset = queryset.filter(
                 Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user.id))
+
         request_post = self.request.POST
         if request_post:
             if request_post.get('name'):
@@ -48,7 +49,7 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super(OpportunityListView, self).get_context_data(**kwargs)
         context["opportunity_list"] = self.get_queryset()
-        context["accounts"] = Account.objects.all()
+        context["accounts"] = Account.objects.filter(status="open")
         context["contacts"] = Contact.objects.all()
         context["stages"] = STAGES
         context["sources"] = SOURCES
@@ -74,7 +75,7 @@ def create_opportunity(request):
     template_name = "create_opportunity.html"
 
     users = User.objects.filter(is_active=True).order_by('email')
-    accounts = Account.objects.all()
+    accounts = Account.objects.filter(status="open")
     contacts = Contact.objects.all()
     if request.user.role != "ADMIN" and not request.user.is_superuser:
         accounts = Account.objects.filter(
@@ -176,7 +177,7 @@ class OpportunityDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(OpportunityDetailView, self).get_context_data(**kwargs)
-        user_assgn_list = [i.id for i in context['object'].assigned_to.all()]
+        user_assgn_list = [assigned_to.id for assigned_to in context['object'].assigned_to.all()]
         if self.request.user == context['object'].created_by:
             user_assgn_list.append(self.request.user.id)
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
@@ -200,7 +201,7 @@ def update_opportunity(request, pk):
     template_name = "create_opportunity.html"
     opportunity_object = Opportunity.objects.filter(pk=pk).first()
     users = User.objects.filter(is_active=True).order_by('email')
-    accounts = Account.objects.all()
+    accounts = Account.objects.filter(status="open")
     contacts = Contact.objects.all()
     if request.user.role != "ADMIN" and not request.user.is_superuser:
         accounts = Account.objects.filter(
@@ -284,7 +285,7 @@ def update_opportunity(request, pk):
         context = {}
         context["opportunity_obj"] = opportunity_object
         user_assgn_list = [
-            i.id for i in context["opportunity_obj"].assigned_to.all()]
+            assigned_to.id for assigned_to in context["opportunity_obj"].assigned_to.all()]
         if request.user == context['opportunity_obj'].created_by:
             user_assgn_list.append(request.user.id)
         if request.user.role != "ADMIN" and not request.user.is_superuser:
@@ -338,7 +339,7 @@ class GetContactView(LoginRequiredMixin, View):
             contacts = account.contacts.all()
         else:
             contacts = Contact.objects.all()
-        data = {i.pk: i.first_name for i in contacts.distinct()}
+        data = {contact.pk: contact.first_name for contact in contacts.distinct()}
         return JsonResponse(data)
 
 
