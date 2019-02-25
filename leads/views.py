@@ -207,7 +207,7 @@ class CreateLeadView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(CreateLeadView, self).get_context_data(**kwargs)
         context["lead_form"] = context["form"]
-        context["accounts"] = Account.objects.all()
+        context["accounts"] = Account.objects.filter(status="open")
         context["users"] = self.users
         context["countries"] = COUNTRIES
         context["status"] = LEAD_STATUS
@@ -414,7 +414,7 @@ class UpdateLeadView(LoginRequiredMixin, UpdateView):
             if self.request.user.id not in user_assgn_list:
                 raise PermissionDenied
         context["lead_form"] = context["form"]
-        context["accounts"] = Account.objects.all()
+        context["accounts"] = Account.objects.filter(status="open")
         context["users"] = self.users
         context["countries"] = COUNTRIES
         context["status"] = LEAD_STATUS

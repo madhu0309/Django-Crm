@@ -36,6 +36,8 @@ class AccountForm(forms.ModelForm):
             'placeholder': 'Postcode'})
         self.fields["billing_country"].choices = [
             ("", "--Country--"), ] + list(self.fields["billing_country"].choices)[1:]
+        self.fields["lead"].queryset = Lead.objects.all(
+        ).exclude(status='dead')
         if request_user:
             self.fields["lead"].queryset = Lead.objects.filter(
                 Q(assigned_to__in=[request_user]) | Q(created_by=request_user)).exclude(status='dead')
