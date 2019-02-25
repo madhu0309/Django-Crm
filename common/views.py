@@ -332,48 +332,33 @@ class PasswordResetView(PasswordResetView):
     email_template_name = 'registration/password_reset_email.html'
 
 
-class DocumentCreateView(LoginRequiredMixin, CreateView):
-    model = Document
-    form_class = DocumentForm
+def document_create(request):
     template_name = "doc_create.html"
 
-    def dispatch(self, request, *args, **kwargs):
-        self.users = User.objects.filter(is_active=True).order_by('email')
-        return super(DocumentCreateView, self).dispatch(request, *args, **kwargs)
-
-    def get_form_kwargs(self):
-        kwargs = super(DocumentCreateView, self).get_form_kwargs()
-        kwargs.update({'users': self.users})
-        return kwargs
-
-    def form_valid(self, form):
-        doc = form.save(commit=False)
-        doc.created_by = self.request.user
-        doc.save()
-        if self.request.POST.getlist('shared_to'):
-            doc.shared_to.add(*self.request.POST.getlist('shared_to'))
-
-        if self.request.is_ajax():
+    users = User.objects.filter(is_active=True).order_by('email')
+    form = DocumentForm(users=users)
+    if request.POST:
+        form = DocumentForm(request.POST, request.FILES, users=users)
+        if form.is_valid():
+            doc = form.save(commit=False)
+            doc.created_by = request.user
+            doc.save()
+            if request.POST.getlist('shared_to'):
+                doc.shared_to.add(*request.POST.getlist('shared_to'))
             data = {'success_url': reverse_lazy(
                 'common:doc_list'), 'error': False}
             return JsonResponse(data)
-        return super(DocumentCreateView, self).form_valid(form)
 
-    def form_invalid(self, form):
-        response = super(DocumentCreateView, self).form_invalid(form)
-        if self.request.is_ajax():
+        else:
             return JsonResponse({'error': True, 'errors': form.errors})
-        return response
-
-    def get_context_data(self, **kwargs):
-        context = super(DocumentCreateView, self).get_context_data(**kwargs)
-        context["doc_form"] = context["form"]
-        context["users"] = self.users
+    else:
+        context = {}
+        context["doc_form"] = form
+        context["users"] = users
         context["sharedto_list"] = [
-            int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
-        if "errors" in kwargs:
-            context["errors"] = kwargs["errors"]
-        return context
+            int(i) for i in request.POST.getlist('assigned_to', []) if i]
+        context["errors"] = form.errors
+        return render(request, template_name, context)
 
 
 class DocumentListView(LoginRequiredMixin, TemplateView):
@@ -444,6 +429,42 @@ class DocumentDeleteView(LoginRequiredMixin, DeleteView):
         self.object = self.get_object()
         self.object.delete()
         return redirect("common:doc_list")
+
+
+def document_update(request, pk):
+    template_name = "doc_create.html"
+    users = User.objects.filter(is_active=True).order_by('email')
+    form = DocumentForm(users=users)
+    document = Document.objects.filter(id=pk).first()
+
+    if request.POST:
+        form = DocumentForm(request.POST, request.FILES, instance=document, users=users)
+        if form.is_valid():
+            doc = form.save(commit=False)
+            doc.save()
+
+            doc.shared_to.clear()
+            if request.POST.getlist('shared_to'):
+                doc.shared_to.add(*request.POST.getlist('shared_to'))
+
+            data = {'success_url': reverse_lazy(
+                'common:doc_list'), 'error': False}
+            return JsonResponse(data)
+
+        else:
+            return JsonResponse({'error': True, 'errors': form.errors})
+
+    else:
+        context = {}
+        context["doc_obj"] = document
+        context["doc_form"] = form
+        context["doc_file_name"] = context["doc_obj"].document_file.name.split(
+            "/")[-1]
+        context["users"] = users
+        context["sharedto_list"] = [
+            int(i) for i in request.POST.getlist('shared_to', []) if i]
+        context["errors"] = form.errors
+        return render(request, template_name, context)
 
 
 class UpdateDocumentView(LoginRequiredMixin, UpdateView):
@@ -698,7 +719,7 @@ def update_api_settings(request, pk):
     else:
         data = {
             'form': form, "setting": api_settings, 'users': users, 'assign_to_list': assign_to_list,
-            'assigned_to_list': json.dumps([i.id for i in api_settings.lead_assigned_to.all() if i])
+            'assigned_to_list': json.dumps([setting.id for setting in api_settings.lead_assigned_to.all() if setting])
         }
     return render(request, 'settings/update.html', data)
 
