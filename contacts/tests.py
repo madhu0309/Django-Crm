@@ -180,6 +180,10 @@ class CommentTestCase(ContactObjectsCreation, TestCase):
         response = self.client.post(
             '/contacts/comment/edit/', {'commentid': self.comment.id})
         self.assertEqual(response.status_code, 200)
+        resp = self.client.post(
+            '/contacts/comment/edit/',
+            {'commentid': self.comment.id, 'comment': 'hello123'})
+        self.assertEqual(resp.status_code, 200)
 
     def test_comment_delete(self):
         response = self.client.post(

@@ -111,7 +111,10 @@ class EditOpportunityTestCase(OpportunityModel, TestCase):
             'stage': "negotiation/review",
             'lead_source': "Call", 'probability': "58",
             'closed_on': "2016-05-04", 'description': "hgfdxc"})
-        self.assertEqual(response.status_code, 200)
+        resp = self.client.post( '/opportunities/' + str(self.opportunity.id) + '/edit/', **{'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'})
+        self.assertEqual(resp.status_code, 200)
+        resp1 = self.client.post( '/opportunities/create/', **{'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'})
+        self.assertEqual(resp1.status_code, 200)
 
     def test_update_opportunity(self):
         url = '/opportunities/' + str(self.opportunity.id) + '/edit/'
