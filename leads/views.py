@@ -84,7 +84,8 @@ class LeadListView(LoginRequiredMixin, TemplateView):
 
         context["search"] = search
 
-        context['tags'] = Tags.objects.all()
+        # context['tags'] = Tags.objects.all()
+        context["tags"] = [tag for i in Lead.objects.all() for tag in i.tags.all() if i.tags.all()]
 
         tab_status = 'Open'
         if self.request.POST.get('tab_status'):
