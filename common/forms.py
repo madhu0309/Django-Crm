@@ -127,6 +127,14 @@ class LoginForm(forms.ModelForm):
         self.request = kwargs.pop("request", None)
         super(LoginForm, self).__init__(*args, **kwargs)
 
+    def clean_password(self):
+        password = self.cleaned_data.get('password')
+        if password:
+            if len(password) < 4:
+                raise forms.ValidationError(
+                    'Password must be at least 4 characters long!')
+        return password
+
     def clean(self):
         email = self.cleaned_data.get("email")
         password = self.cleaned_data.get("password")

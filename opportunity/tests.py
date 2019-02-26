@@ -69,7 +69,8 @@ class OpportunityCreateTestCase(OpportunityModel, TestCase):
         url = '/opportunities/create/'
         data = {'name': "micky", 'amount': "500", 'stage': "CLOSED WON"}
         response = self.client.post(url, data)
-        self.assertEqual(response.status_code, 302)
+        # self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
 
     def test_opportunity_invalid(self):
         url = '/opportunities/create/'
@@ -122,7 +123,8 @@ class EditOpportunityTestCase(OpportunityModel, TestCase):
             'name': "meghan", 'amount': "478", 'stage': "QUALIFICATION",
             'probability': "58", 'closed_on': "2016-05-04", 'description': "hgfdxc"}
         response = self.client.post(url, data)
-        self.assertEqual(response.status_code, 302)
+        # self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
 
     def test_update_opportunity_invalid(self):
         url = '/opportunities/' + str(self.opportunity.id) + '/edit/'
