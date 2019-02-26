@@ -57,7 +57,9 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
         context['close_accounts'] = close_accounts
         context["industries"] = INDCHOICES
         context["per_page"] = self.request.POST.get('per_page')
-        context["tags"] = Tags.objects.all()
+        # context["tags"] = Tags.objects.all()
+        context["tags"] = [tag for i in Account.objects.all()
+                           for tag in i.tags.all() if i.tags.all()]
 
         search = False
         if (
