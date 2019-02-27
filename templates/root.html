@@ -25,6 +25,7 @@
 </head>
 <body class="main_body_bg_color">
   <div class="wrapper">
+    {% block header %}
     <header>
       <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <a class="navbar-brand" href="{% url 'common:home' %}">Django CRM</a>
@@ -63,7 +64,8 @@
           </div>
         {% endif %}
         </nav>
-      </header>
+    </header>
+      {% endblock %}
 
     <div id="mainbody" class="main_container">
       {% block breadcrumb %}
