@@ -170,7 +170,7 @@ class LoginView(TemplateView):
                 "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                 # "error": True,
                 # "message": "Your username and password didn't match. Please try again."
-                "errors": form.errors
+                "form": form
             })
 
 
