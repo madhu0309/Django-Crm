@@ -14,8 +14,10 @@ from common.utils import INDCHOICES, COUNTRIES, CURRENCY_CODES, CASE_TYPE, PRIOR
 from contacts.models import Contact
 from opportunity.models import Opportunity, STAGES, SOURCES
 from cases.models import Case
-from django.urls import reverse
+from django.urls import reverse_lazy, reverse
 from leads.models import Lead
+from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 
 
 class AccountsListView(LoginRequiredMixin, TemplateView):
@@ -25,8 +27,9 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
 
     def get_queryset(self):
         queryset = self.model.objects.all()
-        if self.request.user.role != "ADMIN" or not self.request.user.is_superuser:
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             queryset = queryset.filter(created_by=self.request.user.id)
+
         request_post = self.request.POST
         if request_post:
             if request_post.get('name'):
@@ -54,7 +57,8 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
         context['close_accounts'] = close_accounts
         context["industries"] = INDCHOICES
         context["per_page"] = self.request.POST.get('per_page')
-        context["tag"] = Tags.objects.all()
+        tag_ids = list(set(Account.objects.values_list('tags', flat=True)))
+        context["tags"] = Tags.objects.filter(id__in=tag_ids)
 
         search = False
         if (
@@ -92,6 +96,8 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
     def get_form_kwargs(self):
         kwargs = super(CreateAccountView, self).get_form_kwargs()
         kwargs.update({"account": True})
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+            kwargs.update({"request_user": self.request.user})
         return kwargs
 
     def post(self, request, *args, **kwargs):
@@ -133,9 +139,16 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
         if self.request.POST.get("savenewform"):
             return redirect("accounts:new_account")
 
+        if self.request.is_ajax():
+            data = {'success_url': reverse_lazy(
+                'accounts:list'), 'error': False}
+            return JsonResponse(data)
+
         return redirect("accounts:list")
 
     def form_invalid(self, form):
+        if self.request.is_ajax():
+            return JsonResponse({'error': True, 'errors': form.errors})
         return self.render_to_response(
             self.get_context_data(form=form)
         )
@@ -147,7 +160,10 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
         context["contact_count"] = Contact.objects.count()
-        context["lead_count"] = Lead.objects.count()
+        context["lead_count"] = Lead.objects.exclude(status='dead').count()
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+            context["lead_count"] = Lead.objects.filter(
+                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user)).exclude(status='dead').count()
         return context
 
 
@@ -159,6 +175,9 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super(AccountDetailView, self).get_context_data(**kwargs)
         account_record = context["account_record"]
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+            if self.request.user != account_record.created_by:
+                raise PermissionDenied
         if (
             self.request.user == account_record.created_by or
             self.request.user.is_superuser or self.request.user.role == 'ADMIN'
@@ -198,6 +217,8 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
     def get_form_kwargs(self):
         kwargs = super(AccountUpdateView, self).get_form_kwargs()
         kwargs.update({"account": True})
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+            kwargs.update({"request_user": self.request.user})
         return kwargs
 
     def post(self, request, *args, **kwargs):
@@ -238,9 +259,16 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
             attachment.attachment = self.request.FILES.get(
                 'account_attachment')
             attachment.save()
+
+        if self.request.is_ajax():
+            data = {'success_url': reverse_lazy(
+                'accounts:list'), 'error': False}
+            return JsonResponse(data)
         return redirect("accounts:list")
 
     def form_invalid(self, form):
+        if self.request.is_ajax():
+            return JsonResponse({'error': True, 'errors': form.errors})
         return self.render_to_response(
             self.get_context_data(form=form)
         )
@@ -248,12 +276,18 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super(AccountUpdateView, self).get_context_data(**kwargs)
         context["account_obj"] = self.object
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+            if self.request.user != context['account_obj'].created_by:
+                raise PermissionDenied
         context["account_form"] = context["form"]
         context["users"] = self.users
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
         context["contact_count"] = Contact.objects.count()
-        context["lead_count"] = Lead.objects.count()
+        context["lead_count"] = Lead.objects.exclude(status='dead').count()
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+            context["lead_count"] = Lead.objects.filter(
+                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user)).exclude(status='dead').count()
         return context
 
 
@@ -263,6 +297,9 @@ class AccountDeleteView(LoginRequiredMixin, DeleteView):
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+            if self.request.user != self.object.created_by:
+                raise PermissionDenied
         self.object.delete()
         return redirect("accounts:list")
 
