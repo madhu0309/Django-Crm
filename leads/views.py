@@ -84,8 +84,8 @@ class LeadListView(LoginRequiredMixin, TemplateView):
 
         context["search"] = search
 
-        # context['tags'] = Tags.objects.all()
-        context["tags"] = [tag for i in Lead.objects.all() for tag in i.tags.all() if i.tags.all()]
+        tag_ids = list(set(Lead.objects.values_list('tags', flat=True)))
+        context["tags"] = Tags.objects.filter(id__in=tag_ids)
 
         tab_status = 'Open'
         if self.request.POST.get('tab_status'):
@@ -134,7 +134,8 @@ def create_lead(request):
                         'protocol': request.scheme,
                         'lead': lead_obj
                     })
-                    email = EmailMessage(mail_subject, message, to=[user.email])
+                    email = EmailMessage(
+                        mail_subject, message, to=[user.email])
                     email.content_subtype = "html"
                     email.send()
 
@@ -211,7 +212,8 @@ class LeadDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(LeadDetailView, self).get_context_data(**kwargs)
-        user_assgn_list = [assigned_to.id for assigned_to in context['object'].assigned_to.all()]
+        user_assgn_list = [
+            assigned_to.id for assigned_to in context['object'].assigned_to.all()]
         if self.request.user == context['object'].created_by:
             user_assgn_list.append(self.request.user.id)
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
@@ -263,7 +265,8 @@ def update_lead(request, pk):
     form = LeadForm(instance=lead_record, initial=initial, assigned_to=users)
 
     if request.POST:
-        form = LeadForm(request.POST, request.FILES, instance=lead_record, initial=initial, assigned_to=users)
+        form = LeadForm(request.POST, request.FILES,
+                        instance=lead_record, initial=initial, assigned_to=users)
 
         if request.POST.get('status') == "converted":
             form.fields['account_name'].required = True
