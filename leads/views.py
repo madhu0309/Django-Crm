@@ -84,8 +84,7 @@ class LeadListView(LoginRequiredMixin, TemplateView):
 
         context["search"] = search
 
-        tag_ids = [i[0]
-                   for i in list(Lead.objects.values_list('tags')) if i[0]]
+        tag_ids = list(set(Lead.objects.values_list('tags', flat=True)))
         context["tags"] = Tags.objects.filter(id__in=tag_ids)
 
         tab_status = 'Open'
