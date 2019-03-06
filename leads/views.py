@@ -9,11 +9,11 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.generic import (
-    CreateView, UpdateView, DetailView, ListView, TemplateView, View)
+    CreateView, DetailView, ListView, TemplateView, View)
 
 from accounts.models import Account, Tags
 from common.models import User, Comment, Attachments, APISettings
-from common.utils import LEAD_STATUS, LEAD_SOURCE, COUNTRIES, get_client_ip
+from common.utils import LEAD_STATUS, LEAD_SOURCE, COUNTRIES
 from common import status
 from contacts.models import Contact
 from leads.models import Lead
@@ -73,14 +73,12 @@ class LeadListView(LoginRequiredMixin, TemplateView):
         context["assignedto_list"] = [
             int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
 
-        search = False
-        if (
+        search = True if (
             self.request.POST.get('name') or self.request.POST.get('city') or
             self.request.POST.get('email') or self.request.POST.get('tag') or
             self.request.POST.get('status') or self.request.POST.get('source') or
             self.request.POST.get('assigned_to')
-        ):
-            search = True
+        ) else False
 
         context["search"] = search
 
@@ -107,7 +105,6 @@ def create_lead(request):
     if request.POST:
         form = LeadForm(request.POST, request.FILES, assigned_to=users)
         if form.is_valid():
-
             lead_obj = form.save(commit=False)
             lead_obj.created_by = request.user
             lead_obj.save()
@@ -187,22 +184,18 @@ def create_lead(request):
             if request.POST.get("savenewform"):
                 success_url = reverse("leads:add_lead")
             return JsonResponse({'error': False, 'success_url': success_url})
+        return JsonResponse({'error': True, 'errors': form.errors})
+    context = {}
+    context["lead_form"] = form
+    context["accounts"] = Account.objects.filter(status="open")
+    context["users"] = users
+    context["countries"] = COUNTRIES
+    context["status"] = LEAD_STATUS
+    context["source"] = LEAD_SOURCE
+    context["assignedto_list"] = [
+        int(i) for i in request.POST.getlist('assigned_to', []) if i]
 
-        else:
-            return JsonResponse({'error': True, 'errors': form.errors})
-
-    else:
-        context = {}
-        context["lead_form"] = form
-        context["accounts"] = Account.objects.filter(status="open")
-        context["users"] = users
-        context["countries"] = COUNTRIES
-        context["status"] = LEAD_STATUS
-        context["source"] = LEAD_SOURCE
-        context["assignedto_list"] = [
-            int(i) for i in request.POST.getlist('assigned_to', []) if i]
-
-        return render(request, template_name, context)
+    return render(request, template_name, context)
 
 
 class LeadDetailView(LoginRequiredMixin, DetailView):
@@ -368,32 +361,28 @@ def update_lead(request, pk):
             if status:
                 success_url = reverse('accounts:list')
             return JsonResponse({'error': False, 'success_url': success_url})
+        return JsonResponse({'error': True, 'errors': form.errors})
+    context = {}
+    context["lead_obj"] = lead_record
+    user_assgn_list = [
+        assigned_to.id for assigned_to in lead_record.assigned_to.all()]
+    if request.user == lead_record.created_by:
+        user_assgn_list.append(request.user.id)
+    if request.user.role != "ADMIN" and not request.user.is_superuser:
+        if request.user.id not in user_assgn_list:
+            raise PermissionDenied
 
-        else:
-            return JsonResponse({'error': True, 'errors': form.errors})
+    context["lead_form"] = form
+    context["accounts"] = Account.objects.filter(status="open")
+    context["users"] = users
+    context["countries"] = COUNTRIES
+    context["status"] = LEAD_STATUS
+    context["source"] = LEAD_SOURCE
+    context["error"] = error
+    context["assignedto_list"] = [
+        int(i) for i in request.POST.getlist('assigned_to', []) if i]
 
-    else:
-        context = {}
-        context["lead_obj"] = lead_record
-        user_assgn_list = [
-            assigned_to.id for assigned_to in lead_record.assigned_to.all()]
-        if request.user == lead_record.created_by:
-            user_assgn_list.append(request.user.id)
-        if request.user.role != "ADMIN" and not request.user.is_superuser:
-            if request.user.id not in user_assgn_list:
-                raise PermissionDenied
-
-        context["lead_form"] = form
-        context["accounts"] = Account.objects.filter(status="open")
-        context["users"] = users
-        context["countries"] = COUNTRIES
-        context["status"] = LEAD_STATUS
-        context["source"] = LEAD_SOURCE
-        context["error"] = error
-        context["assignedto_list"] = [
-            int(i) for i in request.POST.getlist('assigned_to', []) if i]
-
-        return render(request, template_name, context)
+    return render(request, template_name, context)
 
 
 class DeleteLeadView(LoginRequiredMixin, View):
@@ -409,8 +398,7 @@ class DeleteLeadView(LoginRequiredMixin, View):
         ):
             self.object.delete()
             return redirect("leads:list")
-        else:
-            raise PermissionDenied
+        raise PermissionDenied
 
 
 def convert_lead(request, pk):
@@ -581,7 +569,7 @@ class AddAttachmentsView(LoginRequiredMixin, CreateView):
         })
 
     def form_invalid(self, form):
-        return JsonResponse({"error": form['attachment'].errors})
+            return JsonResponse({"error": form['attachment'].errors})
 
 
 class DeleteAttachmentsView(LoginRequiredMixin, View):
@@ -640,7 +628,6 @@ def create_lead_from_site(request):
                                 status=status.HTTP_201_CREATED)
         return JsonResponse({'error': True, 'message': "In-valid data."},
                             status=status.HTTP_400_BAD_REQUEST)
-    else:
-        return JsonResponse({
-            'error': True, 'message': "In-valid request method."},
-            status=status.HTTP_400_BAD_REQUEST)
+    return JsonResponse({
+        'error': True, 'message': "In-valid request method."},
+        status=status.HTTP_400_BAD_REQUEST)

@@ -140,29 +140,25 @@ def create_opportunity(request):
                 from_account = request.POST.get('from_account')
                 success_url = reverse("accounts:view_account", pk=from_account)
             return JsonResponse({'error': False, 'success_url': success_url})
+        return JsonResponse({'error': True, 'errors': form.errors})
+    context = {}
+    context["opportunity_form"] = form
 
-        else:
-            return JsonResponse({'error': True, 'errors': form.errors})
+    context["accounts"] = accounts
+    if request.GET.get('view_account'):
+        context['account'] = get_object_or_404(
+            Account, id=request.GET.get('view_account'))
+    context["contacts"] = contacts
+    context["users"] = users
+    context["currencies"] = CURRENCY_CODES
+    context["stages"] = STAGES
+    context["sources"] = SOURCES
+    context["assignedto_list"] = [
+        int(i) for i in request.POST.getlist('assigned_to', []) if i]
 
-    else:
-        context = {}
-        context["opportunity_form"] = form
-
-        context["accounts"] = accounts
-        if request.GET.get('view_account'):
-            context['account'] = get_object_or_404(
-                Account, id=request.GET.get('view_account'))
-        context["contacts"] = contacts
-        context["users"] = users
-        context["currencies"] = CURRENCY_CODES
-        context["stages"] = STAGES
-        context["sources"] = SOURCES
-        context["assignedto_list"] = [
-            int(i) for i in request.POST.getlist('assigned_to', []) if i]
-
-        context["contacts_list"] = [
-            int(i) for i in request.POST.getlist('contacts', []) if i]
-        return render(request, template_name, context)
+    context["contacts_list"] = [
+        int(i) for i in request.POST.getlist('contacts', []) if i]
+    return render(request, template_name, context)
 
 
 class OpportunityDetailView(LoginRequiredMixin, DetailView):
@@ -229,7 +225,7 @@ def update_opportunity(request, pk):
                     'assigned_to').values_list('id', flat=True)
                 all_members_list = list(
                     set(list(assigned_form_users)) - set(list(assigned_to_ids)))
-                if len(all_members_list):
+                if all_members_list:
                     for assigned_to_user in all_members_list:
                         user = get_object_or_404(User, pk=assigned_to_user)
                         mail_subject = 'Assigned to opportunity.'
@@ -326,8 +322,7 @@ class DeleteOpportunityView(LoginRequiredMixin, View):
                 return redirect("accounts:view_account", pk=account)
 
             return redirect("opportunities:list")
-        else:
-            raise PermissionDenied
+        raise PermissionDenied
 
 
 class GetContactView(LoginRequiredMixin, View):

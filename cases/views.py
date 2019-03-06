@@ -128,27 +128,23 @@ def create_case(request):
                 from_account = request.POST.get('from_account')
                 success_url = reverse("accounts:view_account", pk=from_account)
             return JsonResponse({'error': False, "success_url": success_url})
-
-        else:
-            return JsonResponse({'error': True, 'errors': form.errors})
-
-    else:
-        context = {}
-        context["case_form"] = form
-        context["accounts"] = accounts
-        if request.GET.get('view_account'):
-            context['account'] = get_object_or_404(
-                Account, id=request.GET.get('view_account'))
-        context["contacts"] = contacts
-        context["users"] = users
-        context["case_types"] = CASE_TYPE
-        context["case_priority"] = PRIORITY_CHOICE
-        context["case_status"] = STATUS_CHOICE
-        context["assignedto_list"] = [
-            int(i) for i in request.POST.getlist('assigned_to', []) if i]
-        context["contacts_list"] = [
-            int(i) for i in request.POST.getlist('contacts', []) if i]
-        return render(request, template_name, context)
+        return JsonResponse({'error': True, 'errors': form.errors})
+    context = {}
+    context["case_form"] = form
+    context["accounts"] = accounts
+    if request.GET.get('view_account'):
+        context['account'] = get_object_or_404(
+            Account, id=request.GET.get('view_account'))
+    context["contacts"] = contacts
+    context["users"] = users
+    context["case_types"] = CASE_TYPE
+    context["case_priority"] = PRIORITY_CHOICE
+    context["case_status"] = STATUS_CHOICE
+    context["assignedto_list"] = [
+        int(i) for i in request.POST.getlist('assigned_to', []) if i]
+    context["contacts_list"] = [
+        int(i) for i in request.POST.getlist('contacts', []) if i]
+    return render(request, template_name, context)
 
 
 class CaseDetailView(LoginRequiredMixin, DetailView):
@@ -212,7 +208,7 @@ def update_case(request, pk):
                 all_members_list = list(
                     set(list(assigned_form_users)) - set(list(assigned_to_ids)))
 
-                if len(all_members_list):
+                if all_members_list:
                     for assigned_to_user in all_members_list:
                         user = get_object_or_404(User, pk=assigned_to_user)
                         mail_subject = 'Assigned to case.'
@@ -296,8 +292,7 @@ class RemoveCaseView(LoginRequiredMixin, View):
         ):
             self.object.delete()
             return redirect("cases:list")
-        else:
-            raise PermissionDenied
+        raise PermissionDenied
 
     def post(self, request, *args, **kwargs):
         case_id = kwargs.get("case_id")
@@ -310,8 +305,7 @@ class RemoveCaseView(LoginRequiredMixin, View):
                 Q(assigned_to__in=[request.user]) | Q(created_by=request.user)).distinct().count()
             data = {"case_id": case_id, "count": count}
             return JsonResponse(data)
-        else:
-            raise PermissionDenied
+        raise PermissionDenied
 
 
 class CloseCaseView(LoginRequiredMixin, View):
@@ -327,8 +321,7 @@ class CloseCaseView(LoginRequiredMixin, View):
             self.object.save()
             data = {'status': "Closed", "cid": case_id}
             return JsonResponse(data)
-        else:
-            raise PermissionDenied
+        raise PermissionDenied
 
 
 def select_contact(request):

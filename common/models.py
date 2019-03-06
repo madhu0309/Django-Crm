@@ -51,7 +51,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             full_name = self.email
         return full_name
 
-    def __unicode__(self):
+    def __str__(self):
         return self.email
 
     class Meta:
