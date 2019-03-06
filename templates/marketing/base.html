@@ -26,24 +26,24 @@
   <div class="menu_block">
     <ul class="main_menu">
       <li class="parent_menu">
-        <a href="#" class="red"><i class="far fa-address-book"></i>Contacts</a>
+        <a href="{% url 'marketing:contact_lists' %}" class="red"><i class="far fa-address-book"></i>Contacts</a>
         <ul class="submenu">
-          <li><a href="#" class="yellow"><i class="fas fa-bars"></i>All Contacts</a></li>
-          <li><a href="#" class="yellow"><i class="far fa-plus-square"></i>Create Contact</a></li>
+          <li><a href="{% url 'marketing:contacts_list' %}" class="yellow"><i class="fas fa-bars"></i>All Contacts</a></li>
+          <li><a href="{% url 'marketing:contacts_list_new' %}" class="yellow"><i class="far fa-plus-square"></i>Create Contact</a></li>
         </ul>
       </li>
       <li class="parent_menu">
-        <a href="#" class="purple"><i class="fas fa-envelope-open"></i>Email Templates</a>
+        <a href="{% url 'marketing:email_template_list' %}" class="purple"><i class="fas fa-envelope-open"></i>Email Templates</a>
         <ul class="submenu">
-          <li><a href="#" class="d_green"><i class="fas fa-bars"></i>All Templates</a></li>
-          <li><a href="#" class="d_green"><i class="far fa-plus-square"></i>Create Template</a></li>
+          <li><a href="{% url 'marketing:email_template_list' %}" class="d_green"><i class="fas fa-bars"></i>All Templates</a></li>
+          <li><a href="{% url 'marketing:email_template_new' %}" class="d_green"><i class="far fa-plus-square"></i>Create Template</a></li>
         </ul>
       </li>
       <li class="parent_menu">
-        <a href="#" class="green"><i class="fas fa-at"></i>Campaigns</a>
+        <a href="{% url 'marketing:campaign_list' %}" class="green"><i class="fas fa-at"></i>Campaigns</a>
         <ul class="submenu">
-          <li><a href="#" class="sky_color"><i class="fas fa-bars"></i>All Campaigns</a></li>
-          <li><a href="#" class="sky_color"><i class="far fa-plus-square"></i>Create Campaign</a></li>
+          <li><a href="{% url 'marketing:campaign_list' %}" class="sky_color"><i class="fas fa-bars"></i>All Campaigns</a></li>
+          <li><a href="{% url 'marketing:campaign_new' %}" class="sky_color"><i class="far fa-plus-square"></i>Create Campaign</a></li>
         </ul>
       </li>
     </ul>
