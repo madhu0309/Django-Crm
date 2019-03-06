@@ -93,11 +93,13 @@
                   <label for="exampleInputEmail1">Attachment</label>
                   <input type="file" name="case_attachment" id="case_attachment">
                   {% if case_obj.case_attachment.count %}
-                    {% for i in case_obj.case_attachment.all %}
-                    <span id="attachment{{i.id}}">
-                      <a target="_blank" href="{{i.attachment.url}}">{{i.file_name}}</a>
-                      <a class="action btn primary_btn"  onclick="remove_attachment({{i.id}})">X</a>
-                    </span>
+                    {% for attachment in case_obj.case_attachment.all %}
+                    <div id="attachment{{attachment.id}}" class="mt-2">
+                      <a target="_blank" href="{{ attachment.attachment.url }}">{{ attachment.file_name }}</a>
+                      {% if not attachment.created_by.role == 'ADMIN' or attachment.created_by.role == request.user.role %}
+                      <a class="action btn primary_btn"  onclick="remove_attachment({{attachment.id}})">X</a>
+                      {% endif %}
+                    </div>
                     {% endfor %}
                   {% endif %}
                   <span class="error error_message" id="error_id_case_attachment"></span>

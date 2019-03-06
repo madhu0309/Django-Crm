@@ -104,6 +104,7 @@ class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = "profile.html"
 
     def get_context_data(self, **kwargs):
+
         context = super(ProfileView, self).get_context_data(**kwargs)
         context["user_obj"] = self.request.user
         return context
@@ -168,8 +169,9 @@ class LoginView(TemplateView):
                 "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
                 "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
                 "GP_CLIENT_ID": settings.GP_CLIENT_ID,
-                "error": True,
-                "message": "Your username and password didn't match. Please try again."
+                # "error": True,
+                # "message": "Your username and password didn't match. Please try again."
+                "form": form
             })
 
 
@@ -545,7 +547,7 @@ def download_document(request, pk):
     if doc_obj:
         if not request.user.role == 'ADMIN':
             if (not request.user == doc_obj.created_by and
-                request.user not in doc_obj.shared_to.all()):
+                    request.user not in doc_obj.shared_to.all()):
                 raise PermissionDenied
         path = doc_obj.document_file.path
         file_path = os.path.join(settings.MEDIA_ROOT, path)
@@ -780,11 +782,16 @@ def google_login(request):
         link = user_document['link'] if 'link' in user_document.keys(
         ) else link
 
-        verified_email = user_document['verified_email'] if 'verified_email' in user_document.keys() else ''
-        name = user_document['name'] if 'name' in user_document.keys() else 'name'
-        first_name = user_document['given_name'] if 'given_name' in user_document.keys() else 'first_name'
-        last_name = user_document['family_name'] if 'family_name' in user_document.keys() else 'last_name'
-        email = user_document['email'] if 'email' in user_document.keys() else 'email@dummy.com'
+        verified_email = user_document['verified_email'] if 'verified_email' in user_document.keys(
+        ) else ''
+        name = user_document['name'] if 'name' in user_document.keys(
+        ) else 'name'
+        first_name = user_document['given_name'] if 'given_name' in user_document.keys(
+        ) else 'first_name'
+        last_name = user_document['family_name'] if 'family_name' in user_document.keys(
+        ) else 'last_name'
+        email = user_document['email'] if 'email' in user_document.keys(
+        ) else 'email@dummy.com'
 
         user = User.objects.filter(email=user_document['email'])
 
@@ -798,7 +805,7 @@ def google_login(request):
                 email=email,
                 first_name=first_name,
                 last_name=last_name,
-                role="User"
+                role="USER"
             )
 
         google, created = Google.objects.get_or_create(user=user)
