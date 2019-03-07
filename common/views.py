@@ -139,40 +139,36 @@ class LoginView(TemplateView):
                     if user is not None:
                         login(request, user)
                         return HttpResponseRedirect('/')
-                    else:
-                        return render(request, "login.html", {
-                            "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
-                            "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
-                            "GP_CLIENT_ID": settings.GP_CLIENT_ID,
-                            "error": True,
-                            "message": "Your username and password didn't match. Please try again."
-                        })
-                else:
                     return render(request, "login.html", {
                         "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
                         "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
                         "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                         "error": True,
-                        "message": "Your Account is inactive. Please Contact Administrator"
+                        "message": "Your username and password didn't match. Please try again."
                     })
-            else:
                 return render(request, "login.html", {
                     "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
                     "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
                     "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                     "error": True,
-                    "message": "Your Account is not Found. Please Contact Administrator"
+                    "message": "Your Account is inactive. Please Contact Administrator"
                 })
-
-        else:
             return render(request, "login.html", {
                 "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
                 "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
                 "GP_CLIENT_ID": settings.GP_CLIENT_ID,
-                # "error": True,
-                # "message": "Your username and password didn't match. Please try again."
-                "form": form
+                "error": True,
+                "message": "Your Account is not Found. Please Contact Administrator"
             })
+
+        return render(request, "login.html", {
+            "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
+            "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
+            "GP_CLIENT_ID": settings.GP_CLIENT_ID,
+            # "error": True,
+            # "message": "Your username and password didn't match. Please try again."
+            "form": form
+        })
 
 
 class ForgotPasswordView(TemplateView):
@@ -350,17 +346,14 @@ def document_create(request):
             data = {'success_url': reverse_lazy(
                 'common:doc_list'), 'error': False}
             return JsonResponse(data)
-
-        else:
-            return JsonResponse({'error': True, 'errors': form.errors})
-    else:
-        context = {}
-        context["doc_form"] = form
-        context["users"] = users
-        context["sharedto_list"] = [
-            int(i) for i in request.POST.getlist('assigned_to', []) if i]
-        context["errors"] = form.errors
-        return render(request, template_name, context)
+        return JsonResponse({'error': True, 'errors': form.errors})
+    context = {}
+    context["doc_form"] = form
+    context["users"] = users
+    context["sharedto_list"] = [
+        int(i) for i in request.POST.getlist('assigned_to', []) if i]
+    context["errors"] = form.errors
+    return render(request, template_name, context)
 
 
 class DocumentListView(LoginRequiredMixin, TemplateView):
@@ -452,21 +445,17 @@ def document_update(request, pk):
             data = {'success_url': reverse_lazy(
                 'common:doc_list'), 'error': False}
             return JsonResponse(data)
-
-        else:
-            return JsonResponse({'error': True, 'errors': form.errors})
-
-    else:
-        context = {}
-        context["doc_obj"] = document
-        context["doc_form"] = form
-        context["doc_file_name"] = context["doc_obj"].document_file.name.split(
-            "/")[-1]
-        context["users"] = users
-        context["sharedto_list"] = [
-            int(i) for i in request.POST.getlist('shared_to', []) if i]
-        context["errors"] = form.errors
-        return render(request, template_name, context)
+        return JsonResponse({'error': True, 'errors': form.errors})
+    context = {}
+    context["doc_obj"] = document
+    context["doc_form"] = form
+    context["doc_file_name"] = context["doc_obj"].document_file.name.split(
+        "/")[-1]
+    context["users"] = users
+    context["sharedto_list"] = [
+        int(i) for i in request.POST.getlist('shared_to', []) if i]
+    context["errors"] = form.errors
+    return render(request, template_name, context)
 
 
 class UpdateDocumentView(LoginRequiredMixin, UpdateView):
@@ -599,8 +588,7 @@ def add_comment(request):
                 "commented_on": comment.commented_on,
                 "commented_by": comment.commented_by.email
             })
-        else:
-            return JsonResponse({"error": form.errors})
+        return JsonResponse({"error": form.errors})
 
 
 def edit_comment(request, pk):
@@ -615,8 +603,7 @@ def edit_comment(request, pk):
                     "comment_id": comment_obj.id,
                     "comment": comment_obj.comment,
                 })
-            else:
-                return JsonResponse({"error": form['comment'].errors})
+            return JsonResponse({"error": form['comment'].errors})
         data = {'error': "You don't have permission to edit this comment."}
         return JsonResponse(data)
 
@@ -668,12 +655,9 @@ def add_api_settings(request):
                 success_url = reverse_lazy("common:add_api_settings")
             data = {'success_url': success_url, 'error': False}
             return JsonResponse(data)
-
-        else:
-            return JsonResponse({'error': True, 'errors': form.errors})
-    else:
-        data = {'form': form, "setting": api_settings,
-                'users': users, 'assign_to_list': assign_to_list}
+        return JsonResponse({'error': True, 'errors': form.errors})
+    data = {'form': form, "setting": api_settings,
+            'users': users, 'assign_to_list': assign_to_list}
     return render(request, 'settings/create.html', data)
 
 
@@ -715,14 +699,11 @@ def update_api_settings(request, pk):
                 success_url = reverse_lazy("common:add_api_settings")
             data = {'success_url': success_url, 'error': False}
             return JsonResponse(data)
-
-        else:
-            return JsonResponse({'error': True, 'errors': form.errors})
-    else:
-        data = {
-            'form': form, "setting": api_settings, 'users': users, 'assign_to_list': assign_to_list,
-            'assigned_to_list': json.dumps([setting.id for setting in api_settings.lead_assigned_to.all() if setting])
-        }
+        return JsonResponse({'error': True, 'errors': form.errors})
+    data = {
+        'form': form, "setting": api_settings, 'users': users, 'assign_to_list': assign_to_list,
+        'assigned_to_list': json.dumps([setting.id for setting in api_settings.lead_assigned_to.all() if setting])
+    }
     return render(request, 'settings/update.html', data)
 
 
@@ -751,8 +732,7 @@ def change_passsword_by_admin(request):
             email.content_subtype = "html"
             email.send()
             return HttpResponseRedirect('/users/list/')
-    else:
-        raise PermissionDenied
+    raise PermissionDenied
 
 
 def google_login(request):
@@ -808,7 +788,7 @@ def google_login(request):
                 role="USER"
             )
 
-        google, created = Google.objects.get_or_create(user=user)
+        google = Google.objects.get_or_create(user=user)
         google.user = user
         google.google_url = link
         google.verified_email = verified_email
@@ -828,16 +808,14 @@ def google_login(request):
 
         if request.GET.get('state') != '1235dfghjkf123':
             return HttpResponseRedirect(request.GET.get('state'))
-        else:
-            return HttpResponseRedirect(reverse("common:home"))
+        return HttpResponseRedirect(reverse("common:home"))
+    if request.GET.get('next'):
+        next_url = request.GET.get('next')
     else:
-        if request.GET.get('next'):
-            next_url = request.GET.get('next')
-        else:
-            next_url = '1235dfghjkf123'
-        rty = "https://accounts.google.com/o/oauth2/auth?client_id=" + \
-            settings.GP_CLIENT_ID + "&response_type=code"
-        rty += "&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email&redirect_uri=" + \
-            'http://' + request.META['HTTP_HOST'] + \
-            reverse('common:google_login') + "&state=" + next_url
-        return HttpResponseRedirect(rty)
+        next_url = '1235dfghjkf123'
+    rty = "https://accounts.google.com/o/oauth2/auth?client_id=" + \
+        settings.GP_CLIENT_ID + "&response_type=code"
+    rty += "&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email&redirect_uri=" + \
+        'http://' + request.META['HTTP_HOST'] + \
+        reverse('common:google_login') + "&state=" + next_url
+    return HttpResponseRedirect(rty)

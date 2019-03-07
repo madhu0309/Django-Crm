@@ -51,7 +51,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             full_name = self.email
         return full_name
 
-    def __unicode__(self):
+    def __str__(self):
         return self.email
 
     class Meta:
@@ -185,8 +185,7 @@ class Attachments(models.Model):
     def get_file_type_display(self):
         if self.attachment:
             return self.file_type()[1]
-        else:
-            return None
+        return None
 
 
 def document_path(self, filename):

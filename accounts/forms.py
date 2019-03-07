@@ -1,8 +1,8 @@
 from django import forms
 from .models import Account
 from common.models import Comment, Attachments
-from leads.models import *
-from contacts.models import *
+from leads.models import Lead
+from contacts.models import Contact
 from django.db.models import Q
 
 
