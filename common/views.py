@@ -55,7 +55,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context = super(HomeView, self).get_context_data(**kwargs)
         accounts = Account.objects.filter(status="open")
         contacts = Contact.objects.all()
-        leads = Lead.objects.exclude(status='converted' and 'dead')
+        leads = Lead.objects.exclude(status='converted')
         opportunities = Opportunity.objects.all()
         if self.request.user.role == "ADMIN" or self.request.user.is_superuser:
             pass
