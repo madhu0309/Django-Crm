@@ -185,8 +185,7 @@ class Attachments(models.Model):
     def get_file_type_display(self):
         if self.attachment:
             return self.file_type()[1]
-        else:
-            return None
+        return None
 
 
 def document_path(self, filename):

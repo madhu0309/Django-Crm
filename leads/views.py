@@ -292,7 +292,7 @@ def update_lead(request, pk):
                         'assigned_to').values_list('id', flat=True)
                     all_members_list = list(
                         set(list(assigned_form_users)) - set(list(assigned_to_ids)))
-                    if len(all_members_list):
+                    if all_members_list:
                         for assigned_to_user in all_members_list:
                             user = get_object_or_404(User, pk=assigned_to_user)
                             mail_subject = 'Assigned to lead.'
@@ -525,11 +525,6 @@ class GetLeadsView(LoginRequiredMixin, ListView):
     context_object_name = "leads"
     template_name = "leads_list.html"
 
-    def get_context_data(self, **kwargs):
-        context = super(GetLeadsView, self).get_context_data(**kwargs)
-        context["leads"] = self.get_queryset()
-        return context
-
 
 class AddAttachmentsView(LoginRequiredMixin, CreateView):
     model = Attachments
@@ -569,7 +564,7 @@ class AddAttachmentsView(LoginRequiredMixin, CreateView):
         })
 
     def form_invalid(self, form):
-            return JsonResponse({"error": form['attachment'].errors})
+        return JsonResponse({"error": form['attachment'].errors})
 
 
 class DeleteAttachmentsView(LoginRequiredMixin, View):

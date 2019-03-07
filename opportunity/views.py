@@ -5,7 +5,7 @@ from django.core.mail import EmailMessage
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
-from django.views.generic import CreateView, UpdateView, DetailView, ListView, TemplateView, View
+from django.views.generic import CreateView, DetailView, ListView, TemplateView, View
 from accounts.models import Account, Tags
 from common.models import User, Comment, Attachments
 from common.utils import STAGES, SOURCES, CURRENCY_CODES
@@ -72,9 +72,6 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
 
 
 def create_opportunity(request):
-    template_name = "create_opportunity.html"
-
-    users = User.objects.filter(is_active=True).order_by('email')
     accounts = Account.objects.filter(status="open")
     contacts = Contact.objects.all()
     if request.user.role != "ADMIN" and not request.user.is_superuser:
@@ -83,9 +80,9 @@ def create_opportunity(request):
         contacts = Contact.objects.filter(
             Q(assigned_to__in=[request.user]) | Q(created_by=request.user))
 
-    kwargs_data = {"assigned_to": users, "account": accounts, "contacts": contacts}
-    form = OpportunityForm(**kwargs_data)
-
+    kwargs_data = {
+        "assigned_to": User.objects.filter(is_active=True).order_by('email'),
+        "account": accounts, "contacts": contacts}
     if request.POST:
         form = OpportunityForm(request.POST, request.FILES, **kwargs_data)
         if form.is_valid():
@@ -138,18 +135,19 @@ def create_opportunity(request):
                 success_url = reverse("opportunities:save")
             if request.POST.get('from_account'):
                 from_account = request.POST.get('from_account')
-                success_url = reverse("accounts:view_account", pk=from_account)
+                success_url = reverse("accounts:view_account", kwargs={'pk': from_account})
+                print(success_url)
             return JsonResponse({'error': False, 'success_url': success_url})
         return JsonResponse({'error': True, 'errors': form.errors})
     context = {}
-    context["opportunity_form"] = form
+    context["opportunity_form"] = OpportunityForm(**kwargs_data)
 
     context["accounts"] = accounts
     if request.GET.get('view_account'):
         context['account'] = get_object_or_404(
             Account, id=request.GET.get('view_account'))
     context["contacts"] = contacts
-    context["users"] = users
+    context["users"] = kwargs_data['assigned_to']
     context["currencies"] = CURRENCY_CODES
     context["stages"] = STAGES
     context["sources"] = SOURCES
@@ -158,7 +156,7 @@ def create_opportunity(request):
 
     context["contacts_list"] = [
         int(i) for i in request.POST.getlist('contacts', []) if i]
-    return render(request, template_name, context)
+    return render(request, "create_opportunity.html", context)
 
 
 class OpportunityDetailView(LoginRequiredMixin, DetailView):
@@ -194,9 +192,7 @@ class OpportunityDetailView(LoginRequiredMixin, DetailView):
 
 
 def update_opportunity(request, pk):
-    template_name = "create_opportunity.html"
     opportunity_object = Opportunity.objects.filter(pk=pk).first()
-    users = User.objects.filter(is_active=True).order_by('email')
     accounts = Account.objects.filter(status="open")
     contacts = Contact.objects.all()
     if request.user.role != "ADMIN" and not request.user.is_superuser:
@@ -205,7 +201,9 @@ def update_opportunity(request, pk):
         contacts = Contact.objects.filter(
             Q(assigned_to__in=[request.user]) | Q(created_by=request.user))
 
-    kwargs_data = {"assigned_to": users, "account": accounts, "contacts": contacts}
+    kwargs_data = {
+        "assigned_to": User.objects.filter(is_active=True).order_by('email'),
+        "account": accounts, "contacts": contacts}
     form = OpportunityForm(instance=opportunity_object, **kwargs_data)
 
     if request.POST:
@@ -272,37 +270,33 @@ def update_opportunity(request, pk):
             success_url = reverse('opportunities:list')
             if request.POST.get('from_account'):
                 from_account = request.POST.get('from_account')
-                success_url = reverse("accounts:view_account", pk=from_account)
+                success_url = reverse("accounts:view_account", kwargs={'pk': from_account})
             return JsonResponse({'error': False, 'success_url': success_url})
-
-        else:
-            return JsonResponse({'error': True, 'errors': form.errors})
-    else:
-        context = {}
-        context["opportunity_obj"] = opportunity_object
-        user_assgn_list = [
-            assigned_to.id for assigned_to in context["opportunity_obj"].assigned_to.all()]
-        if request.user == context['opportunity_obj'].created_by:
-            user_assgn_list.append(request.user.id)
-        if request.user.role != "ADMIN" and not request.user.is_superuser:
-            if request.user.id not in user_assgn_list:
-                raise PermissionDenied
-        context["opportunity_form"] = form
-        context["accounts"] = accounts
-        if request.GET.get('view_account'):
-            context['account'] = get_object_or_404(
-                Account, id=request.GET.get('view_account'))
-        context["contacts"] = contacts
-        context["users"] = users
-        context["currencies"] = CURRENCY_CODES
-        context["stages"] = STAGES
-        context["sources"] = SOURCES
-        context["assignedto_list"] = [
-            int(i) for i in request.POST.getlist('assigned_to', []) if i]
-        context["contacts_list"] = [
-            int(i) for i in request.POST.getlist('contacts', []) if i]
-
-        return render(request, template_name, context)
+        return JsonResponse({'error': True, 'errors': form.errors})
+    context = {}
+    context["opportunity_obj"] = opportunity_object
+    user_assgn_list = [
+        assigned_to.id for assigned_to in context["opportunity_obj"].assigned_to.all()]
+    if request.user == context['opportunity_obj'].created_by:
+        user_assgn_list.append(request.user.id)
+    if request.user.role != "ADMIN" and not request.user.is_superuser:
+        if request.user.id not in user_assgn_list:
+            raise PermissionDenied
+    context["opportunity_form"] = form
+    context["accounts"] = accounts
+    if request.GET.get('view_account'):
+        context['account'] = get_object_or_404(
+            Account, id=request.GET.get('view_account'))
+    context["contacts"] = contacts
+    context["users"] = kwargs_data['assigned_to']
+    context["currencies"] = CURRENCY_CODES
+    context["stages"] = STAGES
+    context["sources"] = SOURCES
+    context["assignedto_list"] = [
+        int(i) for i in request.POST.getlist('assigned_to', []) if i]
+    context["contacts_list"] = [
+        int(i) for i in request.POST.getlist('contacts', []) if i]
+    return render(request, "create_opportunity.html", context)
 
 
 class DeleteOpportunityView(LoginRequiredMixin, View):
@@ -422,10 +416,6 @@ class GetOpportunitiesView(LoginRequiredMixin, ListView):
     context_object_name = "opportunities"
     template_name = "opportunities_list.html"
 
-    def get_context_data(self, **kwargs):
-        context = super(GetOpportunitiesView, self).get_context_data(**kwargs)
-        context["opportunities"] = self.get_queryset()
-        return context
 
 
 class AddAttachmentsView(LoginRequiredMixin, CreateView):

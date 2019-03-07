@@ -126,7 +126,7 @@ def create_case(request):
                 success_url = reverse("cases:add_case")
             if request.POST.get('from_account'):
                 from_account = request.POST.get('from_account')
-                success_url = reverse("accounts:view_account", pk=from_account)
+                success_url = reverse("accounts:view_account", kwargs={'pk': from_account})
             return JsonResponse({'error': False, "success_url": success_url})
         return JsonResponse({'error': True, 'errors': form.errors})
     context = {}
@@ -179,7 +179,6 @@ class CaseDetailView(LoginRequiredMixin, DetailView):
 
 def update_case(request, pk):
     case_object = Case.objects.filter(pk=pk).first()
-    users = User.objects.filter(is_active=True).order_by('email')
     accounts = Account.objects.filter(status="open")
     contacts = Contact.objects.all()
     if request.user.role != "ADMIN" and not request.user.is_superuser:
@@ -187,9 +186,10 @@ def update_case(request, pk):
             created_by=request.user)
         contacts = Contact.objects.filter(
             Q(assigned_to__in=[request.user]) | Q(created_by=request.user))
-    kwargs_data = {"assigned_to": users, "account": accounts, "contacts": contacts}
+    kwargs_data = {
+        "assigned_to": User.objects.filter(is_active=True).order_by('email'),
+        "account": accounts, "contacts": contacts}
     form = CaseForm(instance=case_object, **kwargs_data)
-    template_name = "create_cases.html"
 
     if request.POST:
         form = CaseForm(request.POST, request.FILES, instance=case_object, **kwargs_data)
@@ -234,7 +234,7 @@ def update_case(request, pk):
             success_url = reverse("cases:list")
             if request.POST.get('from_account'):
                 from_account = request.POST.get('from_account')
-                success_url = reverse("accounts:view_account", pk=from_account)
+                success_url = reverse("accounts:view_account", kwargs={'pk': from_account})
             if request.FILES.get('case_attachment'):
                 attachment = Attachments()
                 attachment.created_by = request.user
@@ -245,37 +245,33 @@ def update_case(request, pk):
                 attachment.save()
 
             return JsonResponse({'error': False, 'success_url': success_url})
+        return JsonResponse({'error': True, 'errors': form.errors})
+    context = {}
+    context["case_obj"] = case_object
+    user_assgn_list = [
+        assgined_to.id for assgined_to in context["case_obj"].assigned_to.all()]
 
-        else:
-            return JsonResponse({'error': True, 'errors': form.errors})
+    if request.user == case_object.created_by:
+        user_assgn_list.append(request.user.id)
+    if request.user.role != "ADMIN" and not request.user.is_superuser:
+        if request.user.id not in user_assgn_list:
+            raise PermissionDenied
+    context["case_form"] = form
+    context["accounts"] = accounts
+    if request.GET.get('view_account'):
+        context['account'] = get_object_or_404(
+            Account, id=request.GET.get('view_account'))
+    context["contacts"] = contacts
+    context["users"] = kwargs_data['assigned_to']
+    context["case_types"] = CASE_TYPE
+    context["case_priority"] = PRIORITY_CHOICE
+    context["case_status"] = STATUS_CHOICE
+    context["assignedto_list"] = [
+        int(i) for i in request.POST.getlist('assigned_to', []) if i]
+    context["contacts_list"] = [
+        int(i) for i in request.POST.getlist('contacts', []) if i]
 
-    else:
-        context = {}
-        context["case_obj"] = case_object
-        user_assgn_list = [
-            assgined_to.id for assgined_to in context["case_obj"].assigned_to.all()]
-
-        if request.user == case_object.created_by:
-            user_assgn_list.append(request.user.id)
-        if request.user.role != "ADMIN" and not request.user.is_superuser:
-            if request.user.id not in user_assgn_list:
-                raise PermissionDenied
-        context["case_form"] = form
-        context["accounts"] = accounts
-        if request.GET.get('view_account'):
-            context['account'] = get_object_or_404(
-                Account, id=request.GET.get('view_account'))
-        context["contacts"] = contacts
-        context["users"] = users
-        context["case_types"] = CASE_TYPE
-        context["case_priority"] = PRIORITY_CHOICE
-        context["case_status"] = STATUS_CHOICE
-        context["assignedto_list"] = [
-            int(i) for i in request.POST.getlist('assigned_to', []) if i]
-        context["contacts_list"] = [
-            int(i) for i in request.POST.getlist('contacts', []) if i]
-
-        return render(request, template_name, context)
+    return render(request, "create_cases.html", context)
 
 
 class RemoveCaseView(LoginRequiredMixin, View):
