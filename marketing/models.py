@@ -12,6 +12,7 @@ class Tag(models.Model):
     name = models.CharField(max_length=500)
     color = models.CharField(max_length=20, default="#999999", verbose_name=_("color"))
     created_by = models.ForeignKey(User, related_name="marketing_tags", null=True, on_delete=models.SET_NULL)
+    created_on = models.DateTimeField(auto_now_add=True)
 
     @property
     def created_by_user(self):
@@ -22,6 +23,7 @@ class EmailTemplate(models.Model):
     created_by = models.ForeignKey(
         User, related_name="marketing_emailtemplates", null=True, on_delete=models.SET_NULL)
     created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
     title = models.CharField(max_length=5000)
     subject = models.CharField(max_length=5000)
     html = models.TextField()
@@ -35,6 +37,7 @@ class ContactList(models.Model):
     created_by = models.ForeignKey(
         User, related_name="marketing_contactlist", null=True, on_delete=models.SET_NULL)
     created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
     name = models.CharField(max_length=500)
     tags = models.ManyToManyField(Tag)
     # is_public = models.BooleanField(default=False)
@@ -92,6 +95,7 @@ class Contact(models.Model):
     created_by = models.ForeignKey(
         User, related_name="marketing_contacts_created_by", null=True, on_delete=models.SET_NULL)
     created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
     contact_list = models.ManyToManyField(ContactList, related_name="contacts")
     name = models.CharField(max_length=500)
     email = models.EmailField()
@@ -103,6 +107,31 @@ class Contact(models.Model):
     city = models.CharField(max_length=500, null=True, blank=True)
     state = models.CharField(max_length=500, null=True, blank=True)
     contry = models.CharField(max_length=500, null=True, blank=True)
+
+    def __str__(self):
+        return self.email
+
+
+class FailedContact(models.Model):
+    phone_regex = RegexValidator(
+        regex=r'^\+?1?\d{9,15}$',
+        message="Phone number must be entered in the format: '+999999999'. Up to 20 digits allowed."
+    )
+    created_by = models.ForeignKey(
+        User, related_name="marketing_failed_contacts_created_by", null=True, on_delete=models.SET_NULL)
+    created_on = models.DateTimeField(auto_now_add=True)
+    contact_list = models.ManyToManyField(ContactList, related_name="failed_contacts")
+    name = models.CharField(max_length=500, null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
+    contact_number = models.CharField(validators=[phone_regex], max_length=20, blank=True, null=True)
+    company_name = models.CharField(max_length=500, null=True, blank=True)
+    last_name = models.CharField(max_length=500, null=True, blank=True)
+    city = models.CharField(max_length=500, null=True, blank=True)
+    state = models.CharField(max_length=500, null=True, blank=True)
+    contry = models.CharField(max_length=500, null=True, blank=True)
+
+    def __str__(self):
+        return self.email
 
 
 class Campaign(models.Model):
@@ -118,6 +147,7 @@ class Campaign(models.Model):
     created_by = models.ForeignKey(
         User, related_name="marketing_campaigns_created_by", null=True, on_delete=models.SET_NULL)
     created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
     contact_lists = models.ManyToManyField(ContactList, related_name="campaigns")
     email_template = models.ForeignKey(EmailTemplate, blank=True, null=True, on_delete=models.SET_NULL)
     schedule_date_time = models.DateTimeField(blank=True, null=True)

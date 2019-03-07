@@ -1,5 +1,6 @@
 import json
 from django.conf import Settings
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.http.response import JsonResponse, HttpResponse, HttpResponseRedirect
@@ -7,7 +8,7 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from common import status
 from marketing.models import Tag, ContactList, Contact
-from marketing.forms import ContactListForm
+from marketing.forms import ContactListForm, ContactForm
 from marketing.tasks import upload_csv_file
 
 
@@ -20,10 +21,12 @@ def get_exact_match(query, m2m_field, ids):
     return query
 
 
+@login_required(login_url='/login')
 def dashboard(request):
     return render(request, 'marketing/dashboard.html')
 
 
+@login_required(login_url='/login')
 def contact_lists(request):
     tags = Tag.objects.all()
     if (request.user.is_superuser):
@@ -59,10 +62,14 @@ def contact_lists(request):
     return render(request, 'marketing/lists/index.html', data)
 
 
+@login_required(login_url='/login')
 def contacts_list(request):
-    return render(request, 'marketing/lists/all.html')
+    contacts = Contact.objects.all()
+    data = {"contacts": contacts}
+    return render(request, 'marketing/lists/all.html', data)
 
 
+@login_required(login_url='/login')
 def contact_list_new(request):
     data = {}
     if request.POST:
@@ -84,6 +91,7 @@ def contact_list_new(request):
     return render(request, 'marketing/lists/new.html', data)
 
 
+@login_required(login_url='/login')
 def edit_contact_list(request, pk):
     user = request.user
     try:
@@ -116,6 +124,7 @@ def edit_contact_list(request, pk):
         return JsonResponse({'error': True, 'errors': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@login_required(login_url='/login')
 def view_contact_list(request, pk):
     contact_list = get_object_or_404(ContactList, pk=pk)
     contacts = Contact.objects.filter(contact_list__in=[contact_list])
@@ -138,6 +147,7 @@ def view_contact_list(request, pk):
     return render(request, template_name, data)
 
 
+@login_required(login_url='/login')
 def delete_contact_list(request, pk):
     try:
         ContactList.objects.get(pk=pk).delete()
@@ -147,45 +157,74 @@ def delete_contact_list(request, pk):
     return HttpResponseRedirect(redirect_to)
 
 
+@login_required(login_url='/login')
 def contacts_list_new(request):
-    return render(request, 'marketing/lists/cnew.html')
+    if request.POST:
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            instance.created_by = request.user
+            instance.save()
+            for each in json.loads(request.POST['contact_list']):
+                instance.contact_list.add(ContactList.objects.get(id=each))
+            # return JsonResponse(form.data, status=status.HTTP_201_CREATED)
+            return reverse('marketing:contact_list')
+        else:
+            data = {'error': True, 'errors': form.errors}
+    else:
+        if (request.user.is_superuser):
+            queryset = ContactList.objects.all()
+        else:
+            queryset = ContactList.objects.filter(created_by=request.user)
+        data = {"contact_list": queryset}
+    return render(request, 'marketing/lists/cnew.html', data)
 
 
+@login_required(login_url='/login')
 def edit_contact(request):
     return render(request, 'marketing/lists/edit_contact.html')
 
 
+@login_required(login_url='/login')
 def contact_list_detail(request):
     return render(request, 'marketing/lists/detail.html')
 
 
+@login_required(login_url='/login')
 def email_template_list(request):
     return render(request, 'marketing/email_template/index.html')
 
 
+@login_required(login_url='/login')
 def email_template_new(request):
     return render(request, 'marketing/email_template/new.html')
 
 
+@login_required(login_url='/login')
 def email_template_edit(request):
     return render(request, 'marketing/email_template/edit.html')
 
 
+@login_required(login_url='/login')
 def email_template_detail(request):
     return render(request, 'marketing/email_template/details.html')
 
 
+@login_required(login_url='/login')
 def campaign_list(request):
     return render(request, 'marketing/campaign/index.html')
 
 
+@login_required(login_url='/login')
 def campaign_new(request):
     return render(request, 'marketing/campaign/new.html')
 
 
+@login_required(login_url='/login')
 def campaign_edit(request):
     return render(request, 'marketing/campaign/edit.html')
 
 
+@login_required(login_url='/login')
 def campaign_details(request):
     return render(request, 'marketing/campaign/details.html')
