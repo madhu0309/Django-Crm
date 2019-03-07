@@ -169,7 +169,7 @@ class UserListTestCase(ObjectsCreation, TestCase):
         response = self.client.get('/users/list/')
         # get_img_url = self.users.filter()
         get_user = User.objects.get(email='admin@micropyramid.com')
-        self.assertEqual(get_user.email, get_user.__unicode__())
+        self.assertEqual(get_user.email, get_user.__str__())
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'list.html')
 
