@@ -76,7 +76,7 @@ class EmailTestCase(UserCreation, TestCase):
         # boo = Email.objects.get(important=True)
         # print('yes')
         self.assertFalse(get_email.important)
-        self.assertEqual(get_email.subject, get_email.__unicode__())
+        self.assertEqual(get_email.subject, get_email.__str__())
 
         self.assertEqual(response.status_code, 302)
 

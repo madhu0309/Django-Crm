@@ -1,10 +1,6 @@
-import json
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import EmailMessage
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
-from django.template.loader import render_to_string
+from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import (
     CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
 from accounts.forms import AccountForm, AccountCommentForm, AccountAttachmentForm
@@ -178,13 +174,11 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             if self.request.user != account_record.created_by:
                 raise PermissionDenied
-        if (
+
+        comment_permission = True if (
             self.request.user == account_record.created_by or
             self.request.user.is_superuser or self.request.user.role == 'ADMIN'
-        ):
-            comment_permission = True
-        else:
-            comment_permission = False
+        ) else False
 
         context.update({
             "comments": account_record.accounts_comments.all(),
@@ -233,9 +227,6 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         # Save Account
         account_object = form.save(commit=False)
         account_object.save()
-
-        all_members_list = []
-
         account_object.tags.clear()
         if self.request.POST.get('tags', ''):
             tags = self.request.POST.get("tags")
