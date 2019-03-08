@@ -37,10 +37,10 @@ class AccountForm(forms.ModelForm):
         self.fields["billing_country"].choices = [
             ("", "--Country--"), ] + list(self.fields["billing_country"].choices)[1:]
         self.fields["lead"].queryset = Lead.objects.all(
-        ).exclude(status='dead')
+        ).exclude(status='closed')
         if request_user:
             self.fields["lead"].queryset = Lead.objects.filter(
-                Q(assigned_to__in=[request_user]) | Q(created_by=request_user)).exclude(status='dead')
+                Q(assigned_to__in=[request_user]) | Q(created_by=request_user)).exclude(status='closed')
             self.fields["contacts"].queryset = Contact.objects.filter(
                 Q(assigned_to__in=[request_user]) | Q(created_by=request_user))
 

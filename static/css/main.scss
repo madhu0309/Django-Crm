@@ -1556,3 +1556,13 @@ pre{
   font-size: 12px;
   color: #a7a7a7a7;
 }
+
+.actions {
+  .edit, .delete {
+    svg {
+      path {
+        fill: white;
+      }
+    }
+  }
+}

@@ -61,8 +61,8 @@ class LeadListView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super(LeadListView, self).get_context_data(**kwargs)
         # context["lead_obj"] = self.get_queryset()
-        open_leads = self.get_queryset().exclude(status='dead')
-        close_leads = self.get_queryset().filter(status='dead')
+        open_leads = self.get_queryset().exclude(status='closed')
+        close_leads = self.get_queryset().filter(status='closed')
         context["status"] = LEAD_STATUS
         context["open_leads"] = open_leads
         context["close_leads"] = close_leads

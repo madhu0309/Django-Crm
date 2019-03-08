@@ -64,7 +64,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
             contacts = contacts.filter(
                 Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
             leads = leads.filter(
-                Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id)).exclude(status='dead')
+                Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id)).exclude(status='closed')
             opportunities = opportunities.filter(
                 Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
 

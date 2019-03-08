@@ -156,10 +156,10 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
         context["contact_count"] = Contact.objects.count()
-        context["lead_count"] = Lead.objects.exclude(status='dead').count()
+        context["lead_count"] = Lead.objects.exclude(status='closed').count()
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             context["lead_count"] = Lead.objects.filter(
-                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user)).exclude(status='dead').count()
+                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user)).exclude(status='closed').count()
         return context
 
 
@@ -275,10 +275,10 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
         context["contact_count"] = Contact.objects.count()
-        context["lead_count"] = Lead.objects.exclude(status='dead').count()
+        context["lead_count"] = Lead.objects.exclude(status='closed').count()
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             context["lead_count"] = Lead.objects.filter(
-                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user)).exclude(status='dead').count()
+                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user)).exclude(status='closed').count()
         return context
 
 
