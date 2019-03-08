@@ -788,7 +788,7 @@ def google_login(request):
                 role="USER"
             )
 
-        google = Google.objects.get_or_create(user=user)
+        google, _ = Google.objects.get_or_create(user=user)
         google.user = user
         google.google_url = link
         google.verified_email = verified_email
