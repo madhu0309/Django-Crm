@@ -72,13 +72,14 @@ def contacts_list(request):
 @login_required(login_url='/login')
 def contact_list_new(request):
     data = {}
-    if request.POST:
+    if request.method == "POST":
         form = ContactListForm(request.POST, request.FILES)
         if form.is_valid():
             instance = form.save(commit=False)
             instance.created_by = request.user
             instance.save()
-            for each in json.loads(request.POST['tags']):
+            tags = request.POST['tags'].split(',') if request.POST['tags'] else []
+            for each in tags:
                 tag, _ = Tag.objects.get_or_create(
                     name=each, created_by=request.user)
                 instance.tags.add(tag)
@@ -86,9 +87,11 @@ def contact_list_new(request):
                 upload_csv_file.delay(form.validated_rows, request.user.id, [instance.id])
 
             return JsonResponse({'error': False, 'data': form.data}, status=status.HTTP_201_CREATED)
-        return JsonResponse({'error': True, 'errors': form.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-    return render(request, 'marketing/lists/new.html', data)
+        else:
+            # return JsonResponse({'error': True, 'errors': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'error': True, 'errors': form.errors}, status=status.HTTP_200_OK)
+    else:
+        return render(request, 'marketing/lists/new.html', data)
 
 
 @login_required(login_url='/login')
@@ -114,14 +117,15 @@ def edit_contact_list(request, pk):
         if form.is_valid():
             instance = form.save()
             instance.tags.clear()
-            for each in json.loads(request.POST['tags']):
+            tags = request.POST['tags'].split(',') if request.POST['tags'] else []
+            for each in tags:
                 tag, _ = Tag.objects.get_or_create(name=each, created_by=request.user)
                 instance.tags.add(tag)
             if request.FILES.get('contacts_file'):
                 upload_csv_file.delay(form.validated_rows, request.user.id, [instance.id])
 
-            return JsonResponse(form.data, status=status.HTTP_201_CREATED)
-        return JsonResponse({'error': True, 'errors': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'error': False, 'data': form.data}, status=status.HTTP_200_OK)
+        return JsonResponse({'error': True, 'errors': form.errors}, status=status.HTTP_200_OK)
 
 
 @login_required(login_url='/login')
@@ -150,10 +154,10 @@ def view_contact_list(request, pk):
 @login_required(login_url='/login')
 def delete_contact_list(request, pk):
     try:
-        ContactList.objects.get(pk=pk).delete()
-        redirect_to = HttpResponseRedirect(reverse('marketing:contact_lists'))
+        # ContactList.objects.get(pk=pk).delete()
+        redirect_to = reverse('marketing:contact_lists')
     except ContactList.DoesNotExist:
-        redirect_to = HttpResponseRedirect(reverse('marketing:contact_lists'))
+        redirect_to = reverse('marketing:contact_lists')
     return HttpResponseRedirect(redirect_to)
 
 

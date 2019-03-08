@@ -114,7 +114,7 @@ def import_document_validator(document):
 
 
 class ContactListForm(forms.ModelForm):
-    tags = forms.CharField(max_length=5000)
+    tags = forms.CharField(max_length=5000, required=False)
     contacts_file = forms.FileField(required=False)
 
     class Meta:
@@ -126,7 +126,7 @@ class ContactListForm(forms.ModelForm):
         self.fields['contacts_file'].widget.attrs.update({
             "accept": ".csv,.xls,.xlsx,.xlsm,.xlsb,.xml",
         })
-        if self.data['is_file_upload'] == "true":
+        if self.instance is None:
             self.fields['contacts_file'].required = True
         if self.data.get('contacts_file'):
             self.fields['contacts_file'].widget.attrs.update({
@@ -144,7 +144,7 @@ class ContactListForm(forms.ModelForm):
         return document
 
     def clean_tags(self):
-        tags_data = json.loads(self.data['tags'])
+        tags_data = self.data['tags'].split(",") if self.data['tags'] else []
         if len(tags_data) > 0:
             instance_tags = []
             if self.instance and self.instance.id is not None:
