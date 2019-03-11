@@ -5,12 +5,14 @@ from django.core.mail import EmailMessage
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
-from django.views.generic import CreateView, DetailView, ListView, TemplateView, View
+from django.views.generic import (CreateView, DetailView,
+                                  ListView, TemplateView, View)
 from accounts.models import Account, Tags
 from common.models import User, Comment, Attachments
 from common.utils import STAGES, SOURCES, CURRENCY_CODES
 from contacts.models import Contact
-from opportunity.forms import OpportunityForm, OpportunityCommentForm, OpportunityAttachmentForm
+from opportunity.forms import (OpportunityForm, OpportunityCommentForm,
+                               OpportunityAttachmentForm)
 from opportunity.models import Opportunity
 from django.urls import reverse
 from django.db.models import Q
@@ -23,10 +25,13 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
     template_name = "opportunity.html"
 
     def get_queryset(self):
-        queryset = self.model.objects.all().prefetch_related("contacts", "account")
-        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+        queryset = self.model.objects.all().prefetch_related(
+            "contacts", "account")
+        if self.request.user.role != "ADMIN" and not \
+                self.request.user.is_superuser:
             queryset = queryset.filter(
-                Q(assigned_to__in=[self.request.user]) | Q(created_by=self.request.user.id))
+                Q(assigned_to__in=[self.request.user]) |
+                Q(created_by=self.request.user.id))
 
         request_post = self.request.POST
         if request_post:
@@ -58,7 +63,8 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
         search = False
         if (
             self.request.POST.get('name') or self.request.POST.get('stage') or
-            self.request.POST.get('lead_source') or self.request.POST.get('account') or
+            self.request.POST.get('lead_source') or
+            self.request.POST.get('account') or
             self.request.POST.get('contacts')
         ):
             search = True
@@ -99,13 +105,15 @@ def create_opportunity(request):
                 for assigned_to_user in assigned_to_list:
                     user = get_object_or_404(User, pk=assigned_to_user)
                     mail_subject = 'Assigned to opportunity.'
-                    message = render_to_string('assigned_to/opportunity_assigned.html', {
-                        'user': user,
-                        'domain': current_site.domain,
-                        'protocol': request.scheme,
-                        'opportunity': opportunity_obj
-                    })
-                    email = EmailMessage(mail_subject, message, to=[user.email])
+                    message = render_to_string(
+                        'assigned_to/opportunity_assigned.html', {
+                            'user': user,
+                            'domain': current_site.domain,
+                            'protocol': request.scheme,
+                            'opportunity': opportunity_obj
+                        })
+                    email = EmailMessage(
+                        mail_subject, message, to=[user.email])
                     email.content_subtype = "html"
                     email.send()
             if request.POST.getlist('contacts', []):
@@ -135,7 +143,8 @@ def create_opportunity(request):
                 success_url = reverse("opportunities:save")
             if request.POST.get('from_account'):
                 from_account = request.POST.get('from_account')
-                success_url = reverse("accounts:view_account", kwargs={'pk': from_account})
+                success_url = reverse("accounts:view_account", kwargs={
+                                      'pk': from_account})
                 print(success_url)
             return JsonResponse({'error': False, 'success_url': success_url})
         return JsonResponse({'error': True, 'errors': form.errors})
@@ -171,10 +180,13 @@ class OpportunityDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(OpportunityDetailView, self).get_context_data(**kwargs)
-        user_assgn_list = [assigned_to.id for assigned_to in context['object'].assigned_to.all()]
+        user_assgn_list = [
+            assigned_to.id for assigned_to in
+            context['object'].assigned_to.all()]
         if self.request.user == context['object'].created_by:
             user_assgn_list.append(self.request.user.id)
-        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+        if self.request.user.role != "ADMIN" and not \
+                self.request.user.is_superuser:
             if self.request.user.id not in user_assgn_list:
                 raise PermissionDenied
         assigned_data = []
@@ -186,7 +198,9 @@ class OpportunityDetailView(LoginRequiredMixin, DetailView):
 
         comments = context["opportunity_record"].opportunity_comments.all()
         context.update({
-            "comments": comments, 'attachments': context["opportunity_record"].opportunity_attachment.all(),
+            "comments": comments,
+            'attachments': context[
+                "opportunity_record"].opportunity_attachment.all(),
             "assigned_data": json.dumps(assigned_data)})
         return context
 
@@ -207,9 +221,12 @@ def update_opportunity(request, pk):
     form = OpportunityForm(instance=opportunity_object, **kwargs_data)
 
     if request.POST:
-        form = form = OpportunityForm(request.POST, request.FILES, instance=opportunity_object, **kwargs_data)
+        form = form = OpportunityForm(
+            request.POST, request.FILES,
+            instance=opportunity_object, **kwargs_data)
         if form.is_valid():
-            assigned_to_ids = opportunity_object.assigned_to.all().values_list('id', flat=True)
+            assigned_to_ids = opportunity_object.assigned_to.all().values_list(
+                'id', flat=True)
             opportunity_obj = form.save(commit=False)
             if request.POST.get('stage') in ['CLOSED WON', 'CLOSED LOST']:
                 opportunity_obj.closed_by = request.user
@@ -222,17 +239,19 @@ def update_opportunity(request, pk):
                 assigned_form_users = form.cleaned_data.get(
                     'assigned_to').values_list('id', flat=True)
                 all_members_list = list(
-                    set(list(assigned_form_users)) - set(list(assigned_to_ids)))
+                    set(list(assigned_form_users)) -
+                    set(list(assigned_to_ids)))
                 if all_members_list:
                     for assigned_to_user in all_members_list:
                         user = get_object_or_404(User, pk=assigned_to_user)
                         mail_subject = 'Assigned to opportunity.'
-                        message = render_to_string('assigned_to/opportunity_assigned.html', {
-                            'user': user,
-                            'domain': current_site.domain,
-                            'protocol': request.scheme,
-                            'opportunity': opportunity_obj
-                        })
+                        message = render_to_string(
+                            'assigned_to/opportunity_assigned.html', {
+                                'user': user,
+                                'domain': current_site.domain,
+                                'protocol': request.scheme,
+                                'opportunity': opportunity_obj
+                            })
                         email = EmailMessage(
                             mail_subject, message, to=[user.email])
                         email.content_subtype = "html"
@@ -270,13 +289,15 @@ def update_opportunity(request, pk):
             success_url = reverse('opportunities:list')
             if request.POST.get('from_account'):
                 from_account = request.POST.get('from_account')
-                success_url = reverse("accounts:view_account", kwargs={'pk': from_account})
+                success_url = reverse("accounts:view_account", kwargs={
+                                      'pk': from_account})
             return JsonResponse({'error': False, 'success_url': success_url})
         return JsonResponse({'error': True, 'errors': form.errors})
     context = {}
     context["opportunity_obj"] = opportunity_object
     user_assgn_list = [
-        assigned_to.id for assigned_to in context["opportunity_obj"].assigned_to.all()]
+        assigned_to.id for assigned_to in
+        context["opportunity_obj"].assigned_to.all()]
     if request.user == context['opportunity_obj'].created_by:
         user_assgn_list.append(request.user.id)
     if request.user.role != "ADMIN" and not request.user.is_superuser:
@@ -306,7 +327,9 @@ class DeleteOpportunityView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         self.object = get_object_or_404(Opportunity, id=kwargs.get("pk"))
-        if self.request.user.role == "ADMIN" or self.request.user.is_superuser or self.request.user == self.object.created_by:
+        if (self.request.user.role == "ADMIN" or
+            self.request.user.is_superuser or
+                self.request.user == self.object.created_by):
             self.object.delete()
             if request.is_ajax():
                 return JsonResponse({'error': False})
@@ -328,7 +351,8 @@ class GetContactView(LoginRequiredMixin, View):
             contacts = account.contacts.all()
         else:
             contacts = Contact.objects.all()
-        data = {contact.pk: contact.first_name for contact in contacts.distinct()}
+        data = {contact.pk:
+                contact.first_name for contact in contacts.distinct()}
         return JsonResponse(data)
 
 
@@ -343,7 +367,8 @@ class AddCommentView(LoginRequiredMixin, CreateView):
             Opportunity, id=request.POST.get('opportunityid'))
         if (
                 request.user in self.opportunity.assigned_to.all() or
-                request.user == self.opportunity.created_by or request.user.is_superuser or
+                request.user == self.opportunity.created_by or
+                request.user.is_superuser or
                 request.user.role == 'ADMIN'
         ):
             form = self.get_form()
@@ -417,7 +442,6 @@ class GetOpportunitiesView(LoginRequiredMixin, ListView):
     template_name = "opportunities_list.html"
 
 
-
 class AddAttachmentsView(LoginRequiredMixin, CreateView):
     model = Attachments
     form_class = OpportunityAttachmentForm
@@ -429,7 +453,8 @@ class AddAttachmentsView(LoginRequiredMixin, CreateView):
             Opportunity, id=request.POST.get('opportunityid'))
         if (
                 request.user in self.opportunity.assigned_to.all() or
-                request.user == self.opportunity.created_by or request.user.is_superuser or
+                request.user == self.opportunity.created_by or
+                request.user.is_superuser or
                 request.user.role == 'ADMIN'
         ):
             form = self.get_form()
@@ -452,7 +477,8 @@ class AddAttachmentsView(LoginRequiredMixin, CreateView):
             "attachment_url": attachment.attachment.url,
             "created_on": attachment.created_on,
             "created_by": attachment.created_by.email,
-            "download_url": reverse('common:download_attachment', kwargs={'pk': attachment.id}),
+            "download_url": reverse('common:download_attachment',
+                                    kwargs={'pk': attachment.id}),
             "attachment_display": attachment.get_file_type_display()
         })
 
@@ -465,10 +491,13 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         self.object = get_object_or_404(
             Attachments, id=request.POST.get("attachment_id"))
-        if (request.user == self.object.created_by or request.user.is_superuser or request.user.role == 'ADMIN'):
+        if (request.user == self.object.created_by or
+            request.user.is_superuser or
+                request.user.role == 'ADMIN'):
             self.object.delete()
             data = {"aid": request.POST.get("attachment_id")}
             return JsonResponse(data)
 
-        data = {'error': "You don't have permission to delete this attachment."}
+        data = {
+            'error': "You don't have permission to delete this attachment."}
         return JsonResponse(data)

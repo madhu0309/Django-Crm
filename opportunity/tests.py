@@ -13,7 +13,8 @@ class OpportunityModel(object):
     def setUp(self):
 
         self.user = User.objects.create(
-            first_name="meghan", username='meghan', email="m@mp.com", role="ADMIN")
+            first_name="meghan", username='meghan',
+            email="m@mp.com", role="ADMIN")
         self.user.set_password('madhu123')
         self.user.save()
 

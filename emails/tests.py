@@ -9,11 +9,15 @@ class UserCreation(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create(
-            first_name="nicole", username='nicole', email="n@mp.com", role="ADMIN")
+            first_name="nicole",
+            username='nicole',
+            email="n@mp.com", role="ADMIN")
         self.user.set_password('navi123')
         self.user.save()
         self.email = Email.objects.create(
-            from_email="admin@micropyramid.com", to_email="nike@micropyramid.com", subject="wish", message="haii",
+            from_email="admin@micropyramid.com",
+            to_email="nike@micropyramid.com",
+            subject="wish", message="haii",
             important=False)
         self.client.login(username='n@mp.com', password='navi123')
 
