@@ -35,7 +35,7 @@ class TestTemplates(TestMarketingModel, TestCase):
         url12 = '/m/cm/list/'
         url13 = '/m/cm/new/'
         # url14 = '/m/cm/edit/'
-        url15 = '/m/cm/details/'
+        # url15 = '/m/cm/details/'
         resp1 = self.client.get(url1)
         resp2 = self.client.get(url2)
         resp3 = self.client.get(url3)
@@ -50,7 +50,7 @@ class TestTemplates(TestMarketingModel, TestCase):
         resp12 = self.client.get(url12)
         resp13 = self.client.get(url13)
         # resp14 = self.client.get(url14)
-        resp15 = self.client.get(url15)
+        # resp15 = self.client.get(url15)
         self.assertEqual(resp1.status_code, 200)
         self.assertEqual(resp2.status_code, 200)
         self.assertEqual(resp3.status_code, 200)
@@ -65,4 +65,4 @@ class TestTemplates(TestMarketingModel, TestCase):
         self.assertEqual(resp12.status_code, 200)
         self.assertEqual(resp13.status_code, 200)
         # self.assertEqual(resp14.status_code, 200)
-        self.assertEqual(resp15.status_code, 200)
+        # self.assertEqual(resp15.status_code, 200)
