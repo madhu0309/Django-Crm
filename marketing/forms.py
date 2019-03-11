@@ -76,7 +76,8 @@ def get_validated_rows(wb, sheet_name, validated_rows):
                 if headers[x_index] in required_headers:
                     if not cell.value:
                         message = 'Missing required \
-                                    value %s for row %s in sheet %s' % (headers[x_index], y_index + 1, sheet_name)
+                                    value %s for row %s in sheet %s'\
+                            % (headers[x_index], y_index + 1, sheet_name)
                         return {"error": True, "message": message}
                     # elif x_index == 0:
                     #     cell_value = is_valid_date_format(cell.value)
@@ -148,16 +149,21 @@ class ContactListForm(forms.ModelForm):
         if len(tags_data) > 0:
             instance_tags = []
             if self.instance and self.instance.id is not None:
-                instance_tags = list(set(self.instance.tags.all().values_list('name', flat=True)))
+                instance_tags = list(
+                    set(self.instance.tags.all().values_list(
+                        'name', flat=True)))
             for each in tags_data:
                 tags = Tag.objects.filter(name__iexact=each)
                 if instance_tags:
                     tags = tags.exclude(name__in=instance_tags)
                 if tags:
-                    raise forms.ValidationError(str(each) + ' Tag aleady existed with this name')
-                if bool(re.search(r"[~\!_.@#\$%\^&\*\(\)\+{}\":;'/\[\]]", each)):
                     raise forms.ValidationError(
-                        "Tags Should not contain special charcters except hyphens")
+                        str(each) + ' Tag aleady existed with this name')
+                if bool(re.search(r"[~\!_.@#\$%\^&\*\(\)\+{}\":;'/\[\]]",
+                                  each)):
+                    raise forms.ValidationError(
+                        "Tags Should not contain special \
+                        charcters except hyphens")
             return self.data['tags']
         raise forms.ValidationError("Enter Any tags")
 
@@ -166,13 +172,17 @@ class ContactListForm(forms.ModelForm):
         if len(visible_to_data) > 0:
             instance_visible_to = []
             if self.instance and self.instance.id is not None:
-                instance_visible_to = list(set(self.instance.visible_to.all().values_list('email', flat=True)))
+                instance_visible_to = list(
+                    set(self.instance.visible_to.all().values_list(
+                        'email', flat=True)))
             for each in visible_to_data:
                 visible_to = User.objects.filter(email=each)
                 if instance_visible_to:
-                    visible_to = visible_to.exclude(email__in=instance_visible_to)
+                    visible_to = visible_to.exclude(
+                        email__in=instance_visible_to)
                 if visible_to:
-                    raise forms.ValidationError(str(each) + ' User aleady existed')
+                    raise forms.ValidationError(
+                        str(each) + ' User aleady existed')
             return self.data['visible_to']
         raise forms.ValidationError("Select any of the users")
 
@@ -189,12 +199,15 @@ class ContactForm(forms.ModelForm):
 
     def clean_contact_list(self):
         contact_list = self.cleaned_data.get("contact_list")
-        if not contact_list or contact_list == '[]' or json.loads(contact_list) == []:
-            raise forms.ValidationError("Please choose any of the Contact List")
+        if not contact_list or contact_list == '[]' or\
+                json.loads(contact_list) == []:
+            raise forms.ValidationError(
+                "Please choose any of the Contact List")
         else:
             for each in json.loads(contact_list):
                 if not ContactList.objects.filter(id=each).first():
-                    raise forms.ValidationError("Please choose a valid Contact List")
+                    raise forms.ValidationError(
+                        "Please choose a valid Contact List")
 
         return contact_list
 
@@ -220,12 +233,15 @@ class ContactsCSVUploadForm(forms.Form):
 
     def clean_contact_list(self):
         contact_list = self.cleaned_data.get("contact_list")
-        if not contact_list or contact_list == '[]' or json.loads(contact_list) == []:
-            raise forms.ValidationError("Please choose any of the Contact List")
+        if not contact_list or contact_list == '[]' or\
+                json.loads(contact_list) == []:
+            raise forms.ValidationError(
+                "Please choose any of the Contact List")
         else:
             for each in json.loads(contact_list):
                 if not ContactList.objects.filter(id=each).first():
-                    raise forms.ValidationError("Please choose a valid Contact List")
+                    raise forms.ValidationError(
+                        "Please choose a valid Contact List")
 
         return contact_list
 
@@ -260,11 +276,14 @@ class SendCampaignForm(forms.ModelForm):
 
     def clean_contact_list(self):
         contact_list = self.cleaned_data.get("contact_list")
-        if not contact_list or contact_list == '[]' or json.loads(contact_list) == []:
-            raise forms.ValidationError("Please choose any of the Contact List")
+        if not contact_list or contact_list == '[]' or \
+                json.loads(contact_list) == []:
+            raise forms.ValidationError(
+                "Please choose any of the Contact List")
         else:
             for each in json.loads(contact_list):
                 if not ContactList.objects.filter(id=each).first():
-                    raise forms.ValidationError("Please choose a valid Contact List")
+                    raise forms.ValidationError(
+                        "Please choose a valid Contact List")
 
         return contact_list

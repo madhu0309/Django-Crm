@@ -49,13 +49,17 @@ class TestLeadModel(object):
                                         description="Iam an Lead",
                                         created_by=self.user)
         self.case = Case.objects.create(
-            name="Rose", case_type="Problem", status="New", account=self.account,
+            name="Rose", case_type="Problem",
+            status="New",
+            account=self.account,
             priority="Low", description="something",
             created_by=self.user, closed_on="2016-05-04")
         self.comment = Comment.objects.create(
             comment='testikd', case=self.case, commented_by=self.user)
         self.attachment = Attachments.objects.create(
-            attachment='image.png', case=self.case, created_by=self.user, account=self.account)
+            attachment='image.png',
+            case=self.case, created_by=self.user,
+            account=self.account)
 
 
 class LeadsPostrequestTestCase(TestLeadModel, TestCase):
@@ -119,7 +123,8 @@ class LeadsCreateUrlTestCase(TestLeadModel, TestCase):
             'street': "Arcade enclave colony", 'city': "NewTown",
             'state': "California", 'postcode': "579", 'country': "AD",
             'website': "www.gmail.com", 'status': "assigned",
-            "source": "Call", 'opportunity_amount': "700", 'description': "Iam an Lead", 'created_by': self.user})
+            "source": "Call", 'opportunity_amount': "700",
+            'description': "Iam an Lead", 'created_by': self.user})
         # self.assertTemplateUsed(response, 'create_lead.html')
         self.assertEqual(response.status_code, 200)
 

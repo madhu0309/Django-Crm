@@ -35,4 +35,5 @@ def upload_csv_file(data, user, contact_lists):
                 contact.state = each['state']
             contact.save()
         for contact_list in contact_lists:
-            contact.contact_list.add(ContactList.objects.get(id=int(contact_list)))
+            contact.contact_list.add(ContactList.objects.get(
+                id=int(contact_list)))
