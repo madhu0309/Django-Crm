@@ -8,8 +8,8 @@ from django.http.response import (JsonResponse,
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from common import status
-from marketing.models import Tag, ContactList, Contact
-from marketing.forms import ContactListForm, ContactForm
+from marketing.models import Tag, ContactList, Contact, EmailTemplate
+from marketing.forms import ContactListForm, ContactForm, EmailTemplateForm
 from marketing.tasks import upload_csv_file
 
 
@@ -212,22 +212,77 @@ def contact_list_detail(request):
 
 @login_required(login_url='/login')
 def email_template_list(request):
-    return render(request, 'marketing/email_template/index.html')
+    if (request.user.is_admin or request.user.is_superuser):
+        queryset = EmailTemplate.objects.all()
+    else:
+        queryset = EmailTemplate.objects.filter(
+            created_by=request.user)
+    if request.method == 'POST':
+        queryset = queryset.filter(
+            Q(title__icontains=request.POST['search']) |
+            Q(subject__icontains=request.POST['search']) |
+            Q(created_by__email__icontains=request.POST['search']))
+
+    per_page = request.GET.get("per_page", 10)
+    paginator = Paginator(queryset.distinct(), per_page)
+    page = request.GET.get('page')
+    try:
+        email_templates = paginator.page(page)
+    except PageNotAnInteger:
+        email_templates = paginator.page(1)
+    except EmptyPage:
+        email_templates = paginator.page(paginator.num_pages)
+    data = {'email_templates': email_templates}
+    return render(request, 'marketing/email_template/index.html', data)
 
 
 @login_required(login_url='/login')
 def email_template_new(request):
-    return render(request, 'marketing/email_template/new.html')
+    if request.POST:
+        form = EmailTemplateForm(request.POST)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            instance.created_by = request.user
+            instance.save()
+            return JsonResponse({'error': False, 'data': form.data}, status=status.HTTP_201_CREATED)
+        else:
+            return JsonResponse({'error': True, 'errors': form.errors}, status=status.HTTP_200_OK)
+    else:
+        return render(request, 'marketing/email_template/new.html')
 
 
 @login_required(login_url='/login')
-def email_template_edit(request):
-    return render(request, 'marketing/email_template/edit.html')
+def email_template_edit(request, pk):
+    email_template = get_object_or_404(EmailTemplate, pk=pk)
+
+    if request.method == 'GET':
+        data = {'email_template': email_template}
+        return render(request, 'marketing/email_template/new.html', data)
+    else:
+        form = EmailTemplateForm(request.POST, instance=email_template)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            # instance.created_by = request.user
+            instance.save()
+            return JsonResponse({'error': False, 'data': form.data}, status=status.HTTP_201_CREATED)
+        return JsonResponse({'error': True, 'errors': form.errors}, status=status.HTTP_200_OK)
 
 
 @login_required(login_url='/login')
-def email_template_detail(request):
-    return render(request, 'marketing/email_template/details.html')
+def email_template_detail(request, pk):
+    queryset = get_object_or_404(EmailTemplate, id=pk)
+    data = {'email_template': queryset}
+    return render(request, 'marketing/email_template/details.html', data)
+
+
+@login_required(login_url='/login')
+def email_template_delete(request, pk):
+    try:
+        # EmailTemplate.objects.get(id=pk).delete()
+        redirect_to = reverse('marketing:email_template_list')
+    except ContactList.DoesNotExist:
+        redirect_to = reverse('marketing:email_template_list')
+    return HttpResponseRedirect(redirect_to)
 
 
 @login_required(login_url='/login')
