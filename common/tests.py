@@ -15,8 +15,13 @@ class ObjectsCreation(object):
         #                                 is_admin=True,
         #                                 is_superuser=True, is_active=True)
 
-        self.user = User.objects.create(first_name="admin", username='admin', email='admin@micropyramid.com',
-                                        is_staff=True, is_admin=True, is_superuser=True, is_active=True, role='ADMIN')
+        self.user = User.objects.create(first_name="admin",
+                                        username='admin',
+                                        email='admin@micropyramid.com',
+                                        is_staff=True,
+                                        is_admin=True,
+                                        is_superuser=True,
+                                        is_active=True, role='ADMIN')
 
         self.user.set_password('admin123')
         self.user.save()
@@ -204,9 +209,11 @@ class UserUpdateTestCase(ObjectsCreation, TestCase):
 
     def test_accounts_update_post(self):
         response = self.client.post('/users/' + str(self.user.id) + '/edit/',
-                                    {'first_name': "micheal", 'user_name': 'micheal',
+                                    {'first_name': "micheal",
+                                     'user_name': 'micheal',
                                      'email': "abc@micropyramid",
-                                     'role': "USER", 'is_superuser': False})
+                                     'role': "USER",
+                                     'is_superuser': False})
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'create.html')
 
@@ -246,7 +253,6 @@ class ProfileViewTestCase(ObjectsCreation, TestCase):
     #     self.assertContains(response,'admin@micropyramid.com')
 
 
-
 class UserDetailView(ObjectsCreation, TestCase):
     def test_user_detail(self):
         url = "/users/" + str(self.user.id) + "/view/"
@@ -266,8 +272,11 @@ class DocumentDetailView(ObjectsCreation, TestCase):
 
 class CreateCommentFile(TestCase):
     def test_invalid_user_form(self):
-        fields = ['email', 'first_name', 'last_name',
-                  'username', 'role', 'profile_pic']
+        fields = ['email',
+                  'first_name',
+                  'last_name',
+                  'username', 'role',
+                  'profile_pic']
         user1 = User.objects.create(username='robert',
                                     first_name='robert',
                                     last_name='clark',

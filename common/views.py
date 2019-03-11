@@ -7,13 +7,20 @@ from django.db.models import Q
 from django.core.mail import EmailMessage
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http404
+from django.http import (HttpResponseRedirect,
+                         JsonResponse, HttpResponse,
+                         Http404)
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import (
     CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
-from common.models import User, Document, Attachments, Comment, APISettings, Google
+from common.models import (User, Document, Attachments,
+                           Comment,
+                           APISettings,
+                           Google)
 from common.forms import (
-    UserForm, LoginForm, ChangePasswordForm, PasswordResetEmailForm, DocumentForm, UserCommentForm,
+    UserForm, LoginForm,
+    ChangePasswordForm, PasswordResetEmailForm,
+    DocumentForm, UserCommentForm,
     APISettingsForm
 )
 from django.contrib.auth.views import PasswordResetView
@@ -45,7 +52,8 @@ class AdminRequiredMixin(AccessMixin):
         if not request.user.role == "ADMIN":
             if not request.user.is_superuser:
                 return self.handle_no_permission()
-        return super(AdminRequiredMixin, self).dispatch(request, *args, **kwargs)
+        return super(AdminRequiredMixin, self).dispatch(
+            request, *args, **kwargs)
 
 
 class HomeView(LoginRequiredMixin, TemplateView):
@@ -62,11 +70,14 @@ class HomeView(LoginRequiredMixin, TemplateView):
         else:
             accounts = accounts.filter(created_by=self.request.user.id)
             contacts = contacts.filter(
-                Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
+                Q(assigned_to__id__in=[self.request.user.id]) |
+                Q(created_by=self.request.user.id))
             leads = leads.filter(
-                Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id)).exclude(status='closed')
+                Q(assigned_to__id__in=[self.request.user.id]) |
+                Q(created_by=self.request.user.id)).exclude(status='closed')
             opportunities = opportunities.filter(
-                Q(assigned_to__id__in=[self.request.user.id]) | Q(created_by=self.request.user.id))
+                Q(assigned_to__id__in=[self.request.user.id]) |
+                Q(created_by=self.request.user.id))
 
         context["accounts"] = accounts
         context["contacts_count"] = contacts.count()
@@ -88,7 +99,8 @@ class ChangePasswordView(LoginRequiredMixin, TemplateView):
         form = ChangePasswordForm(request.POST)
         if form.is_valid():
             user = request.user
-            if not check_password(request.POST.get('CurrentPassword'), user.password):
+            if not check_password(request.POST.get('CurrentPassword'),
+                                  user.password):
                 error = "Invalid old password"
             else:
                 user.set_password(request.POST.get('Newpassword'))
@@ -97,7 +109,9 @@ class ChangePasswordView(LoginRequiredMixin, TemplateView):
                 return HttpResponseRedirect('/')
         else:
             errors = form.errors
-        return render(request, "change_password.html", {'error': error, 'errors': errors, 'change_password_form': form})
+        return render(request, "change_password.html",
+                      {'error': error, 'errors': errors,
+                       'change_password_form': form})
 
 
 class ProfileView(LoginRequiredMixin, TemplateView):
@@ -144,21 +158,25 @@ class LoginView(TemplateView):
                         "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
                         "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                         "error": True,
-                        "message": "Your username and password didn't match. Please try again."
+                        "message":
+                        "Your username and password didn't match. \
+                        Please try again."
                     })
                 return render(request, "login.html", {
                     "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
                     "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
                     "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                     "error": True,
-                    "message": "Your Account is inactive. Please Contact Administrator"
+                    "message":
+                    "Your Account is inactive. Please Contact Administrator"
                 })
             return render(request, "login.html", {
                 "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
                 "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
                 "GP_CLIENT_ID": settings.GP_CLIENT_ID,
                 "error": True,
-                "message": "Your Account is not Found. Please Contact Administrator"
+                "message":
+                "Your Account is not Found. Please Contact Administrator"
             })
 
         return render(request, "login.html", {
@@ -261,7 +279,8 @@ class UserDetailView(AdminRequiredMixin, DetailView):
             users_data.append(assigned_dict)
         context.update({
             "user_obj": user_obj,
-            "opportunity_list": Opportunity.objects.filter(assigned_to=user_obj.id),
+            "opportunity_list":
+            Opportunity.objects.filter(assigned_to=user_obj.id),
             "contacts": Contact.objects.filter(assigned_to=user_obj.id),
             "cases": Case.objects.filter(assigned_to=user_obj.id),
             # "accounts": Account.objects.filter(assigned_to=user_obj.id),
@@ -279,14 +298,16 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         user = form.save(commit=False)
         if self.request.is_ajax():
-            if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+            if (self.request.user.role != "ADMIN" and not
+                    self.request.user.is_superuser):
                 if self.request.user.id != self.object.id:
                     data = {'error_403': True, 'error': True}
                     return JsonResponse(data)
         if user.role == "USER":
             user.is_superuser = False
         user.save()
-        if self.request.user.role == "ADMIN" and self.request.user.is_superuser:
+        if (self.request.user.role == "ADMIN" and
+                self.request.user.is_superuser):
             if self.request.is_ajax():
                 data = {'success_url': reverse_lazy(
                     'common:users_list'), 'error': False}
@@ -367,9 +388,12 @@ class DocumentListView(LoginRequiredMixin, TemplateView):
             queryset = queryset
         else:
             if self.request.user.documents():
-                doc_ids = self.request.user.documents().values_list('id', flat=True)
+                doc_ids = self.request.user.documents().values_list('id',
+                                                                    flat=True)
                 shared_ids = queryset.filter(
-                    Q(status='active') & Q(shared_to__id__in=[self.request.user.id])).values_list('id', flat=True)
+                    Q(status='active') &
+                    Q(shared_to__id__in=[self.request.user.id])).values_list(
+                    'id', flat=True)
                 queryset = queryset.filter(
                     Q(id__in=doc_ids) | Q(id__in=shared_ids))
             else:
@@ -401,7 +425,8 @@ class DocumentListView(LoginRequiredMixin, TemplateView):
 
         search = False
         if (
-            self.request.POST.get('doc_name') or self.request.POST.get('status') or
+            self.request.POST.get('doc_name') or
+            self.request.POST.get('status') or
             self.request.POST.get('shared_to')
         ):
             search = True
@@ -433,7 +458,8 @@ def document_update(request, pk):
     document = Document.objects.filter(id=pk).first()
 
     if request.POST:
-        form = DocumentForm(request.POST, request.FILES, instance=document, users=users)
+        form = DocumentForm(request.POST, request.FILES,
+                            instance=document, users=users)
         if form.is_valid():
             doc = form.save(commit=False)
             doc.save()
@@ -469,7 +495,8 @@ class UpdateDocumentView(LoginRequiredMixin, UpdateView):
                 raise PermissionDenied
 
         self.users = User.objects.filter(is_active=True).order_by('email')
-        return super(UpdateDocumentView, self).dispatch(request, *args, **kwargs)
+        return super(UpdateDocumentView, self).dispatch(
+            request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super(UpdateDocumentView, self).get_form_kwargs()
@@ -516,10 +543,12 @@ class DocumentDetailView(LoginRequiredMixin, DetailView):
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.role == 'ADMIN':
-            if (not request.user == Document.objects.get(id=kwargs['pk']).created_by):
+            if (not request.user ==
+                    Document.objects.get(id=kwargs['pk']).created_by):
                 raise PermissionDenied
 
-        return super(DocumentDetailView, self).dispatch(request, *args, **kwargs)
+        return super(DocumentDetailView, self).dispatch(
+            request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(DocumentDetailView, self).get_context_data(**kwargs)
@@ -701,8 +730,11 @@ def update_api_settings(request, pk):
             return JsonResponse(data)
         return JsonResponse({'error': True, 'errors': form.errors})
     data = {
-        'form': form, "setting": api_settings, 'users': users, 'assign_to_list': assign_to_list,
-        'assigned_to_list': json.dumps([setting.id for setting in api_settings.lead_assigned_to.all() if setting])
+        'form': form, "setting": api_settings,
+        'users': users, 'assign_to_list': assign_to_list,
+        'assigned_to_list':
+        json.dumps(
+            [setting.id for setting in api_settings.lead_assigned_to.all() if setting])
     }
     return render(request, 'settings/update.html', data)
 
@@ -713,7 +745,8 @@ def delete_api_settings(request, pk):
         api_settings.delete()
         data = {"error": False, "response": "Successfully Deleted!"}
     else:
-        data = {"error": True, "response": "Object Not Found!"}
+        data = {"error": True,
+                "response": "Object Not Found!"}
     # return JsonResponse(data)
     return redirect('common:api_settings')
 
@@ -725,8 +758,10 @@ def change_passsword_by_admin(request):
             user.set_password(request.POST.get("new_passwoord"))
             user.save()
             mail_subject = 'Crm Account Password Changed'
-            message = "<h3><b>hello</b> <i>" + user.username + "</i></h3><br><h2><p> <b>Your account password has been changed ! </b></p></h2>" + \
-                "<br> <p><b> New Password</b> : <b><i>" + \
+            message = "<h3><b>hello</b> <i>" + user.username +\
+                "</i></h3><br><h2><p> <b>Your account password has been changed !\
+                 </b></p></h2>" \
+                + "<br> <p><b> New Password</b> : <b><i>" + \
                 request.POST.get("new_passwoord") + "</i><br></p>"
             email = EmailMessage(mail_subject, message, to=[user.email])
             email.content_subtype = "html"
@@ -740,7 +775,8 @@ def google_login(request):
         params = {
             'grant_type': 'authorization_code',
             'code': request.GET.get('code'),
-            'redirect_uri': 'http://' + request.META['HTTP_HOST'] + reverse('common:google_login'),
+            'redirect_uri': 'http://' +
+            request.META['HTTP_HOST'] + reverse('common:google_login'),
             'client_id': settings.GP_CLIENT_ID,
             'client_secret': settings.GP_CLIENT_SECRET
         }
@@ -815,7 +851,7 @@ def google_login(request):
         next_url = '1235dfghjkf123'
     rty = "https://accounts.google.com/o/oauth2/auth?client_id=" + \
         settings.GP_CLIENT_ID + "&response_type=code"
-    rty += "&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email&redirect_uri=" + \
-        'http://' + request.META['HTTP_HOST'] + \
+    rty += "&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email&redirect_uri=" \
+        + 'http://' + request.META['HTTP_HOST'] + \
         reverse('common:google_login') + "&state=" + next_url
     return HttpResponseRedirect(rty)

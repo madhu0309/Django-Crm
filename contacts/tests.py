@@ -192,7 +192,8 @@ class CommentTestCase(ContactObjectsCreation, TestCase):
 
     def test_form_valid(self):
         response = self.client.post(
-            '/contacts/comment/add/', {'contactid': self.contact.id, 'comment': 'hello'})
+            '/contacts/comment/add/', {'contactid': self.contact.id,
+                                       'comment': 'hello'})
         # print(response , "response")
         self.assertEqual(response.status_code, 200)
 
