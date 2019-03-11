@@ -330,7 +330,7 @@ def campaign_new(request):
             contact_lists = ContactList.objects.all()
         else:
             contact_lists = ContactList.objects.filter(
-                is_public=True, created_by=request.user)
+                created_by=request.user)
         # if request.GET.get('contact_list'):
         #     contacts = Contact.objects.filter(
         #         contact_list__id__in=json.loads(request.GET.get('contact_list'))).distinct()
