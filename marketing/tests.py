@@ -1,13 +1,25 @@
 from django.test import TestCase
 from django.test import Client
+from common.models import User
 # from marketing.models import Tag, Document, ContactList, EmailTemplate, Contact, Campaign, CampaignLinkClick, CampaignLog, Link, CampaignOpen
 # from .models import *
 from marketing.views import *
-# from common.models import User
 # Create your tests here.
 
 
-class TestTemplates(TestCase):
+class TestMarketingModel(object):
+    def setUp(self):
+        self.client = Client()
+
+        self.user = User.objects.create(
+            username='jorge', email='j@mp.com', role="ADMIN")
+        self.user.set_password('jorge2293')
+        self.user.save()
+
+        self.client.login(username='j@mp.com', password='jorge2293')
+
+
+class TestTemplates(TestMarketingModel, TestCase):
     def test_templates(self):
         url1 = '/m/'
         url2 = '/m/cl/all/'
