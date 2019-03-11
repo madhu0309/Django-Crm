@@ -1,4 +1,8 @@
 import json
+import pytz
+import lxml
+import lxml.html
+from lxml.cssselect import CSSSelector
 from django.conf import Settings
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -7,9 +11,14 @@ from django.http.response import JsonResponse, HttpResponse, HttpResponseRedirec
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from common import status
-from marketing.models import Tag, ContactList, Contact, EmailTemplate
-from marketing.forms import ContactListForm, ContactForm, EmailTemplateForm
-from marketing.tasks import upload_csv_file
+from marketing.models import (
+    Tag, ContactList, Contact, EmailTemplate, Campaign, CampaignLog, Link
+)
+from marketing.forms import ContactListForm, ContactForm, EmailTemplateForm, SendCampaignForm
+from marketing.tasks import upload_csv_file, run_campaign
+
+
+TIMEZONE_CHOICES = [(tz, tz) for tz in pytz.common_timezones]
 
 
 def get_exact_match(query, m2m_field, ids):
@@ -271,12 +280,111 @@ def email_template_delete(request, pk):
 
 @login_required(login_url='/login')
 def campaign_list(request):
-    return render(request, 'marketing/campaign/index.html')
+    campaigns = Campaign.objects.all()
+    if request.method == 'POST':
+        campaigns = campaigns.filter(
+            Q(title__icontains=request.POST['search']) |
+            Q(created_by__email__icontains=request.POST['search'])
+        )
+        if request.POST['scheduled_on']:
+            campaigns = campaigns.filter(
+                schedule_date_time__date__lte=request.POST['scheduled_on'])
+    per_page = request.GET.get("per_page", 10)  # Show 15 contacts per page
+    paginator = Paginator(campaigns.distinct().order_by('-created_on'), per_page)
+    page = request.GET.get('page')
+    try:
+        campaigns = paginator.page(page)
+    except PageNotAnInteger:
+        campaigns = paginator.page(1)
+    except EmptyPage:
+        campaigns = paginator.page(paginator.num_pages)
+    data = {'campaigns_list': campaigns}
+    return render(request, 'marketing/campaign/index.html', data)
 
 
 @login_required(login_url='/login')
 def campaign_new(request):
-    return render(request, 'marketing/campaign/new.html')
+    if request.method == 'GET':
+        if request.user.is_admin or request.user.is_superuser:
+            email_templates = EmailTemplate.objects.all()
+        else:
+            email_templates = EmailTemplate.objects.filter(
+                created_by=request.user)
+        if request.user.is_admin or request.user.is_superuser:
+            contact_lists = ContactList.objects.all()
+        else:
+            contact_lists = ContactList.objects.filter(
+                is_public=True, created_by=request.user)
+        # if request.GET.get('contact_list'):
+        #     contacts = Contact.objects.filter(
+        #         contact_list__id__in=json.loads(request.GET.get('contact_list'))).distinct()
+
+        data = {
+            'contact_lists': contact_lists, 'email_templates': email_templates, "timezones": TIMEZONE_CHOICES}
+        # return JsonResponse(data, status=status.HTTP_200_OK)
+        return render(request, 'marketing/campaign/new.html', data)
+    else:
+        print ("request.POST", request.POST)
+        form = SendCampaignForm(request.POST)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            instance.created_by = request.user
+            if request.POST['from_email']:
+                instance.from_email = request.POST['from_email']
+            if request.POST['from_name']:
+                instance.from_name = request.POST['from_name']
+            if request.POST['reply_to_email']:
+                instance.reply_to_email = request.POST['reply_to_email']
+            instance.save()
+            for each in json.loads(request.POST['contact_list']):
+                instance.contact_lists.add(ContactList.objects.get(id=each))
+            # contacts = Contact.objects.filter(contact_list__in=json.loads(request.POST['contact_list'])).distinct()
+            # for each_contact in contacts:
+            #     instance.contacts.add(each_contact)
+
+            camp = instance
+
+            html = camp.html
+            dom = lxml.html.document_fromstring(html)
+            selAnchor = CSSSelector('a')
+            links = selAnchor(dom)
+            llist = []
+            # Extract links and unique links
+            for e in links:
+                llist.append(e.get('href'))
+
+            # get uniaue linnk
+            links = set(llist)
+
+            # Replace Links with new One
+            domain_url = '%s://%s' % (request.scheme, request.META['HTTP_HOST'])
+            if Link.objects.filter(campaign_id=camp.id):
+                Link.objects.filter(campaign_id=camp.id).delete()
+            for l in links:
+                link = Link.objects.create(campaign_id=camp.id, original=l)
+                html = html.replace(
+                    'href="' + l + '"', 'href="' + domain_url + '/a/' + str(link.id) + '/e/{{email_id}}"')
+            camp.html_processed = html
+            camp.sent_status = "scheduled"
+            camp.save()
+
+            if request.POST['schedule_later'] == 'false':
+                run_campaign.delay(instance.id)
+            else:
+                schedule_date_time = request.POST.get('schedule_date_time', '')
+                # user_timezone = request.POST.get('timezone', '')
+                # if user_timezone and schedule_date_time:
+                #     print ("schedule_date_time", schedule_date_time)
+                #     print ("timezone", user_timezone)
+                #     start_time_object = ddatetime.strptime(schedule_date_time, '%Y-%m-%d %H:%M:%S')
+                #     schedule_date_time = convert_to_custom_timezone(start_time_object, user_timezone, to_utc=True)
+                #     print ("After", schedule_date_time)
+                instance.schedule_date_time = schedule_date_time
+                # instance.timezone = request.POST['timezone']
+            instance.save()
+
+            return JsonResponse({'error': True, 'data': form.data}, status=status.HTTP_201_CREATED)
+        return JsonResponse({'error': True, 'errors': form.errors}, status=status.HTTP_200_OK)
 
 
 @login_required(login_url='/login')
@@ -286,4 +394,9 @@ def campaign_edit(request):
 
 @login_required(login_url='/login')
 def campaign_details(request):
+    return render(request, 'marketing/campaign/details.html')
+
+
+@login_required(login_url='/login')
+def campaign_delete(request):
     return render(request, 'marketing/campaign/details.html')
