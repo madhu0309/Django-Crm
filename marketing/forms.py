@@ -255,6 +255,7 @@ class EmailTemplateForm(forms.ModelForm):
 
 class SendCampaignForm(forms.ModelForm):
     schedule_later = forms.BooleanField(required=False)
+    reply_to_crm = forms.BooleanField(required=False)
     timezone = forms.CharField(max_length=500, required=False)
     schedule_date_time = forms.CharField(max_length=100, required=False)
     reply_to_email = forms.EmailField(max_length=100, required=False)
@@ -268,10 +269,10 @@ class SendCampaignForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(SendCampaignForm, self).__init__(*args, **kwargs)
-        if self.data['schedule_later'] == 'true':
+        if self.data.get('schedule_later') and self.data['schedule_later'] == 'true':
             self.fields['timezone'].required = True
             self.fields['schedule_date_time'].required = True
-        if self.data['reply_to_crm'] == 'false':
+        if not self.data.get('reply_to_crm'):
             self.fields['reply_to_email'].required = True
 
     def clean_contact_list(self):

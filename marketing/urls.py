@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     dashboard, contact_lists, contacts_list, contact_list_new, contacts_list_new, contact_list_detail, edit_contact,
     email_template_list, email_template_new, email_template_edit, email_template_delete,
-    email_template_detail, campaign_list, campaign_new, campaign_edit, campaign_details,
+    email_template_detail, campaign_list, campaign_new, campaign_edit, campaign_details, campaign_delete,
     edit_contact_list, delete_contact_list
 )
 
@@ -28,6 +28,7 @@ urlpatterns = [
 
     path('cm/list/', campaign_list, name='campaign_list'),
     path('cm/new/', campaign_new, name='campaign_new'),
-    path('cm/edit/', campaign_edit, name='campaign_edit'),
-    path('cm/details/', campaign_details, name='campaign_details')
+    path('cm/<int:pk>/edit/', campaign_edit, name='campaign_edit'),
+    path('cm/<int:pk>/details/', campaign_details, name='campaign_details'),
+    path('cm/<int:pk>/delete/', campaign_delete, name='campaign_delete')
 ]
