@@ -1,10 +1,12 @@
 from django.test import TestCase
 from cases.models import Case
-from accounts.models import Account
+from accounts.models import Account, Tags
 from common.models import User, Comment, Attachments
+from django.urls import reverse
 
 
 class AccountCreateTest(object):
+
     def setUp(self):
         self.user = User.objects.create(
             first_name="mike", username='mike', email='u@mp.com', role='ADMIN')
@@ -17,7 +19,7 @@ class AccountCreateTest(object):
             billing_city="New York",
             billing_state="usa", billing_postcode="500073",
             billing_country="IN",
-            website="www.mike.com", created_by=self.user,
+            website="www.mike.com", created_by=self.user, status="open",
             industry="SOFTWARE", description="Yes.. Testing Done")
         self.case = Case.objects.create(
             name="raghu", case_type="Problem",
@@ -33,9 +35,40 @@ class AccountCreateTest(object):
             created_by=self.user, account=self.account
         )
         self.client.login(email='u@mp.com', password='mike2293')
+        self.lead = Lead.objects.create(title="LeadCreation",
+                                        first_name="Alisa",
+                                        last_name="k",
+                                        email="Alisak1993@gmail.com",
+                                        address_line="",
+                                        street="Arcade enclave colony",
+                                        city="NewTown",
+                                        state="California",
+                                        postcode="5079",
+                                        country="AD",
+                                        website="www.gmail.com",
+                                        status="assigned",
+                                        source="Call",
+                                        opportunity_amount="700",
+                                        description="Iam an Lead",
+                                        created_by=self.user)
+        self.lead.assigned_to.add(self.user)
+        self.address = Address.objects.create(
+            street="5th phase",
+            city="Orlando",
+            state="Florida",
+            postcode=502279, country="AD")
+
+        self.contact = Contact.objects.create(
+            first_name="contact",
+            email="contact@gmail.com",
+            phone="12345",
+            address=self.address,
+            description="contact",
+            created_by=self.user)
 
 
 class AccountsCreateTestCase(AccountCreateTest, TestCase):
+
     def test_account_create_url(self):
         response = self.client.get('/accounts/create/', {
             'name': "mike", 'email': "mike@micropyramid.com",
@@ -87,12 +120,14 @@ class AccountsListTestCase(AccountCreateTest, TestCase):
 
 
 class AccountsCountTestCase(AccountCreateTest, TestCase):
+
     def test_accounts_list_count(self):
         count = Account.objects.all().count()
         self.assertEqual(count, 1)
 
 
 class AccountsViewTestCase(AccountCreateTest, TestCase):
+
     def test_accounts_view(self):
         self.accounts = Account.objects.all()
         response = self.client.get(
@@ -102,6 +137,7 @@ class AccountsViewTestCase(AccountCreateTest, TestCase):
 
 
 class AccountsRemoveTestCase(AccountCreateTest, TestCase):
+
     def test_accounts_remove(self):
         response = self.client.get(
             '/accounts/' + str(self.account.id) + '/delete/')
@@ -114,6 +150,7 @@ class AccountsRemoveTestCase(AccountCreateTest, TestCase):
 
 
 class AccountsUpdateUrlTestCase(AccountCreateTest, TestCase):
+
     def test_accounts_update(self):
         response = self.client.get(
             '/accounts/' + str(self.account.id) + '/edit/', {
@@ -187,6 +224,7 @@ class AccountModelTest(AccountCreateTest, TestCase):
 
 
 class CommentTestCase(AccountCreateTest, TestCase):
+
     def test_comment_add(self):
         response = self.client.post(
             '/accounts/comment/add/', {'accountid': self.account.id})
@@ -212,6 +250,7 @@ class CommentTestCase(AccountCreateTest, TestCase):
 
 
 class AttachmentTestCase(AccountCreateTest, TestCase):
+
     def test_attachment_add(self):
         response = self.client.post(
             '/accounts/attachment/add/', {'accountid': self.account.id})
@@ -226,4 +265,34 @@ class AttachmentTestCase(AccountCreateTest, TestCase):
         response = self.client.post(
             '/accounts/attachment/remove/',
             {'attachment_id': self.attachment.id})
+        self.assertEqual(response.status_code, 200)
+
+
+class TagCreateTest(object):
+
+    def setUp(self):
+        self.tag = Tags.objects.create(
+            name="tag", slug="tag1")
+
+
+class TagModelTest(TagCreateTest, TestCase):
+
+    def test_string_representation(self):
+        tag = Tags(name="tag", slug="tag1")
+        self.assertEqual(str(self.tag.name), tag.name)
+
+
+class TestCreateLeadPostView(TagCreateTest, TestCase):
+
+    def test_create_lead_post_status(self):
+        response = self.client.post(reverse(
+            'leads:new_account'), {"name": "mike", "email": "mike@micropyramid.com",
+                                   "phone": "+91-833-385-5552", "billing_address_line": "sddsv",
+                                   "billing_street": "KPHB", "billing_city": "New York",
+                                   "billing_state": "usa", "billing_postcode": "500073",
+                                   "billing_country": "IN",
+                                   "website": "www.mike.com", "created_by": self.user, "status": "open",
+                                   "industry": "SOFTWARE", "description": "Yes.. Testing Done"
+                                   "leads":
+                                   })
         self.assertEqual(response.status_code, 200)

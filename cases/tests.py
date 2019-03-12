@@ -4,6 +4,7 @@ from contacts.models import Contact
 from accounts.models import Account
 from common.models import Address, Comment, Attachments
 from common.models import User
+from django.contrib.contenttypes.models import ContentType
 
 
 class CaseCreation(object):
@@ -56,6 +57,8 @@ class CaseCreation(object):
             attachment='image.png', case=self.case,
             created_by=self.user, account=self.account
         )
+        self.content_type = ContentType.objects.create(
+            app_label="cases1", model="case")
 
 
 class CaseViewTestCase(CaseCreation, TestCase):

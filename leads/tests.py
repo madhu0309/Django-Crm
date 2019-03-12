@@ -1,13 +1,15 @@
 from django.test import TestCase, Client
 from cases.models import Case
 from leads.models import Lead
-from common.models import User, Comment, Attachments
+from common.models import User, Comment, Attachments, APISettings
 from accounts.models import Account
 from leads.tasks import *
 from leads.forms import *
+from django.urls import reverse
 
 
 class TestLeadModel(object):
+
     def setUp(self):
         self.client = Client()
 
@@ -48,6 +50,7 @@ class TestLeadModel(object):
                                         opportunity_amount="700",
                                         description="Iam an Lead",
                                         created_by=self.user)
+        self.lead.assigned_to.add(self.user)
         self.case = Case.objects.create(
             name="Rose", case_type="Problem",
             status="New",
@@ -60,9 +63,12 @@ class TestLeadModel(object):
             attachment='image.png',
             case=self.case, created_by=self.user,
             account=self.account)
+        self.api_seetings = APISettings.objects.create(
+            title="api", apikey="api", created_by=self.user)
 
 
 class LeadsPostrequestTestCase(TestLeadModel, TestCase):
+
     def test_valid_postrequesttestcase_date(self):
         data = {'title': 'LeadCreation', 'first_name': "micky",
                 'last_name': "Alisa", 'email': "Alisamicky1993@gmail.com",
@@ -95,6 +101,7 @@ class LeadsPostrequestTestCase(TestLeadModel, TestCase):
 
 
 class LeadsCreateUrlTestCase(TestLeadModel, TestCase):
+
     def test_leads_create_url(self):
         response = self.client.post('/leads/create/', {
                                     'title': 'LeadCreation',
@@ -128,8 +135,21 @@ class LeadsCreateUrlTestCase(TestLeadModel, TestCase):
         # self.assertTemplateUsed(response, 'create_lead.html')
         self.assertEqual(response.status_code, 200)
 
+    def test_leads_create_with_status_converted(self):
+        response = self.client.post('/leads/create/', {
+            'title': 'LeadCreation', 'name': "micky",
+            'email': "Alisamicky1993@gmail.com", 'account': self.account,
+            'address_line': "", 'account_name': 'account1',
+            'street': "Arcade enclave colony", 'city': "NewTown",
+            'state': "California", 'postcode': "579", 'country': "AD",
+            'website': "www.gmail.com", 'status': "converted",
+            "source": "Call", 'opportunity_amount': "700",
+            'description': "Iam an Lead", 'created_by': self.user})
+        self.assertEqual(response.status_code, 200)
+
 
 class LeadsEditUrlTestCase(TestLeadModel, TestCase):
+
     def test_leads_editurl(self):
         response = self.client.get('/leads/' + str(self.lead.id) + '/edit/')
         self.assertEqual(response.status_code, 200)
@@ -177,6 +197,7 @@ class LeadListTestCase(TestLeadModel, TestCase):
 
 
 class GetLeadsViewTestCase(TestLeadModel, TestCase):
+
     def test_get_lead(self):
         url = '/leads/get/list/'
         response = self.client.get(url)
@@ -215,6 +236,7 @@ class UpdateLeadTestCase(TestLeadModel, TestCase):
 
 
 class LeadDetailTestCase(TestLeadModel, TestCase):
+
     def test_lead_detail(self):
         url = '/leads/' + str(self.lead.id) + '/view/'
         response = self.client.get(url, {'status': ''})
@@ -222,6 +244,7 @@ class LeadDetailTestCase(TestLeadModel, TestCase):
 
 
 class CommentTestCase(TestLeadModel, TestCase):
+
     def test_comment_add(self):
         response = self.client.post(
             '/leads/comment/add/', {'leadid': self.lead.id})
@@ -239,6 +262,7 @@ class CommentTestCase(TestLeadModel, TestCase):
 
 
 class AttachmentTestCase(TestLeadModel, TestCase):
+
     def test_attachment_add(self):
         response = self.client.post(
             '/leads/attachment/add/', {'leadid': self.lead.id})
@@ -249,8 +273,14 @@ class AttachmentTestCase(TestLeadModel, TestCase):
             '/leads/attachment/remove/', {'attachment_id': self.attachment.id})
         self.assertEqual(response.status_code, 200)
 
+    def test_attachment_valid(self):
+        response = self.client.post(
+            '/leads/attachment/add/', {'leadid': self.lead.id})
+        self.assertEqual(response.status_code, 200)
+
 
 class TestTemplates(TestLeadModel, TestCase):
+
     def test_lead_list_view(self):
         resp = self.client.post('/leads/list/', {'name': 'trevor',
                                                  'tag': "123",
@@ -266,6 +296,60 @@ class TestTemplates(TestLeadModel, TestCase):
 
 
 class TestConvertLeadView(TestLeadModel, TestCase):
+
     def test_get_fun(self):
         resp = self.client.get('/leads/' + str(self.lead.id) + '/convert/')
         self.assertEqual(resp.status_code, 302)
+
+
+class TestCreateLeadPostView(TestLeadModel, TestCase):
+
+    def test_create_lead_post_request(self):
+        response = self.client.post(reverse(
+            'leads:add_lead'), {'first_name': 'm',
+                                'last_name': 's',
+                                "created_by": self.user,
+                                'tags': 'tag',
+                                'assigned_to': str(self.user.id),
+                                })
+        self.assertEqual(response.status_code, 200)
+
+    def test_create_lead_post_status(self):
+        response = self.client.post(reverse(
+            'leads:add_lead'), {'first_name': 'm',
+                                'last_name': 's',
+                                "created_by": self.user,
+                                'status': 'converted',
+                                'description': 'wgrgre',
+                                'website': 'www.mike.com',
+                                'phone': '+91-123-456-7890',
+                                'email': 'a@gmail.com',
+                                'account_name': 'account',
+                                'address_line': self.lead.address_line,
+                                'street': self.lead.street,
+                                'city': self.lead.city,
+                                'state': self.lead.state,
+                                'postcode': self.lead.postcode,
+                                'country': self.lead.country
+                                })
+        self.assertEqual(response.status_code, 200)
+
+    def test_create_lead_get_request(self):
+        response = self.client.get(reverse('leads:add_lead'))
+        self.assertEqual(response.status_code, 200)
+
+
+class TestLeadDetailView(TestLeadModel, TestCase):
+
+    def test_lead_detail_view(self):
+        response = self.client.get(
+            reverse('leads:view_lead', kwargs={'pk': self.lead.id}))
+        self.assertEqual(response.status_code, 200)
+
+
+class TestLeadFromSite(TestLeadModel, TestCase):
+
+    def create_lead_from_site(self):
+        response = self.client.post(reverse(
+            'leads:create_lead_from_site'), {'apikey': self.api_seetings.apikey})
+        self.assertEqual(response.status_code, 200)
