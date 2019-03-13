@@ -97,7 +97,7 @@ def contact_list_new(request):
                 instance.tags.add(tag)
             if request.FILES.get('contacts_file'):
                 upload_csv_file.delay(
-                    form.validated_rows, request.user.id, [instance.id])
+                    form.validated_rows, form.invalid_rows, request.user.id, [instance.id])
 
             return JsonResponse({'error': False,
                                  'data': form.data},
@@ -144,7 +144,7 @@ def edit_contact_list(request, pk):
                 instance.tags.add(tag)
             if request.FILES.get('contacts_file'):
                 upload_csv_file.delay(
-                    form.validated_rows, request.user.id, [instance.id])
+                    form.validated_rows, form.invalid_rows, request.user.id, [instance.id])
 
             return JsonResponse({'error': False,
                                  'data': form.data}, status=status.HTTP_200_OK)
