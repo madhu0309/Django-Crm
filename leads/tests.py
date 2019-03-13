@@ -6,6 +6,7 @@ from accounts.models import Account
 from leads.tasks import *
 from leads.forms import *
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 class TestLeadModel(object):
@@ -304,17 +305,8 @@ class TestConvertLeadView(TestLeadModel, TestCase):
 
 class TestCreateLeadPostView(TestLeadModel, TestCase):
 
-    def test_create_lead_post_request(self):
-        response = self.client.post(reverse(
-            'leads:add_lead'), {'first_name': 'm',
-                                'last_name': 's',
-                                "created_by": self.user,
-                                'tags': 'tag',
-                                'assigned_to': str(self.user.id),
-                                })
-        self.assertEqual(response.status_code, 200)
-
     def test_create_lead_post_status(self):
+        upload_file = open('static/images/user.png', 'rb')
         response = self.client.post(reverse(
             'leads:add_lead'), {'first_name': 'm',
                                 'last_name': 's',
@@ -330,12 +322,41 @@ class TestCreateLeadPostView(TestLeadModel, TestCase):
                                 'city': self.lead.city,
                                 'state': self.lead.state,
                                 'postcode': self.lead.postcode,
-                                'country': self.lead.country
+                                'country': self.lead.country,
+                                'lead_attachment': SimpleUploadedFile(
+                                    upload_file.name, upload_file.read()),
+                                'assigned_to': str(self.user.id),
+                                'tags': 'tag'
                                 })
         self.assertEqual(response.status_code, 200)
 
     def test_create_lead_get_request(self):
         response = self.client.get(reverse('leads:add_lead'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_update_lead_post_status(self):
+        upload_file = open('static/images/user.png', 'rb')
+        response = self.client.post('/leads/' + str(self.lead.id) + '/edit/',
+                                    {'first_name': 'm',
+                                     'last_name': 's',
+                                     "created_by": self.user,
+                                     'status': 'converted',
+                                     'description': 'wgrgre',
+                                     'website': 'www.mike.com',
+                                     'phone': '+91-123-456-7890',
+                                     'email': 'a@gmail.com',
+                                     'account_name': 'account',
+                                     'address_line': self.lead.address_line,
+                                     'street': self.lead.street,
+                                     'city': self.lead.city,
+                                     'state': self.lead.state,
+                                     'postcode': self.lead.postcode,
+                                     'country': self.lead.country,
+                                     'lead_attachment': SimpleUploadedFile(
+                                         upload_file.name, upload_file.read()),
+                                     'assigned_to': str(self.user.id),
+                                     'tags': 'tag'
+                                     })
         self.assertEqual(response.status_code, 200)
 
 

@@ -5,6 +5,7 @@ from common.models import User, Comment, Attachments, Address
 from django.urls import reverse
 from leads.models import Lead
 from contacts.models import Contact
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 class AccountCreateTest(object):
@@ -234,12 +235,14 @@ class CommentTestCase(AccountCreateTest, TestCase):
 
     def test_comment_add(self):
         response = self.client.post(
-            '/accounts/comment/add/', {'accountid': self.account.id})
+            '/accounts/comment/add/', {'accountid': self.account.id,
+                                       'comment': 'comment'})
         self.assertEqual(response.status_code, 200)
 
     def test_comment_edit(self):
         response = self.client.post(
-            '/accounts/comment/edit/', {'commentid': self.comment.id})
+            '/accounts/comment/edit/', {'commentid': self.comment.id,
+                                        'comment': 'comment'})
         self.assertEqual(response.status_code, 200)
 
     # def test_comment_valid(self):
@@ -270,8 +273,11 @@ class AttachmentTestCase(AccountCreateTest, TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_attachment_valid(self):
+        upload_file = open('static/images/user.png', 'rb')
         response = self.client.post(
-            '/accounts/attachment/add/', {'accountid': self.account.id})
+            '/accounts/attachment/add/', {'accountid': self.account.id,
+                                          'attachment': SimpleUploadedFile(
+                                              upload_file.name, upload_file.read())})
         self.assertEqual(response.status_code, 200)
 
     def test_attachment_delete(self):
@@ -305,6 +311,7 @@ class TagModelTest(TagCreateTest, TestCase):
 class TestCreateLeadPostView(AccountCreateTest, TestCase):
 
     def test_create_lead_post_status(self):
+        upload_file = open('static/images/user.png', 'rb')
         response = self.client.post(reverse(
             'accounts:new_account'), {"name": "mike",
                                       "email": "mike@micropyramid.com",
@@ -323,6 +330,7 @@ class TestCreateLeadPostView(AccountCreateTest, TestCase):
                                       "lead": str(self.lead.id),
                                       'contacts': str(self.contact.id),
                                       'tags': 'tag1',
-                                      'account_attachment': self.attachment
+                                      'account_attachment': SimpleUploadedFile(
+                                          upload_file.name, upload_file.read())
                                       })
         self.assertEqual(response.status_code, 302)

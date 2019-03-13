@@ -5,9 +5,11 @@ from accounts.models import Account
 from common.models import Address, Comment, Attachments
 from common.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 class CaseCreation(object):
+
     def setUp(self):
         self.address = Address.objects.create(
             street="6th phase",
@@ -62,6 +64,7 @@ class CaseCreation(object):
 
 
 class CaseViewTestCase(CaseCreation, TestCase):
+
     def test_list_cases(self):
         self.cases = Case.objects.all()
         response = self.client.get('/cases/list/')
@@ -81,12 +84,16 @@ class CaseViewTestCase(CaseCreation, TestCase):
 
 
 class CaseCreationUrlTestCase(CaseCreation, TestCase):
+
     def test_create_cases(self):
+        upload_file = open('static/images/user.png', 'rb')
         response = self.client.post('/cases/create/', {
-            'name': 'new case', 'case_type': 'Problem',
-            'status': 'New',
-            'account': self.account, 'contacts': [self.contacts.id],
-            'priority': "Low", 'description': "something"
+            'name': 'new case', 'closed_on': '2019-03-14',
+            'status': 'New', 'priority': "Low",
+            'created_by': self.user, "assigned_to": str(self.user.id),
+            'contacts': str(self.contacts.id),
+            'case_attachment': SimpleUploadedFile(
+                upload_file.name, upload_file.read())
         })
         self.assertEqual(response.status_code, 200)
 
@@ -102,8 +109,13 @@ class CaseCreationUrlTestCase(CaseCreation, TestCase):
         # self.assertTemplateUsed(response, 'create_cases.html')
         self.assertEqual(response.status_code, 200)
 
+    def test_create_case_get_request(self):
+        response = self.client.get('/cases/create/')
+        self.assertEqual(response.status_code, 200)
+
 
 class CaseShowTestCase(CaseCreation, TestCase):
+
     def test_show_case(self):
         response = self.client.get('/cases/' + str(self.case.id) + '/view/')
         self.assertEqual(response.status_code, 200)
@@ -119,6 +131,7 @@ class CaseShowTestCase(CaseCreation, TestCase):
 
 
 class CaseRemoveTestCase(CaseCreation, TestCase):
+
     def test_case_deletion_show_case(self):
         response = self.client.get('/cases/' + str(self.case.id) + '/remove/')
         self.assertEqual(response['location'], '/cases/list/')
@@ -131,15 +144,22 @@ class CaseRemoveTestCase(CaseCreation, TestCase):
 
 
 class CaseUpdateTestCase(CaseCreation, TestCase):
+
     def test_update_case_view(self):
         response = self.client.get(
             '/cases/' + str(self.case.id) + '/edit_case/')
         self.assertEqual(response.status_code, 200)
 
     def test_case_update(self):
-        response = self.client.post(
-            '/cases/' + str(self.case.id) + '/edit_case/',
-            {'hiddenval': self.case.id})
+        upload_file = open('static/images/user.png', 'rb')
+        response = self.client.post('/cases/' + str(self.case.id) + '/edit_case/', {
+            'name': 'new case', 'closed_on': '2019-03-14',
+            'status': 'New', 'priority': "Low",
+            'created_by': self.user, "assigned_to": str(self.user.id),
+            'contacts': str(self.contacts.id),
+            'case_attachment': SimpleUploadedFile(
+                upload_file.name, upload_file.read())
+        })
         self.assertEqual(response.status_code, 200)
 
     def test_case_update_html(self):
@@ -204,9 +224,14 @@ class CaseFormTestCase(CaseCreation, TestCase):
 
 
 class AttachmentTestCase(CaseCreation, TestCase):
+
     def test_attachment_add(self):
+        upload_file = open('static/images/user.png', 'rb')
         response = self.client.post(
-            '/cases/attachment/add/', {'caseid': self.case.id})
+            '/cases/attachment/add/', {'caseid': self.case.id,
+                                       'attachment': SimpleUploadedFile(
+                                           upload_file.name, upload_file.read())
+                                       })
         self.assertEqual(response.status_code, 200)
 
     def test_attachment_delete(self):
@@ -216,6 +241,7 @@ class AttachmentTestCase(CaseCreation, TestCase):
 
 
 class SelectViewTestCase(CaseCreation, TestCase):
+
     def test_select_contact(self):
         response = self.client.get('/cases/select_contacts/')
         self.assertEqual(response.status_code, 200)

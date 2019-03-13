@@ -5,7 +5,9 @@ from django.db import migrations, models
 
 def generate_status(apps, schema_editor):
     Account = apps.get_model("accounts", "Account")
-    Account.objects.update(status='open')
+    for account in Account.objects.all():
+        account.status = 'open'
+        account.save()
 
 
 class Migration(migrations.Migration):
