@@ -1,3 +1,4 @@
+import csv
 import json
 import pytz
 import lxml
@@ -228,6 +229,25 @@ def failed_contact_list_detail(request, pk):
     failed_contacts_list = contact_list.failed_contacts.all()
     data = {'contact_list': contact_list, "failed_contacts_list": failed_contacts_list}
     return render(request, 'marketing/lists/failed_detail.html', data)
+
+
+@login_required(login_url='/login')
+def failed_contact_list_download_delete(request, pk):
+    contact_list = get_object_or_404(ContactList, pk=pk)
+    failed_contacts_list = contact_list.failed_contacts.all()
+    if failed_contacts_list.count() > 0:
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="failed_contacts.csv"'
+        writer = csv.writer(response)
+        writer.writerow(["company name", "email", "first name", "last name", "city", "state"])
+
+        for contact in failed_contacts_list:
+            writer.writerow([
+                contact.company_name, contact.email, contact.name, contact.last_name, contact.city, contact.state])
+        failed_contacts_list.delete()
+        return response
+    else:
+        return HttpResponseRedirect(reverse('marketing:contact_lists', kwargs={"pk": pk}))
 
 
 @login_required(login_url='/login')
