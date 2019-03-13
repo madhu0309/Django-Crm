@@ -215,8 +215,19 @@ def edit_contact(request):
 
 
 @login_required(login_url='/login')
-def contact_list_detail(request):
-    return render(request, 'marketing/lists/detail.html')
+def contact_list_detail(request, pk):
+    contact_list = get_object_or_404(ContactList, pk=pk)
+    contacts_list = contact_list.contacts.all()
+    data = {'contact_list': contact_list, "contacts_list": contacts_list}
+    return render(request, 'marketing/lists/detail.html', data)
+
+
+@login_required(login_url='/login')
+def failed_contact_list_detail(request, pk):
+    contact_list = get_object_or_404(ContactList, pk=pk)
+    failed_contacts_list = contact_list.failed_contacts.all()
+    data = {'contact_list': contact_list, "failed_contacts_list": failed_contacts_list}
+    return render(request, 'marketing/lists/failed_detail.html', data)
 
 
 @login_required(login_url='/login')
