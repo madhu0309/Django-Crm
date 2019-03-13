@@ -14,7 +14,7 @@
               {% if contact_list.contacts.all|length > 0 %}
                 <a href="{% url 'marketing:contact_list_detail' contact_list.id %}" class="primary_btn">Contacts</a>
               {% endif %}
-              <a href="#" class="primary_btn">Download & Delete</a>
+              <a href="{% url 'marketing:failed_contact_list_download_delete' contact_list.id %}" class="primary_btn">Download & Delete</a>
             </div>
             <div class="table-responsive table-bordered ">
               <table class="table">
