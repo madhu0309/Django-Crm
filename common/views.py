@@ -33,6 +33,8 @@ from accounts.models import Account, Tags
 from leads.models import Lead
 from django.template.loader import render_to_string
 from django.core.exceptions import PermissionDenied
+import boto3
+import botocore
 
 
 def handler404(request, exception):
@@ -567,29 +569,82 @@ def download_document(request, pk):
             if (not request.user == doc_obj.created_by and
                     request.user not in doc_obj.shared_to.all()):
                 raise PermissionDenied
-        path = doc_obj.document_file.path
-        file_path = os.path.join(settings.MEDIA_ROOT, path)
-        if os.path.exists(file_path):
-            with open(file_path, 'rb') as fh:
-                response = HttpResponse(
-                    fh.read(), content_type="application/vnd.ms-excel")
-                response['Content-Disposition'] = 'inline; filename=' + \
-                    os.path.basename(file_path)
+        if settings.STORAGE_TYPE == "normal":
+            # print('no no no no')
+            path = doc_obj.document_file.path
+            file_path = os.path.join(settings.MEDIA_ROOT, path)
+            if os.path.exists(file_path):
+                with open(file_path, 'rb') as fh:
+                    response = HttpResponse(
+                        fh.read(), content_type="application/vnd.ms-excel")
+                    response['Content-Disposition'] = 'inline; filename=' + \
+                        os.path.basename(file_path)
+                    return response
+        else:
+            file_path = doc_obj.document_file
+            file_name = doc_obj.title
+            # print(file_path)
+            # print(file_name)
+            BUCKET_NAME = "django-crm-demo"
+            KEY = str(file_path)
+            s3 = boto3.resource('s3')
+            try:
+                s3.Bucket(BUCKET_NAME).download_file(KEY, file_name)
+                # print('got it')
+                with open(file_name, 'rb') as fh:
+                    response = HttpResponse(
+                        fh.read(), content_type="application/vnd.ms-excel")
+                    response['Content-Disposition'] = 'inline; filename=' + \
+                        os.path.basename(file_name)
+                os.remove(file_name)
                 return response
+            except botocore.exceptions.ClientError as e:
+                if e.response['Error']['Code'] == "404":
+                    print("The object does not exist.")
+                else:
+                    raise
+
+            return path
     raise Http404
 
 
 def download_attachment(request, pk):
     attachment_obj = Attachments.objects.filter(id=pk).last()
-    path = attachment_obj.attachment.path
-    file_path = os.path.join(settings.MEDIA_ROOT, path)
-    if os.path.exists(file_path):
-        with open(file_path, 'rb') as fh:
-            response = HttpResponse(
-                fh.read(), content_type="application/vnd.ms-excel")
-            response['Content-Disposition'] = 'inline; filename=' + \
-                os.path.basename(file_path)
-            return response
+    if attachment_obj:
+        if settings.STORAGE_TYPE == "normal":
+            path = attachment_obj.attachment.path
+            file_path = os.path.join(settings.MEDIA_ROOT, path)
+            if os.path.exists(file_path):
+                with open(file_path, 'rb') as fh:
+                    response = HttpResponse(
+                        fh.read(), content_type="application/vnd.ms-excel")
+                    response['Content-Disposition'] = 'inline; filename=' + \
+                        os.path.basename(file_path)
+                    return response
+        else:
+            file_path = attachment_obj.attachment
+            file_name = attachment_obj.file_name
+            # print(file_path)
+            # print(file_name)
+            BUCKET_NAME = "django-crm-demo"
+            KEY = str(file_path)
+            s3 = boto3.resource('s3')
+            try:
+                s3.Bucket(BUCKET_NAME).download_file(KEY, file_name)
+                with open(file_name, 'rb') as fh:
+                    response = HttpResponse(
+                        fh.read(), content_type="application/vnd.ms-excel")
+                    response['Content-Disposition'] = 'inline; filename=' + \
+                        os.path.basename(file_name)
+                os.remove(file_name)
+                return response
+            except botocore.exceptions.ClientError as e:
+                if e.response['Error']['Code'] == "404":
+                    print("The object does not exist.")
+                else:
+                    raise
+            # if file_path:
+            #     print('yes tus pus')
     raise Http404
 
 
