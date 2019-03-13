@@ -68,7 +68,10 @@ class OpportunityCreateTestCase(OpportunityModel, TestCase):
 
     def test_opportunity_create_post(self):
         url = '/opportunities/create/'
-        data = {'name': "micky", 'amount': "500", 'stage': "CLOSED WON"}
+        data = {'name': "micky", 'amount': "500", 'stage': "CLOSED WON",
+                'assigned_to': str(self.user.id),
+                'contacts': str(self.contacts.id),
+                'tags': 'tag'}
         response = self.client.post(url, data)
         # self.assertEqual(response.status_code, 302)
         self.assertEqual(response.status_code, 200)

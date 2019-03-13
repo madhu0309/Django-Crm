@@ -1,8 +1,10 @@
 from django.test import TestCase
 from cases.models import Case
 from accounts.models import Account, Tags
-from common.models import User, Comment, Attachments
+from common.models import User, Comment, Attachments, Address
 from django.urls import reverse
+from leads.models import Lead
+from contacts.models import Contact
 
 
 class AccountCreateTest(object):
@@ -12,6 +14,11 @@ class AccountCreateTest(object):
             first_name="mike", username='mike', email='u@mp.com', role='ADMIN')
         self.user.set_password('mike2293')
         self.user.save()
+
+        self.user1 = User.objects.create(
+            first_name="mp", username='mp', email='mp@micropyramid.com')
+        self.user1.set_password('mp123')
+        self.user1.save()
 
         self.account = Account.objects.create(
             name="mike", email="mike@micropyramid.com", phone="8333855552",
@@ -248,6 +255,12 @@ class CommentTestCase(AccountCreateTest, TestCase):
             '/accounts/comment/remove/', {'comment_id': self.comment.id})
         self.assertEqual(response.status_code, 200)
 
+    def test_comment_deletion(self):
+        self.client.login(email='mp@micropyramid.com', password='mp123')
+        response = self.client.post(
+            '/accounts/comment/remove/', {'comment_id': self.comment.id})
+        self.assertEqual(response.status_code, 200)
+
 
 class AttachmentTestCase(AccountCreateTest, TestCase):
 
@@ -262,6 +275,13 @@ class AttachmentTestCase(AccountCreateTest, TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_attachment_delete(self):
+        response = self.client.post(
+            '/accounts/attachment/remove/',
+            {'attachment_id': self.attachment.id})
+        self.assertEqual(response.status_code, 200)
+
+    def test_attachment_deletion(self):
+        self.client.login(email='mp@micropyramid.com', password='mp123')
         response = self.client.post(
             '/accounts/attachment/remove/',
             {'attachment_id': self.attachment.id})
@@ -282,17 +302,27 @@ class TagModelTest(TagCreateTest, TestCase):
         self.assertEqual(str(self.tag.name), tag.name)
 
 
-class TestCreateLeadPostView(TagCreateTest, TestCase):
+class TestCreateLeadPostView(AccountCreateTest, TestCase):
 
     def test_create_lead_post_status(self):
         response = self.client.post(reverse(
-            'leads:new_account'), {"name": "mike", "email": "mike@micropyramid.com",
-                                   "phone": "+91-833-385-5552", "billing_address_line": "sddsv",
-                                   "billing_street": "KPHB", "billing_city": "New York",
-                                   "billing_state": "usa", "billing_postcode": "500073",
-                                   "billing_country": "IN",
-                                   "website": "www.mike.com", "created_by": self.user, "status": "open",
-                                   "industry": "SOFTWARE", "description": "Yes.. Testing Done"
-                                   "leads":
-                                   })
-        self.assertEqual(response.status_code, 200)
+            'accounts:new_account'), {"name": "mike",
+                                      "email": "mike@micropyramid.com",
+                                      "phone": "+91-833-385-5552",
+                                      "billing_address_line": "sddsv",
+                                      "billing_street": "KPHB",
+                                      "billing_city": "New York",
+                                      "billing_state": "usa",
+                                      "billing_postcode": "500073",
+                                      "billing_country": "IN",
+                                      "website": "www.mike.com",
+                                      "created_by": self.user,
+                                      "status": "open",
+                                      "industry": "SOFTWARE",
+                                      "description": "Yes.. Testing Done",
+                                      "lead": str(self.lead.id),
+                                      'contacts': str(self.contact.id),
+                                      'tags': 'tag1',
+                                      'account_attachment': self.attachment
+                                      })
+        self.assertEqual(response.status_code, 302)
