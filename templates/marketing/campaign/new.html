@@ -30,7 +30,7 @@
                         <select class="form-control" name="email_template">
                           <option value="">Select a template</option>
                           {% for email_template in email_templates %}
-                            <option value="{{email_template.id}}">{{ email_template.title }}</option>
+                            <option value="{{email_template.id}}" htmlcode="{{email_template.html}}" subject="{{email_template.subject}}">{{ email_template.title }}</option>
                           {% endfor %}
                           <!-- <option value="one">First template</option>
                           <option value="two">Second template</option>
@@ -69,7 +69,7 @@
                             <label><input type="checkbox" name="reply_to_crm" value="true"> Reply To CRM</label>
                             <span id="id_reply_to_crm"></span>
                           </div>
-                          <div class="form-group">
+                          <div class="form-group reply_to_email">
                             <label>Reply to email</label>
                             <input type="email" class="form-control" placeholder="replyto@mp.com" name="reply_to_email">
                             <span id="id_reply_to_email"></span>
@@ -112,7 +112,7 @@
                                 <span id="id_schedule_later"></span>
                               </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-4 timezone-div" style="display: none;">
                               <div class="form-group">
                                 <label>Timezone</label>
                                 <select name="timezone" id="timezone" class="form-control">
@@ -124,7 +124,7 @@
                                 <span id="id_timezone"></span>
                               </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-4 timezone-div" style="display: none;">
                               <div class="form-group">
                                 <label for="">Schedule Date Time</label>
                                 <input type="datetime" class="form-control" name="schedule_date_time" value="" placeholder="Schedule Date Time">
@@ -140,11 +140,11 @@
                             </div>
                             <div class="form-group">
                               <label>Html Code</label>
+                              <span id="id_html"></span>
                               <div id="editor-container">
                               </div>
                               <span class="hint">Use the following tags in your subject, plain text or HTML code and they'll automatically be formatted when your campaign is sent. For web version and unsubscribe tags, you can style them with inline CSS.</span>
                               <input type="hidden" name="html" id="html_content">
-                              <span id="id_html"></span>
                             </div>
                             <div class="col-md-12 no-padding">
                               <div class="row help_container">
@@ -253,6 +253,37 @@
       $('#html_content').val(justHtml);
     });
 
+    $('[name="email_template"]').on('change', function(e){
+      var optionSelected = $("option:selected", this);
+      var valueSelected = this.value;
+      var subject = $('[name="subject"]');
+      var html_code = $("#editor-container");
+      var html_content = $('#html_content');
+      if ($(optionSelected).val()){
+        subject.val($(optionSelected).attr("subject"));
+        quill.root.innerHTML = $(optionSelected).attr("htmlcode");
+      } else {
+        subject.val("");
+        quill.root.innerHTML = "";
+        html_content.val("");
+      }
+    })
+
+    $('[name="schedule_later"]').on('change', function(e){
+      if ($(this).is(":checked")){
+        $('.timezone-div').show();
+      } else {
+        $('.timezone-div').hide();
+      }
+    })
+
+    $('[name="reply_to_crm"]').on('change', function(e){
+      if ($(this).is(":checked")){
+        $('.reply_to_email').hide();
+      } else {
+        $('.reply_to_email').show();
+      }
+    })
 
     $('.save_btn').click(function(e){
       e.preventDefault();
