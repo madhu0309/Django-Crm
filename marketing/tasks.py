@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template import Template, Context
 from common.utils import convert_to_custom_timezone
-from marketing.models import Contact, ContactList, Campaign, CampaignLog
+from marketing.models import Contact, FailedContact, ContactList, Campaign, CampaignLog
 
 
 @task
@@ -26,11 +26,29 @@ def campaign_click(request):
 
 
 @task
-def upload_csv_file(data, user, contact_lists):
+def upload_csv_file(data, invalid_data, user, contact_lists):
     for each in data:
         contact = Contact.objects.filter(email=each['email']).first()
         if not contact:
             contact = Contact.objects.create(
+                email=each['email'], created_by_id=user,
+                name=each['first name'])
+            if each.get('company name', None):
+                contact.company_name = each['company name']
+            if each.get('last name', None):
+                contact.last_name = each['last name']
+            if each.get('city', None):
+                contact.city = each['city']
+            if each.get("state", None):
+                contact.state = each['state']
+            contact.save()
+        for contact_list in contact_lists:
+            contact.contact_list.add(ContactList.objects.get(id=int(contact_list)))
+
+    for each in invalid_data:
+        contact = FailedContact.objects.filter(email=each['email']).first()
+        if not contact:
+            contact = FailedContact.objects.create(
                 email=each['email'], created_by_id=user,
                 name=each['first name'])
             if each.get('company name', None):
