@@ -236,6 +236,8 @@ MANDRILL_API_KEY = os.getenv('MANDRILL_API_KEY', '')
 
 ADMIN_EMAIL = "admin@micropyramid.com"
 
+URL_FOR_LINKS = "http://djangocrm.com"
+
 try:
     from .dev_settings import *
 except ImportError:

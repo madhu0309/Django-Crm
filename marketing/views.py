@@ -4,17 +4,17 @@ import pytz
 import lxml
 import lxml.html
 from lxml.cssselect import CSSSelector
-from django.conf import Settings
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.http.response import (JsonResponse,
                                   HttpResponse, HttpResponseRedirect)
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from common import status
 from marketing.models import (
-    Tag, ContactList, Contact, EmailTemplate, Campaign, CampaignLog, Link
+    Tag, ContactList, Contact, EmailTemplate, Campaign, CampaignLog, Link, CampaignLinkClick
 )
 from marketing.forms import ContactListForm, ContactForm, EmailTemplateForm, SendCampaignForm
 from marketing.tasks import upload_csv_file, run_campaign
@@ -404,13 +404,14 @@ def campaign_new(request):
             links = set(llist)
 
             # Replace Links with new One
-            domain_url = '%s://%s' % (request.scheme, request.META['HTTP_HOST'])
+            # domain_url = '%s://%s' % (request.scheme, request.META['HTTP_HOST'])
+            domain_url = settings.URL_FOR_LINKS
             if Link.objects.filter(campaign_id=camp.id):
                 Link.objects.filter(campaign_id=camp.id).delete()
             for l in links:
                 link = Link.objects.create(campaign_id=camp.id, original=l)
                 html = html.replace(
-                    'href="' + l + '"', 'href="' + domain_url + '/a/' + str(link.id) + '/e/{{email_id}}"')
+                    'href="' + l + '"', 'href="' + domain_url + '/m/cm/link/' + str(link.id) + '/e/{{email_id}}"')
             camp.html_processed = html
             camp.sent_status = "scheduled"
             camp.save()
@@ -430,7 +431,7 @@ def campaign_new(request):
                 # instance.timezone = request.POST['timezone']
             instance.save()
 
-            return JsonResponse({'error': True, 'data': form.data}, status=status.HTTP_201_CREATED)
+            return JsonResponse({'error': False, 'data': form.data}, status=status.HTTP_201_CREATED)
         return JsonResponse({'error': True, 'errors': form.errors}, status=status.HTTP_200_OK)
 
 
@@ -447,3 +448,31 @@ def campaign_details(request):
 @login_required(login_url='/login')
 def campaign_delete(request):
     return render(request, 'marketing/campaign/details.html')
+
+
+def campaign_link_click(request, link_id, email_id):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+
+    if x_forwarded_for:
+        ipaddress = x_forwarded_for.split(',')[-1].strip()
+    else:
+        ipaddress = request.META.get('REMOTE_ADDR')
+
+    link = Link.objects.filter(id=link_id).first()
+    contact = Contact.objects.filter(id=email_id).first()
+    if link and contact:
+        campaign_link_click = CampaignLinkClick.objects.filter(
+            link=link, campaign=link.campaign, contact=contact).first()
+        if not campaign_link_click:
+            campaign_link_click = CampaignLinkClick.objects.create(
+                link=link, campaign=link.campaign, contact=contact, ip_address=ipaddress)
+            link.unique += 1
+        else:
+            campaign_link_click.ip_address = ipaddress
+        link.clicks += 1
+        link.save()
+        campaign_link_click.save()
+        url = link.original
+    else:
+        url = settings.URL_FOR_LINKS
+    return redirect(url)
