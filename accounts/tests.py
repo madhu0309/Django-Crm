@@ -17,8 +17,11 @@ class AccountCreateTest(object):
         self.user.save()
 
         self.user1 = User.objects.create(
-            first_name="mp", username='mp', email='mp@micropyramid.com')
-        self.user1.set_password('mp123')
+            first_name="mp",
+            username='mp',
+            email='mp@micropyramid.com',
+            role="USER")
+        self.user1.set_password('mp')
         self.user1.save()
 
         self.account = Account.objects.create(
@@ -239,7 +242,15 @@ class CommentTestCase(AccountCreateTest, TestCase):
                                        'comment': 'comment'})
         self.assertEqual(response.status_code, 200)
 
+    def test_comment_create(self):
+
+        response = self.client.post(
+            '/accounts/comment/add/', {'accountid': self.account.id,
+                                       'comment': 'comment'})
+        self.assertEqual(response.status_code, 200)
+
     def test_comment_edit(self):
+        self.client.login(email='mp@micropyramid.com', password='mp')
         response = self.client.post(
             '/accounts/comment/edit/', {'commentid': self.comment.id,
                                         'comment': 'comment'})
@@ -259,7 +270,7 @@ class CommentTestCase(AccountCreateTest, TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_comment_deletion(self):
-        self.client.login(email='mp@micropyramid.com', password='mp123')
+        self.client.login(email='mp@micropyramid.com', password='mp')
         response = self.client.post(
             '/accounts/comment/remove/', {'comment_id': self.comment.id})
         self.assertEqual(response.status_code, 200)
@@ -268,6 +279,7 @@ class CommentTestCase(AccountCreateTest, TestCase):
 class AttachmentTestCase(AccountCreateTest, TestCase):
 
     def test_attachment_add(self):
+        self.client.login(email='mp@micropyramid.com', password='mp')
         response = self.client.post(
             '/accounts/attachment/add/', {'accountid': self.account.id})
         self.assertEqual(response.status_code, 200)
@@ -287,7 +299,7 @@ class AttachmentTestCase(AccountCreateTest, TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_attachment_deletion(self):
-        self.client.login(email='mp@micropyramid.com', password='mp123')
+        self.client.login(email='mp@micropyramid.com', password='mp')
         response = self.client.post(
             '/accounts/attachment/remove/',
             {'attachment_id': self.attachment.id})

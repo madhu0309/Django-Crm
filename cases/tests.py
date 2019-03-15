@@ -24,6 +24,13 @@ class CaseCreation(object):
             role="ADMIN")
         self.user.set_password('robert')
         self.user.save()
+        self.user1 = User.objects.create(
+            first_name="mp",
+            username='mp',
+            email='mp@micropyramid.com',
+            role="USER")
+        self.user1.set_password('mp')
+        self.user1.save()
         self.client.login(email='r@mp.com', password='robert')
 
         self.client.login(email='r@mp.com', password='robert')
@@ -208,9 +215,16 @@ class CaseFormTestCase(CaseCreation, TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_comment_add(self):
+        self.client.login(email='mp@micropyramid.com', password='mp')
         response = self.client.post(
             '/cases/comment/add/', {'caseid': self.case.id})
         self.assertEqual(response.status_code, 200)
+
+    def test_comment_form_valid(self):
+        response = self.client.post(
+            '/cases/comment/add/', {'caseid': self.case.id, 'comment': 'comment'})
+        self.assertEqual(response.status_code, 200)
+
 
     def test_comment_edit(self):
         response = self.client.post(
@@ -234,7 +248,19 @@ class AttachmentTestCase(CaseCreation, TestCase):
                                        })
         self.assertEqual(response.status_code, 200)
 
+    def test_attachment_creation(self):
+        self.client.login(email='mp@micropyramid.com', password='mp')
+        response = self.client.post(
+            '/cases/attachment/add/', {'caseid': self.case.id})
+        self.assertEqual(response.status_code, 200)
+
     def test_attachment_delete(self):
+        response = self.client.post(
+            '/cases/attachment/remove/', {'attachment_id': self.attachment.id})
+        self.assertEqual(response.status_code, 200)
+
+    def test_attachment_deletion(self):
+        self.client.login(email='mp@micropyramid.com', password='mp')
         response = self.client.post(
             '/cases/attachment/remove/', {'attachment_id': self.attachment.id})
         self.assertEqual(response.status_code, 200)

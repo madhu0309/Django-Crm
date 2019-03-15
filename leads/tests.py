@@ -19,6 +19,14 @@ class TestLeadModel(object):
         self.user.set_password('jorge2293')
         self.user.save()
 
+        self.user1 = User.objects.create(
+            first_name="mp",
+            username='mp',
+            email='mp@micropyramid.com',
+            role="USER")
+        self.user1.set_password('mp')
+        self.user1.save()
+
         self.client.login(username='j@mp.com', password='jorge2293')
 
         self.account = Account.objects.create(name="account",
@@ -39,7 +47,7 @@ class TestLeadModel(object):
                                         first_name="Alisa",
                                         last_name="k",
                                         email="Alisak1993@gmail.com",
-                                        address_line="",
+                                        address_line="hyd",
                                         street="Arcade enclave colony",
                                         city="NewTown",
                                         state="California",
@@ -50,7 +58,9 @@ class TestLeadModel(object):
                                         source="Call",
                                         opportunity_amount="700",
                                         description="Iam an Lead",
-                                        created_by=self.user)
+                                        created_by=self.user,
+                                        account_name="account",
+                                        phone="+91-123-456-7890")
         self.lead.assigned_to.add(self.user)
         self.case = Case.objects.create(
             name="Rose", case_type="Problem",
@@ -247,11 +257,23 @@ class LeadDetailTestCase(TestLeadModel, TestCase):
 class CommentTestCase(TestLeadModel, TestCase):
 
     def test_comment_add(self):
+        self.client.login(email='mp@micropyramid.com', password='mp')
         response = self.client.post(
             '/leads/comment/add/', {'leadid': self.lead.id})
         self.assertEqual(response.status_code, 200)
 
+    def test_comment_create(self):
+        response = self.client.post(
+            '/leads/comment/add/', {'leadid': self.lead.id, 'comment': "comment"})
+        self.assertEqual(response.status_code, 200)
+
     def test_comment_edit(self):
+        response = self.client.post(
+            '/leads/comment/edit/', {'commentid': self.comment.id, 'comment': "comment"})
+        self.assertEqual(response.status_code, 200)
+
+    def test_comment_update(self):
+        self.client.login(email='mp@micropyramid.com', password='mp')
         response = self.client.post(
             '/leads/comment/edit/', {'commentid': self.comment.id})
         self.assertEqual(response.status_code, 200)
@@ -261,10 +283,17 @@ class CommentTestCase(TestLeadModel, TestCase):
             '/leads/comment/remove/', {'comment_id': self.comment.id})
         self.assertEqual(response.status_code, 200)
 
+    def test_comment_deletion(self):
+        self.client.login(email='mp@micropyramid.com', password='mp')
+        response = self.client.post(
+            '/leads/comment/remove/', {'comment_id': self.comment.id})
+        self.assertEqual(response.status_code, 200)
+
 
 class AttachmentTestCase(TestLeadModel, TestCase):
 
     def test_attachment_add(self):
+        self.client.login(email='mp@micropyramid.com', password='mp')
         response = self.client.post(
             '/leads/attachment/add/', {'leadid': self.lead.id})
         self.assertEqual(response.status_code, 200)
@@ -274,9 +303,18 @@ class AttachmentTestCase(TestLeadModel, TestCase):
             '/leads/attachment/remove/', {'attachment_id': self.attachment.id})
         self.assertEqual(response.status_code, 200)
 
-    def test_attachment_valid(self):
+    def test_attachment_deletion(self):
+        self.client.login(email='mp@micropyramid.com', password='mp')
         response = self.client.post(
-            '/leads/attachment/add/', {'leadid': self.lead.id})
+            '/leads/attachment/remove/', {'attachment_id': self.attachment.id})
+        self.assertEqual(response.status_code, 200)
+
+    def test_attachment_valid(self):
+        upload_file = open('static/images/user.png', 'rb')
+        response = self.client.post(
+            '/leads/attachment/add/', {'leadid': self.lead.id,
+                                       'attachment': SimpleUploadedFile(
+                                           upload_file.name, upload_file.read())})
         self.assertEqual(response.status_code, 200)
 
 
@@ -359,6 +397,10 @@ class TestCreateLeadPostView(TestLeadModel, TestCase):
                                      })
         self.assertEqual(response.status_code, 200)
 
+    def test_lead_convert(self):
+        response = self.client.get('/leads/' + str(self.lead.id) + '/convert/')
+        self.assertEqual(response.status_code, 302)
+
 
 class TestLeadDetailView(TestLeadModel, TestCase):
 
@@ -371,6 +413,5 @@ class TestLeadDetailView(TestLeadModel, TestCase):
 class TestLeadFromSite(TestLeadModel, TestCase):
 
     def create_lead_from_site(self):
-        response = self.client.post(reverse(
-            'leads:create_lead_from_site'), {'apikey': self.api_seetings.apikey})
+        response = self.client.post('/leads/create/from-site/', {'apikey': self.api_seetings.apikey})
         self.assertEqual(response.status_code, 200)
