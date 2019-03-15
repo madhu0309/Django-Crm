@@ -15,9 +15,13 @@ class LeadForm(forms.ModelForm):
             self.fields['email'].required = True
         self.fields['assigned_to'].queryset = assigned_users
         self.fields['assigned_to'].required = False
+        self.fields['first_name'].required = False
+        self.fields['last_name'].required = False
+        self.fields['title'].required = True
         for key, value in self.fields.items():
             if key == 'phone':
-                value.widget.attrs['placeholder'] = 'Enter phone number with country code'
+                value.widget.attrs['placeholder'] =\
+                    'Enter phone number with country code'
             else:
                 value.widget.attrs['placeholder'] = value.label
 
@@ -46,9 +50,12 @@ class LeadForm(forms.ModelForm):
 
     class Meta:
         model = Lead
-        fields = ('assigned_to', 'first_name', 'last_name', 'account_name', 'title',
-                  'phone', 'email', 'status', 'source', 'website', 'description',
-                  'address_line', 'street', 'city', 'state', 'postcode', 'country'
+        fields = ('assigned_to', 'first_name',
+                  'last_name', 'account_name', 'title',
+                  'phone', 'email', 'status', 'source',
+                  'website', 'description',
+                  'address_line', 'street',
+                  'city', 'state', 'postcode', 'country'
                   )
 
 
