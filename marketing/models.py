@@ -170,6 +170,7 @@ class Campaign(models.Model):
     email_template = models.ForeignKey(
         EmailTemplate, blank=True, null=True, on_delete=models.SET_NULL)
     schedule_date_time = models.DateTimeField(blank=True, null=True)
+    timezone = models.CharField(max_length=100, default='UTC')
     reply_to_email = models.EmailField(blank=True, null=True)
     subject = models.CharField(max_length=5000)
     html = models.TextField()
