@@ -1,4 +1,5 @@
 import os
+from celery.schedules import crontab
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -107,7 +108,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'Asia/Calcutta'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -218,6 +219,21 @@ DEFAULT_FROM_EMAIL = 'no-reply@django-crm.micropyramid.com'
 # celery Tasks
 CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+
+CELERY_BEAT_SCHEDULE = {
+    "runs-campaign-for-every-thiry-minutes": {
+        "task": "marketing.tasks.run_all_campaigns",
+        "schedule": crontab(minute=30, hour='*')
+    },
+    "runs-campaign-for-every-five-minutes": {
+        "task": "marketing.tasks.list_all_bounces_unsubscribes",
+        "schedule": crontab(minute='*/5')
+    },
+    "runs-scheduled-campaigns-for-every-one-hour": {
+        "task": "marketing.tasks.send_scheduled_campaigns",
+        "schedule": crontab(hour='*/1')
+    },
+}
 
 MAIL_SENDER = 'AMAZON'
 INACTIVE_MAIL_SENDER = 'MANDRILL'

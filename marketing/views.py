@@ -4,6 +4,7 @@ import pytz
 import lxml
 import lxml.html
 from lxml.cssselect import CSSSelector
+from datetime import datetime as ddatetime
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -13,8 +14,10 @@ from django.http.response import (JsonResponse,
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from common import status
+from common.utils import convert_to_custom_timezone
 from marketing.models import (
-    Tag, ContactList, Contact, EmailTemplate, Campaign, CampaignLog, Link, CampaignLinkClick
+    Tag, ContactList, Contact, EmailTemplate, Campaign, CampaignLog, Link, CampaignLinkClick,
+    CampaignOpen
 )
 from marketing.forms import ContactListForm, ContactForm, EmailTemplateForm, SendCampaignForm
 from marketing.tasks import upload_csv_file, run_campaign
@@ -367,7 +370,8 @@ def campaign_new(request):
         #         contact_list__id__in=json.loads(request.GET.get('contact_list'))).distinct()
 
         data = {
-            'contact_lists': contact_lists, 'email_templates': email_templates, "timezones": TIMEZONE_CHOICES}
+            'contact_lists': contact_lists, 'email_templates': email_templates,
+            "timezones": TIMEZONE_CHOICES, "settings_timezone": settings.TIME_ZONE}
         # return JsonResponse(data, status=status.HTTP_200_OK)
         return render(request, 'marketing/campaign/new.html', data)
     else:
@@ -376,14 +380,14 @@ def campaign_new(request):
         if form.is_valid():
             instance = form.save(commit=False)
             instance.created_by = request.user
-            if request.POST['from_email']:
+            if request.POST.get('from_email'):
                 instance.from_email = request.POST['from_email']
-            if request.POST['from_name']:
+            if request.POST.get('from_name'):
                 instance.from_name = request.POST['from_name']
-            if request.POST['reply_to_email']:
+            if request.POST.get('reply_to_email'):
                 instance.reply_to_email = request.POST['reply_to_email']
             instance.save()
-            for each in json.loads(request.POST['contact_list']):
+            for each in request.POST.getlist('contact_list'):
                 instance.contact_lists.add(ContactList.objects.get(id=each))
             # contacts = Contact.objects.filter(contact_list__in=json.loads(request.POST['contact_list'])).distinct()
             # for each_contact in contacts:
@@ -416,20 +420,17 @@ def campaign_new(request):
             camp.sent_status = "scheduled"
             camp.save()
 
-            if request.POST['schedule_later'] == 'false':
-                run_campaign.delay(instance.id)
-            else:
+            if request.POST.get('schedule_later', None) == 'true':
                 schedule_date_time = request.POST.get('schedule_date_time', '')
-                # user_timezone = request.POST.get('timezone', '')
-                # if user_timezone and schedule_date_time:
-                #     print ("schedule_date_time", schedule_date_time)
-                #     print ("timezone", user_timezone)
-                #     start_time_object = ddatetime.strptime(schedule_date_time, '%Y-%m-%d %H:%M:%S')
-                #     schedule_date_time = convert_to_custom_timezone(start_time_object, user_timezone, to_utc=True)
-                #     print ("After", schedule_date_time)
+                user_timezone = request.POST.get('timezone', '')
+                if user_timezone and schedule_date_time:
+                    start_time_object = ddatetime.strptime(schedule_date_time, '%Y-%m-%d %H:%M')
+                    schedule_date_time = convert_to_custom_timezone(start_time_object, user_timezone, to_utc=True)
                 instance.schedule_date_time = schedule_date_time
-                # instance.timezone = request.POST['timezone']
-            instance.save()
+                instance.timezone = user_timezone
+                instance.save()
+            else:
+                run_campaign.delay(instance.id)
 
             return JsonResponse({'error': False, 'data': form.data}, status=status.HTTP_201_CREATED)
         return JsonResponse({'error': True, 'errors': form.errors}, status=status.HTTP_200_OK)
@@ -446,8 +447,14 @@ def campaign_details(request):
 
 
 @login_required(login_url='/login')
-def campaign_delete(request):
-    return render(request, 'marketing/campaign/details.html')
+def campaign_delete(request, pk):
+    try:
+        campaign = Campaign.objects.get(id=pk)
+        campaign.delete()
+        redirect_url = reverse('marketing:campaign_list')
+    except Campaign.DoesNotExist:
+        redirect_url = reverse('marketing:campaign_list')
+    return redirect(redirect_url)
 
 
 def campaign_link_click(request, link_id, email_id):
@@ -476,3 +483,31 @@ def campaign_link_click(request, link_id, email_id):
     else:
         url = settings.URL_FOR_LINKS
     return redirect(url)
+
+
+def campaign_open(request, campaign_log_id, email_id):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+
+    if x_forwarded_for:
+        ipaddress = x_forwarded_for.split(',')[-1].strip()
+    else:
+        ipaddress = request.META.get('REMOTE_ADDR')
+
+    campaign_log = CampaignLog.objects.filter(id=campaign_log_id).first()
+    contact = Contact.objects.filter(id=email_id).first()
+    image_data = settings.STATIC_URL + 'images/'
+    image_data = open(settings.STATIC_ROOT + '/images/company.png', 'rb').read()
+    if campaign_log and contact:
+        campaign_open = CampaignOpen.objects.filter(
+            campaign=campaign_log.campaign, contact=contact).first()
+        if not campaign_open:
+            campaign_open = CampaignOpen.objects.create(
+                campaign=campaign_log.campaign, contact=contact, ip_address=ipaddress)
+            campaign_log.campaign.opens_unique += 1
+        else:
+            campaign_open.ip_address = ipaddress
+        campaign_log.campaign.opens += 1
+        campaign_log.campaign.status = "Sent"
+        campaign_log.campaign.save()
+        campaign_open.save()
+    return HttpResponse(image_data, content_type="image/png")

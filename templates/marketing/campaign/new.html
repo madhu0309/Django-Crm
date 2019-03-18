@@ -71,7 +71,7 @@
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>Select Contact List</label>
-                            <select class="contact-lsit-select js-example-basic-multiple" name="contact_list[]" multiple="multiple">
+                            <select class="contact-lsit-select js-example-basic-multiple" name="contact_list" multiple="multiple">
                               {% for contact_list in contact_lists %}
                                 <option value="{{contact_list.id}}">{{ contact_list.name }}</option>
                               {% endfor %}
@@ -131,7 +131,7 @@
                                 <select name="timezone" id="timezone" class="form-control timezone-select js-example-basic-single">
                                   <option value="">Select a Timezone</option>
                                   {% for timezone in timezones %}
-                                    <option value="{{timezone.0}}">{{timezone.1}}</option>
+                                    <option value="{{timezone.0}}" {% if timezone.0 == settings_timezone %}selected{% endif %}>{{timezone.1}}</option>
                                   {% endfor %}
                                 </select>
                                 <span id="id_timezone"></span>

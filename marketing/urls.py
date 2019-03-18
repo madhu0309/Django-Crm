@@ -4,7 +4,7 @@ from .views import (
     email_template_list, email_template_new, email_template_edit, email_template_delete,
     email_template_detail, campaign_list, campaign_new, campaign_edit, campaign_details, campaign_delete,
     edit_contact_list, delete_contact_list, failed_contact_list_detail, failed_contact_list_download_delete,
-    campaign_link_click
+    campaign_link_click, campaign_open
 )
 
 app_name = 'marketing'
@@ -36,4 +36,5 @@ urlpatterns = [
     path('cm/<int:pk>/details/', campaign_details, name='campaign_details'),
     path('cm/<int:pk>/delete/', campaign_delete, name='campaign_delete'),
     path('cm/link/<int:link_id>/e/<int:email_id>/', campaign_link_click, name='campaign_link_click'),
+    path('cm/track-email/<int:campaign_log_id>/contact/<int:email_id>/', campaign_open, name='campaign_open'),
 ]
