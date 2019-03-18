@@ -375,7 +375,6 @@ def campaign_new(request):
         # return JsonResponse(data, status=status.HTTP_200_OK)
         return render(request, 'marketing/campaign/new.html', data)
     else:
-        print ("request.POST", request.POST)
         form = SendCampaignForm(request.POST)
         if form.is_valid():
             instance = form.save(commit=False)
@@ -442,8 +441,122 @@ def campaign_edit(request):
 
 
 @login_required(login_url='/login')
-def campaign_details(request):
-    return render(request, 'marketing/campaign/details.html')
+def campaign_details(request, pk):
+    try:
+        campaign = Campaign.objects.get(pk=pk)
+    except Campaign.DoesNotExist:
+        return redirect(reverse('marketing:campaign_list'))
+
+    contact_lists = campaign.contact_lists.all()
+    if (request.user.is_admin or request.user.is_superuser):
+        contact_lists = contact_lists
+    else:
+        contact_lists = contact_lists.filter(
+            is_public=True, created_by=request.user)
+
+    contacts = Contact.objects.filter(contact_list__in=contact_lists)
+    contact_list_ids = campaign.contact_lists.all().values_list('id', flat=True)
+
+    contacts = Contact.objects.filter(contact_list__id__in=contact_list_ids)
+
+    all_contacts = contacts
+    bounced_contacts = contacts.filter(is_bounced=True)
+    unsubscribe_contacts = contacts.filter(
+        is_unsubscribed=True)
+    read_contacts = campaign.marketing_links.filter(Q(clicks__gt=0))
+    # read_contacts =
+    sent_contacts = contacts.exclude(
+        Q(is_bounced=True) | Q(is_unsubscribed=True))
+    if request.POST:
+        contacts = contacts.filter(Q(name__icontains=request.POST['search']))
+
+    tab = request.GET.get('tab', 'contacts')
+    per_page = request.GET.get("per_page", 10)
+    page = request.GET.get('page', 1)
+
+    contacts_paginator = Paginator(contacts.order_by('id'), per_page)
+    if (tab == "contacts"):
+        page = page
+    else:
+        page = 1
+    try:
+        contacts = contacts_paginator.page(page)
+    except PageNotAnInteger:
+        contacts = contacts_paginator.page(1)
+    except EmptyPage:
+        contacts = contacts_paginator.page(contacts_paginator.num_pages)
+
+    unsubscribe_contacts_paginator = Paginator(unsubscribe_contacts.order_by('id'), per_page)
+    if (tab == "unsubscribe_contacts"):
+        page = page
+    else:
+        page = 1
+
+    try:
+        unsubscribe_contacts = unsubscribe_contacts_paginator.page(page)
+    except PageNotAnInteger:
+        unsubscribe_contacts = unsubscribe_contacts_paginator.page(1)
+    except EmptyPage:
+        unsubscribe_contacts = unsubscribe_contacts_paginator.page(unsubscribe_contacts_paginator.num_pages)
+
+    bounced_contacts_paginator = Paginator(bounced_contacts.order_by('id'), per_page)
+    if (tab == "bounced_contacts"):
+        page = page
+    else:
+        page = 1
+
+    try:
+        bounced_contacts = bounced_contacts_paginator.page(page)
+    except PageNotAnInteger:
+        bounced_contacts = bounced_contacts_paginator.page(1)
+    except EmptyPage:
+        bounced_contacts = bounced_contacts_paginator.page(bounced_contacts_paginator.num_pages)
+
+    sent_contacts_paginator = Paginator(sent_contacts.order_by('id'), per_page)
+    if (tab == "sent_contacts"):
+        page = page
+    else:
+        page = 1
+
+    try:
+        sent_contacts = sent_contacts_paginator.page(page)
+    except PageNotAnInteger:
+        sent_contacts = sent_contacts_paginator.page(1)
+    except EmptyPage:
+        sent_contacts = sent_contacts_paginator.page(sent_contacts_paginator.num_pages)
+
+    all_contacts_paginator = Paginator(all_contacts.order_by('id'), per_page)
+    if (tab == "all_contacts"):
+        page = page
+    else:
+        page = 1
+
+    try:
+        all_contacts = all_contacts_paginator.page(page)
+    except PageNotAnInteger:
+        all_contacts = all_contacts_paginator.page(1)
+    except EmptyPage:
+        all_contacts = all_contacts_paginator.page(all_contacts_paginator.num_pages)
+
+    read_contacts_paginator = Paginator(read_contacts.order_by('id'), per_page)
+    if (tab == "read_contacts"):
+        page = page
+    else:
+        page = 1
+
+    try:
+        read_contacts = read_contacts_paginator.page(page)
+    except PageNotAnInteger:
+        read_contacts = read_contacts_paginator.page(1)
+    except EmptyPage:
+        read_contacts = read_contacts_paginator.page(read_contacts_paginator.num_pages)
+
+    data = {'contact_lists': contact_lists, "campaign": campaign,
+            "contacts": contacts, 'unsubscribe_contacts': unsubscribe_contacts,
+            'bounced_contacts': bounced_contacts, 'read_contacts': read_contacts,
+            'sent_contacts': sent_contacts, 'all_contacts': all_contacts, 'tab': tab}
+
+    return render(request, 'marketing/campaign/details.html', data)
 
 
 @login_required(login_url='/login')
