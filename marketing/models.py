@@ -6,6 +6,7 @@ from django.core.validators import RegexValidator
 from django.db.models import Sum
 from django.template.defaultfilters import slugify
 from common.models import User
+from common.utils import convert_to_custom_timezone
 
 
 class Tag(models.Model):
@@ -209,6 +210,15 @@ class Campaign(models.Model):
     @property
     def created_on_format(self):
         return self.created_on.strftime('%b %d, %Y %I:%M %p')
+
+    @property
+    def sent_on_format(self):
+        if self.schedule_date_time:
+            c_schedule_date_time = convert_to_custom_timezone(self.schedule_date_time, self.timezone)
+            return c_schedule_date_time.strftime('%b %d, %Y %I:%M %p')
+        else:
+            c_created_on = convert_to_custom_timezone(self.created_on, self.timezone)
+            return c_created_on.strftime('%b %d, %Y %I:%M %p')
 
 
 class Link(models.Model):
