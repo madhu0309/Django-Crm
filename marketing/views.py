@@ -375,7 +375,7 @@ def campaign_new(request):
         # return JsonResponse(data, status=status.HTTP_200_OK)
         return render(request, 'marketing/campaign/new.html', data)
     else:
-        form = SendCampaignForm(request.POST)
+        form = SendCampaignForm(request.POST, request.FILES)
         if form.is_valid():
             instance = form.save(commit=False)
             instance.created_by = request.user
@@ -385,6 +385,8 @@ def campaign_new(request):
                 instance.from_name = request.POST['from_name']
             if request.POST.get('reply_to_email'):
                 instance.reply_to_email = request.POST['reply_to_email']
+            # if request.FILES.get('attachment'):
+            #     instance.attachment = request.FILES.get('attachment')
             instance.save()
             for each in request.POST.getlist('contact_list'):
                 instance.contact_lists.add(ContactList.objects.get(id=each))

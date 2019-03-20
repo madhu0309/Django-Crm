@@ -2,6 +2,7 @@ import datetime
 import hashlib
 import pytz
 import requests
+from mimetypes import MimeTypes
 from celery.task import task
 from django.conf import settings
 from django.core.mail import EmailMessage
@@ -77,6 +78,7 @@ def send_campaign_mail(subject, content, from_email, to_email, bcc, reply_to, at
         msg.attach(*attachment)
     msg.content_subtype = "html"
     res = msg.send()
+    print (res)
 
 
 def get_campaign_message_id(campaign):
@@ -93,6 +95,14 @@ def get_campaign_message_id(campaign):
 def run_campaign(campaign):
     try:
         campaign = Campaign.objects.get(id=campaign)
+        attachments = []
+        if campaign.attachment:
+            file_path = campaign.attachment.path
+            file_name = file_path.split("/")[-1]
+            content = open(file_path, 'rb').read()
+            mime = MimeTypes()
+            mime_type = mime.guess_type(file_path)
+            attachments.append((file_name, content, mime_type[0]))
         subject = campaign.subject
 
         contacts = Contact.objects.filter(
@@ -130,7 +140,7 @@ def run_campaign(campaign):
                 from_email = str(campaign.from_name) + "<" + str(campaign.from_email) + '>'
                 to_email = [each_contact.email]
                 send_campaign_mail(
-                    subject, mail_html, from_email, to_email, [], [reply_to_email], [])
+                    subject, mail_html, from_email, to_email, [], [reply_to_email], attachments)
     except Exception as e:
         print (e)
         pass

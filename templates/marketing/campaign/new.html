@@ -10,7 +10,7 @@
 <div class="marketing_pages">
   <div class="row marl">
     <div class="col-md-12">
-      <form id="add_form" method="POST" action='' novalidate>
+      <form id="add_form" method="POST" action='' novalidate enctype="multipart/form-data">
         <div class="overview_form_block row marl justify-content-center">
           <div class="col-md-12">
             <div class="card">
@@ -348,7 +348,7 @@
 
     $('form#add_form').ajaxForm({
       type: 'POST',
-      dataType: 'json',
+      // dataType: 'json',
       url: $(this).attr('action'),
       data: $(this).serialize(),
       success: function(data) {

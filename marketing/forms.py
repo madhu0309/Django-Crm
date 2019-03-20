@@ -278,7 +278,7 @@ class SendCampaignForm(forms.ModelForm):
 
     class Meta:
         model = Campaign
-        fields = ['title', 'subject', 'html', 'email_template']
+        fields = ['title', 'subject', 'html', 'email_template', 'attachment']
 
     def __init__(self, *args, **kwargs):
         super(SendCampaignForm, self).__init__(*args, **kwargs)

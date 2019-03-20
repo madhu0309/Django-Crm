@@ -1,8 +1,10 @@
+import os
 from datetime import datetime, timedelta
 from django.db import models
 from django.utils.timesince import timesince
 from django.utils.translation import ugettext_lazy as _
 from django.core.validators import RegexValidator
+from django.dispatch import receiver
 from django.db.models import Sum
 from django.template.defaultfilters import slugify
 from common.models import User
@@ -151,6 +153,13 @@ class FailedContact(models.Model):
         return self.email
 
 
+def get_campaign_attachment_path(self, filename):
+    file_split = filename.split('.')
+    file_extension = file_split[-1]
+    path = "%s_%s" % (file_split[0], str(datetime.now()))
+    return "campaigns/attachment/" + slugify(path) + "." + file_extension
+
+
 class Campaign(models.Model):
     STATUS_CHOICES = (
         ('Scheduled', 'Scheduled'),
@@ -184,6 +193,8 @@ class Campaign(models.Model):
     bounced = models.IntegerField(default='0')
     status = models.CharField(
         default="Preparing", choices=STATUS_CHOICES, max_length=20)
+    attachment = models.FileField(
+        max_length=1000, upload_to=get_campaign_attachment_path, blank=True, null=True)
 
     @property
     def no_of_unsubscribers(self):
@@ -219,6 +230,18 @@ class Campaign(models.Model):
         else:
             c_created_on = convert_to_custom_timezone(self.created_on, self.timezone)
             return c_created_on.strftime('%b %d, %Y %I:%M %p')
+
+
+@receiver(models.signals.pre_delete, sender=Campaign)
+def comment_attachments_delete(sender, instance, **kwargs):
+    attachment = instance.attachment
+    if attachment:
+        try:
+            if os.path.isfile(attachment.path):
+                os.remove(attachment.path)
+        except Exception:
+            return False
+    return True
 
 
 class Link(models.Model):
