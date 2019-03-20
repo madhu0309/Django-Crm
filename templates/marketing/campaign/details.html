@@ -34,7 +34,7 @@
                   </div>
                   <div class="col-md-4">
                     <div class="well">
-                      <span class="badge badge-dark" style="font-size:16px;">216 Not Opened</span> <span class="label"><a href="#"><i class="fas fa-download"></i></a></span>
+                      <span class="badge badge-dark" style="font-size:16px;">216 Not Opened</span>
                     </div>
                   </div>
                   <div class="col-md-4">
@@ -87,7 +87,7 @@
                                   {% endif %}
                                   {% for link in campaign_marketing_links %}
                                     <tr style="text-align:center;">
-                                      <td scope="row"><a href="#" class="anchor">{{ link.original }}</a></td>
+                                      <td scope="row"><a href="{{ link.original }}" class="anchor">{{ link.original }}</a></td>
                                       <td class="text-center">{{ link.unique }}</td>
                                       <td class="text-center">{{ link.clicks }}</td>
                                       <td class="text-center actions">
