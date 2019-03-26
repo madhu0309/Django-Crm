@@ -20,6 +20,14 @@ class OpportunityModel(object):
         self.user.set_password('madhu123')
         self.user.save()
 
+        self.user1 = User.objects.create(
+            first_name="mp",
+            username='mp',
+            email='mp@micropyramid.com',
+            role="USER")
+        self.user1.set_password('mp')
+        self.user1.save()
+
         self.address = Address.objects.create(
             street="kphb", city="canada", postcode="584",
             country='IN')
@@ -57,7 +65,8 @@ class OpportunityModel(object):
         self.comment = Comment.objects.create(
             comment='testikd', case=self.case, commented_by=self.user)
         self.attachment = Attachments.objects.create(
-            attachment='image.png', case=self.case, created_by=self.user, account=self.account)
+            attachment='image.png', case=self.case,
+            created_by=self.user, account=self.account, opportunity=self.opportunity)
 
 
 class OpportunityCreateTestCase(OpportunityModel, TestCase):
@@ -76,7 +85,7 @@ class OpportunityCreateTestCase(OpportunityModel, TestCase):
         data = {'name': "micky", 'amount': "500", 'stage': "CLOSED WON",
                 'assigned_to': str(self.user.id),
                 'contacts': str(self.contacts.id),
-                'tags': 'tag',
+                'tags': 'tag', 'from_account': self.account.id,
                 'oppurtunity_attachment': SimpleUploadedFile(
                     upload_file.name, upload_file.read())}
         response = self.client.post(url, data)
@@ -145,6 +154,12 @@ class EditOpportunityTestCase(OpportunityModel, TestCase):
         # self.assertEqual(response.status_code, 302)
         self.assertEqual(response.status_code, 200)
 
+    def test_update_opportunity_view(self):
+        self.client.login(email='mp@micropyramid.com', password='mp')
+        url = '/opportunities/' + str(self.opportunity.id) + '/edit/'
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+
     def test_update_opportunity_invalid(self):
         url = '/opportunities/' + str(self.opportunity.id) + '/edit/'
         data = {
@@ -195,13 +210,26 @@ class ContactGetViewTestCase(OpportunityModel, TestCase):
 class CommentTestCase(OpportunityModel, TestCase):
 
     def test_comment_add(self):
+        self.client.login(email='mp@micropyramid.com', password='mp')
         response = self.client.post(
             '/opportunities/comment/add/', {'opportunityid': self.opportunity.id})
+        self.assertEqual(response.status_code, 200)
+
+    def test_comment_create(self):
+        response = self.client.post(
+            '/opportunities/comment/add/', {'opportunityid': self.opportunity.id,
+                                            'comment': 'comment'})
         self.assertEqual(response.status_code, 200)
 
     def test_comment_edit(self):
         response = self.client.post(
             '/opportunities/comment/edit/', {'commentid': self.comment.id})
+        self.assertEqual(response.status_code, 200)
+
+    def test_comment_update(self):
+        response = self.client.post(
+            '/opportunities/comment/edit/', {'commentid': self.comment.id,
+                                             'comment': 'comment'})
         self.assertEqual(response.status_code, 200)
 
     def test_comment_delete(self):
@@ -218,6 +246,13 @@ class CommentTestCase(OpportunityModel, TestCase):
 
 class AttachmentTestCase(OpportunityModel, TestCase):
 
+    def test_attachment_create(self):
+        self.client.login(email='mp@micropyramid.com', password='mp')
+        url = "/opportunities/attachment/add/"
+        data = {'opportunityid': self.opportunity.id}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 200)
+
     def test_attachment_add(self):
         upload_file = open('static/images/user.png', 'rb')
         url = "/opportunities/attachment/add/"
@@ -226,12 +261,21 @@ class AttachmentTestCase(OpportunityModel, TestCase):
                     upload_file.name, upload_file.read())}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 200)
+        data = {'opportunityid': self.opportunity.id}
+        self.assertEqual(response.status_code, 200)
 
-    # def test_attachment_delete(self):
-    #     url = "/opportunities/attachment/remove/"
-    #     data = {'attachment_id':self.attachment.id}
-    #     response = self.client.post(url,data)
-    #     self.assertEqual(response.status_code, 200)
+    def test_attachment_delete(self):
+        url = "/opportunities/attachment/remove/"
+        data = {'attachment_id': self.attachment.id}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 200)
+
+    def test_attachment_deletion(self):
+        self.client.login(email='mp@micropyramid.com', password='mp')
+        url = "/opportunities/attachment/remove/"
+        data = {'attachment_id': self.attachment.id}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 200)
 
 
 class TestGetOpportunitiesView(OpportunityModel, TestCase):
