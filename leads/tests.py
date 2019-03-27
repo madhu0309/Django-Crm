@@ -415,3 +415,21 @@ class TestLeadFromSite(TestLeadModel, TestCase):
     def create_lead_from_site(self):
         response = self.client.post('/leads/create/from-site/', {'apikey': self.api_seetings.apikey})
         self.assertEqual(response.status_code, 200)
+
+
+class TestLeadListView(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+
+        self.user = User.objects.create(
+            username='gorge', email='g@mp.com')
+        self.user.set_password('jorge2293')
+        self.user.save()
+
+        self.client.login(username='g@mp.com', password='jorge2293')
+
+    def test_lead_list_view(self):
+        response = self.client.get('/leads/list/')
+        self.assertEqual(response.status_code, 200)
+
