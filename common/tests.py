@@ -34,6 +34,13 @@ class ObjectsCreation(object):
                                         is_superuser=True, is_active=False)
         self.user.set_password('paul123')
         self.user.save()
+        self.user1 = User.objects.create(
+            first_name="mp",
+            username='mp',
+            email='mp@micropyramid.com',
+            role="USER")
+        self.user1.set_password('mp')
+        self.user1.save()
         # self.user
         self.client.login(
             username='admin@micropyramid.com', password='admin123')
@@ -49,6 +56,14 @@ class ObjectsCreation(object):
 class TestHomePage(ObjectsCreation, TestCase):
 
     def test_home_page(self):
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+        if response.status_code == 200:
+            self.assertIn("Micro", str(response.content))
+
+    def test_home_page1(self):
+        self.client.login(
+            username='mp@micropyramid.com', password='mp')
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
         if response.status_code == 200:
@@ -108,8 +123,7 @@ class PasswordChangeTestCase(ObjectsCreation, TestCase):
         self.assertEqual(response.status_code, 200)
 
     def change_passsword_by_admin(self):
-        print(self.user, "madhu", self.user.role)
-        response = self.client.post(reverse('common:change_passsword_by_admin'), {
+        response = self.client.post('/change-password-by-admin//', {
             'useer_id': self.user.id,
             'new_passwoord': "admin123"
         })
@@ -130,6 +144,11 @@ class LoginViewTestCase(ObjectsCreation, TestCase):
 
     def test_login_post(self):
         self.client.logout()
+        data = {"email": "admin@micropyramid.com", "password": "admin123"}
+        response = self.client.post('/login/', data)
+        self.assertEqual(response.status_code, 302)
+
+    def test_login_get_request(self):
         data = {"email": "admin@micropyramid.com", "password": "admin123"}
         response = self.client.post('/login/', data)
         self.assertEqual(response.status_code, 302)
@@ -172,7 +191,8 @@ class UserTestCase(ObjectsCreation, TestCase):
             'last_name': "clark",
             'username': 'micheal',
             'email': 'micheal@micropyramid.com',
-            'password': 'micheal123'})
+            'password': 'micheal123',
+            'role': 'USER'})
         self.assertEqual(response.status_code, 200)
 
     def test_user_create_html(self):
