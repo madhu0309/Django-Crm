@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from cases.models import Case
 from leads.models import Lead
 from common.models import User, Comment, Attachments, APISettings
-from accounts.models import Account
+from accounts.models import Account, Tags
 from leads.tasks import *
 from leads.forms import *
 from django.urls import reverse
@@ -76,6 +76,12 @@ class TestLeadModel(object):
             account=self.account)
         self.api_seetings = APISettings.objects.create(
             title="api", apikey="api", created_by=self.user)
+
+        self.tag_1 = Tags.objects.create(name='tag1')
+        self.tag_2 = Tags.objects.create(name='tag2')
+        self.tag_3 = Tags.objects.create(name='tag3')
+        self.lead.tags.add(self.tag_1, self.tag_2, self.tag_3)
+
 
 
 class LeadsPostrequestTestCase(TestLeadModel, TestCase):
@@ -433,3 +439,31 @@ class TestLeadListView(TestCase):
         response = self.client.get('/leads/list/')
         self.assertEqual(response.status_code, 200)
 
+
+
+class TestUpdateLeadView(TestLeadModel, TestCase):
+
+    def test_lead_update_view(self):
+        response = self.client.get(reverse('leads:edit_lead', args=(self.lead.id,)),
+                        {'status': 'converted', 'country':'AD', 'title':'update_title'})
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(reverse('leads:edit_lead', args=(self.lead.id,)),
+                        {'status': 'assigned', 'country':'AD', 'title':'update_title'})
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(reverse('leads:edit_lead', args=(self.lead.id,)),
+                        {'status': 'assigned', 'country':'AD', 'title':'update_title',
+                        'tags':'tag3, tag4'})
+        self.assertEqual(response.status_code, 200)
+
+
+# class TestLeadCreateView(TestLeadModel, TestCase):
+
+#     def test_lead_create_view(self):
+#         response = self.client.get(reverse('leads:add_lead'),
+#                         {'status': 'assigned', 'country':'AD', 'title':'update_title'})
+
+#         response = self.client.get(reverse('leads:add_lead'),
+#                         {'status': 'converted'})
+#         self.assertEqual(response.status_code, 200)
