@@ -55,7 +55,7 @@ class TestLeadModel(object):
                                         country="AD",
                                         website="www.gmail.com",
                                         status="assigned",
-                                        source="Call",
+                                        source="call",
                                         opportunity_amount="700",
                                         description="Iam an Lead",
                                         created_by=self.user,
@@ -73,7 +73,7 @@ class TestLeadModel(object):
         self.attachment = Attachments.objects.create(
             attachment='image.png',
             case=self.case, created_by=self.user,
-            account=self.account)
+            account=self.account, lead=self.lead)
         self.api_seetings = APISettings.objects.create(
             title="api", apikey="api", created_by=self.user)
 
@@ -97,7 +97,7 @@ class LeadsPostrequestTestCase(TestLeadModel, TestCase):
                 'postcode': "579",
                 'country': "AD",
                 'website': "www.gmail.com", "status ": "assigned",
-                "source": "Call",
+                "source": "call",
                 'opportunity_amount': "700",
                 'description': "Iam an Lead"}
         resp = self.client.post('/leads/create/', data)
@@ -133,7 +133,7 @@ class LeadsCreateUrlTestCase(TestLeadModel, TestCase):
                                     'country': "AD",
                                     'website': "www.gmail.com",
                                     "status": "assigned",
-                                    "source": "Call",
+                                    "source": "call",
                                     'opportunity_amount': "700",
                                     'description': "Iam an Lead",
                                     'created_by': self.user})
@@ -147,7 +147,7 @@ class LeadsCreateUrlTestCase(TestLeadModel, TestCase):
             'street': "Arcade enclave colony", 'city': "NewTown",
             'state': "California", 'postcode': "579", 'country': "AD",
             'website': "www.gmail.com", 'status': "assigned",
-            "source": "Call", 'opportunity_amount': "700",
+            "source": "call", 'opportunity_amount': "700",
             'description': "Iam an Lead", 'created_by': self.user})
         # self.assertTemplateUsed(response, 'create_lead.html')
         self.assertEqual(response.status_code, 200)
@@ -160,7 +160,7 @@ class LeadsCreateUrlTestCase(TestLeadModel, TestCase):
             'street': "Arcade enclave colony", 'city': "NewTown",
             'state': "California", 'postcode': "579", 'country': "AD",
             'website': "www.gmail.com", 'status': "converted",
-            "source": "Call", 'opportunity_amount': "700",
+            "source": "call", 'opportunity_amount': "700",
             'description': "Iam an Lead", 'created_by': self.user})
         self.assertEqual(response.status_code, 200)
 
@@ -187,7 +187,7 @@ class LeadsViewTestCase(TestLeadModel, TestCase):
                             country="AD",
                             website="www.gmail.com",
                             status='converted',
-                            source="Call",
+                            source="call",
                             opportunity_amount="900",
                             description="Iam an Opportunity",
                             created_by=self.user)
@@ -351,27 +351,27 @@ class TestCreateLeadPostView(TestLeadModel, TestCase):
 
     def test_create_lead_post_status(self):
         upload_file = open('static/images/user.png', 'rb')
-        response = self.client.post(reverse(
-            'leads:add_lead'), {'first_name': 'm',
-                                'last_name': 's',
-                                "created_by": self.user,
-                                'status': 'converted',
-                                'description': 'wgrgre',
-                                'website': 'www.mike.com',
-                                'phone': '+91-123-456-7890',
-                                'email': 'a@gmail.com',
-                                'account_name': 'account',
-                                'address_line': self.lead.address_line,
-                                'street': self.lead.street,
-                                'city': self.lead.city,
-                                'state': self.lead.state,
-                                'postcode': self.lead.postcode,
-                                'country': self.lead.country,
-                                'lead_attachment': SimpleUploadedFile(
-                                    upload_file.name, upload_file.read()),
-                                'assigned_to': str(self.user.id),
-                                'tags': 'tag'
-                                })
+        response = self.client.post('/leads/create/',
+                                    {'first_name': 'm',
+                                     'last_name': 's',
+                                     'title': 'lead',
+                                     'status': 'converted',
+                                     'description': 'wgrgre',
+                                     'website': 'www.mike.com',
+                                     'phone': '+91-123-456-7890',
+                                     'email': 'a@gmail.com',
+                                     'account_name': 'account',
+                                     'address_line': self.lead.address_line,
+                                     'street': self.lead.street,
+                                     'city': self.lead.city,
+                                     'state': self.lead.state,
+                                     'postcode': self.lead.postcode,
+                                     'country': self.lead.country,
+                                     'lead_attachment': SimpleUploadedFile(
+                                         upload_file.name, upload_file.read()),
+                                     'assigned_to': str(self.user.id),
+                                     'tags': 'tag'
+                                     })
         self.assertEqual(response.status_code, 200)
 
     def test_create_lead_get_request(self):
@@ -383,6 +383,7 @@ class TestCreateLeadPostView(TestLeadModel, TestCase):
         response = self.client.post('/leads/' + str(self.lead.id) + '/edit/',
                                     {'first_name': 'm',
                                      'last_name': 's',
+                                     'title': 'lead',
                                      "created_by": self.user,
                                      'status': 'converted',
                                      'description': 'wgrgre',
@@ -419,7 +420,8 @@ class TestLeadDetailView(TestLeadModel, TestCase):
 class TestLeadFromSite(TestLeadModel, TestCase):
 
     def create_lead_from_site(self):
-        response = self.client.post('/leads/create/from-site/', {'apikey': self.api_seetings.apikey})
+        response = self.client.post(
+            '/leads/create/from-site/', {'apikey': self.api_seetings.apikey})
         self.assertEqual(response.status_code, 200)
 
 
