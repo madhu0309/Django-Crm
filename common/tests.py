@@ -4,6 +4,8 @@ from django.urls import reverse
 from common.models import User, Document
 from common.forms import *
 from django.core.files.uploadedfile import SimpleUploadedFile
+from leads.models import Lead
+from django.utils.encoding import force_text
 
 
 class ObjectsCreation(object):
@@ -17,7 +19,7 @@ class ObjectsCreation(object):
         #                                 is_admin=True,
         #                                 is_superuser=True, is_active=True)
 
-        self.user = User.objects.create(first_name="admin",
+        self.user_admin = User.objects.create(first_name="admin",
                                         username='admin',
                                         email='admin@micropyramid.com',
                                         is_staff=True,
@@ -25,8 +27,8 @@ class ObjectsCreation(object):
                                         is_superuser=True,
                                         is_active=True, role='ADMIN')
 
-        self.user.set_password('admin123')
-        self.user.save()
+        self.user_admin.set_password('admin123')
+        self.user_admin.save()
         self.user = User.objects.create(first_name="paul",
                                         username='paul',
                                         email='paul@micropyramid.com',
@@ -51,6 +53,14 @@ class ObjectsCreation(object):
             comment='testikd', user=self.user,
             commented_by=self.user
         )
+
+        self.user2 = User.objects.create(
+            first_name="mp2",
+            username='mp2',
+            email='mp2@micropyramid.com',
+            role="USER")
+        self.user2.set_password('mp')
+        self.user2.save()
 
 
 class TestHomePage(ObjectsCreation, TestCase):
@@ -413,3 +423,177 @@ class DocumentTestCase(ObjectsCreation, TestCase):
             "shared_to": str(self.user.id)
         })
         self.assertEqual(response.status_code, 200)
+
+
+# class TestDownloadDocument(ObjectsCreation, TestCase):
+
+#     def test_download_document(self):
+
+#         self.document1 = Document.objects.create(
+#             title="abcd", document_file="2.png", created_by=self.user)
+
+#         response = self.client.get(reverse('common:download_document',
+#             args=(self.document1.id,)))
+#         self.assertEqual(response.status_code, 200)
+
+
+class TestChangeUserStatus(ObjectsCreation, TestCase):
+
+    def test_change_user_status(self):
+        response = self.client.get(reverse('common:change_user_status',
+            args=(self.user2.id,)))
+        self.assertEqual(response.status_code, 302)
+
+class TestDocumentListViewUser(ObjectsCreation, TestCase):
+
+    def test_document_list_view_user(self):
+        response = self.client.get(reverse('common:doc_list'))
+        self.assertEqual(response.status_code, 200)
+
+class TestViewApiSettings(ObjectsCreation, TestCase):
+
+    def test_view_api_settings(self):
+
+        self.api_settings = APISettings.objects.create(title='api key',
+            apikey='a45fds54fds54',
+            website='https://micropyramid.com')
+
+        response = self.client.get(reverse('common:api_settings'))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(reverse('common:view_api_settings',args=(self.api_settings.id,)))
+        self.assertEqual(response.status_code, 200)
+
+class TestDocumentDetailViewPermissionDenied(ObjectsCreation, TestCase):
+
+    def test_document_detail_view_permission(self):
+        self.client.login(username='mp2@micropyramid.com', password='mp')
+        response = self.client.get(reverse('common:view_doc', args=(self.document.id,)))
+        self.assertEqual(response.status_code, 403)
+
+
+class TestChangePasswordByAdmin(ObjectsCreation, TestCase):
+
+    def test_change_password_by_admin(self):
+        response = self.client.post(reverse('common:change_passsword_by_admin'),
+                    {'useer_id':self.user2.id,'new_passwoord':'new password'})
+        self.assertEqual(response.status_code, 302)
+
+
+class TestChangePasswordByAdminPermission(ObjectsCreation, TestCase):
+
+    def test_change_password_by_admin_permission(self):
+        self.client.login(username='mp2@micropyramid.com', password='mp')
+        response = self.client.post(reverse('common:change_passsword_by_admin'),
+                    {'useer_id':self.user2.id,'new_passwoord':'new password'})
+        self.assertEqual(response.status_code, 403)
+        self.client.logout()
+
+class TestDocumentCreateForm(ObjectsCreation, TestCase):
+
+    def test_document_create_form(self):
+        upload_file = open('static/images/user.png', 'rb')
+        response = self.client.post(reverse('common:create_doc'),
+            {'title': 'doc',
+            'document_file': SimpleUploadedFile(upload_file.name, upload_file.read()),
+            'shared_to':str(self.user1.id)})
+        self.assertEqual(response.status_code, 200)
+
+class TestCommentDelete(ObjectsCreation, TestCase):
+
+    def test_comment_delete_form(self):
+        self.lead = Lead.objects.create(title="LeadCreation",
+                                        first_name="Alisa",
+                                        last_name="k",
+                                        email="Alisak1993@gmail.com",
+                                        address_line="",
+                                        street="Arcade enclave colony",
+                                        city="NewTown",
+                                        state="California",
+                                        postcode="5079",
+                                        country="AD",
+                                        website="www.gmail.com",
+                                        status="assigned",
+                                        source="Call",
+                                        opportunity_amount="700",
+                                        description="Iam an Lead",
+                                        created_by=self.user_admin)
+        self.comment_user = Comment.objects.create(comment='comment 1',
+                                commented_by=self.user_admin,lead=self.lead)
+        response = self.client.post(reverse('common:remove_comment'),
+                        {'comment_id':self.comment_user.id })
+        self.assertJSONEqual(force_text(response.content), {"cid": str(self.comment_user.id)})
+
+
+class TestCommentEditErrors(ObjectsCreation, TestCase):
+
+    def test_comment_edit_form(self):
+        self.lead = Lead.objects.create(title="LeadCreation",
+                                        first_name="Alisa",
+                                        last_name="k",
+                                        email="Alisak1993@gmail.com",
+                                        address_line="",
+                                        street="Arcade enclave colony",
+                                        city="NewTown",
+                                        state="California",
+                                        postcode="5079",
+                                        country="AD",
+                                        website="www.gmail.com",
+                                        status="assigned",
+                                        source="Call",
+                                        opportunity_amount="700",
+                                        description="Iam an Lead",
+                                        created_by=self.user_admin)
+        self.comment_user = Comment.objects.create(comment='comment 1',
+                                commented_by=self.user_admin,lead=self.lead)
+        response = self.client.post(reverse('common:edit_comment', args=(self.comment_user.id,)),
+                        {'pk':self.comment_user.id, 'comment':''})
+        self.assertJSONEqual(force_text(response.content), {"error": ['This field is required.']})
+
+        response = self.client.post(reverse('common:edit_comment', args=(self.comment_user.id,)),
+                        {'pk':self.comment_user.id, 'comment':'asdf'})
+
+        self.assertJSONEqual(force_text(response.content), {"comment_id":self.comment_user.id, "comment": 'asdf'})
+
+
+class TestUserUpdate(ObjectsCreation, TestCase):
+
+    def test_user_update(self):
+        response = self.client.post(reverse('common:edit_user', args=(self.user2.id,)), {})
+        self.assertEqual(response.status_code, 200)
+
+
+class TestDocumentListUser(ObjectsCreation, TestCase):
+
+    def test_doc_list_user(self):
+        self.client.login(username='mp2@micropyramid.com', password='mp')
+        response = self.client.get(reverse('common:doc_list'))
+        self.assertEqual(response.status_code, 200)
+
+
+class TestDocumentDelete(ObjectsCreation, TestCase):
+
+    def test_document_delete(self):
+        self.client.login(username='mp2@micropyramid.com', password='mp')
+        response = self.client.get(reverse('common:remove_doc', args=(self.document.id,)))
+        self.assertEqual(response.status_code, 403)
+
+
+class TestDocumentUpdate(ObjectsCreation, TestCase):
+
+    def test_document_update(self):
+        response = self.client.get(reverse('common:edit_doc', args=(self.document.id,)), {'title':"abc"})
+        self.assertEqual(response.status_code, 200)
+
+class TestAPISettingsDelete(ObjectsCreation, TestCase):
+
+    def test_api_settings_delete(self):
+        self.api_settings = APISettings.objects.create(title='api key',
+            apikey='a45fds54fds54',
+            website='https://micropyramid.com')
+
+        response = self.client.get(reverse('common:delete_api_settings',args=(self.api_settings.id,)))
+        self.assertEqual(response.status_code, 302)
+
+        response = self.client.get(reverse('common:delete_api_settings',args=(self.api_settings.id,)))
+        self.assertEqual(response.status_code, 302)
