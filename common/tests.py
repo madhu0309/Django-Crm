@@ -597,3 +597,52 @@ class TestAPISettingsDelete(ObjectsCreation, TestCase):
 
         response = self.client.get(reverse('common:delete_api_settings',args=(self.api_settings.id,)))
         self.assertEqual(response.status_code, 302)
+
+class TestGetFullNameModel(ObjectsCreation, TestCase):
+
+    def test_get_full_name(self):
+        self.assertTrue('mp2', self.user2.get_full_name())
+
+
+class TestGetFullNameModel(ObjectsCreation, TestCase):
+
+    def test_get_full_name(self):
+        self.assertTrue('mp2', self.user2.get_full_name())
+
+    def test_file_extensions(self):
+        self.document_txt = Document.objects.create(
+            title="txt", document_file="text.txt", created_by=self.user)
+
+        self.document_csv = Document.objects.create(
+            title="csv", document_file="sheet.csv", created_by=self.user)
+
+        self.document_zip = Document.objects.create(
+            title="zip", document_file="archive.zip", created_by=self.user)
+
+        self.document_pdf = Document.objects.create(
+            title="pdf", document_file="doc.pdf", created_by=self.user)
+
+        self.document_other_format = Document.objects.create(
+            title="file", document_file="doc_other_format", created_by=self.user)
+
+        self.document_image = Document.objects.create(
+            title="image", document_file="doc_other.png", created_by=self.user)
+
+        self.document_video = Document.objects.create(
+            title="video", document_file="doc.mp4", created_by=self.user)
+
+        self.document_audio = Document.objects.create(
+            title="audio", document_file="doc.mp3", created_by=self.user)
+
+        self.document_code = Document.objects.create(
+            title="code_file", document_file="doc.py", created_by=self.user)
+
+        self.assertEqual(("text", "fa fa-file-alt"), self.document_txt.file_type())
+        self.assertEqual(("sheet", "fa fa-file-excel"), self.document_csv.file_type())
+        self.assertEqual(("zip", "fa fa-file-archive"), self.document_zip.file_type())
+        self.assertEqual(("pdf", "fa fa-file-pdf"), self.document_pdf.file_type())
+        self.assertEqual(("file", "fa fa-file"), self.document_other_format.file_type())
+        self.assertEqual(("image", "fa fa-file-image"), self.document_image.file_type())
+        self.assertEqual(("video", "fa fa-file-video"), self.document_video.file_type())
+        self.assertEqual(("audio", "fa fa-file-audio"), self.document_audio.file_type())
+        self.assertEqual(("code", "fa fa-file-code"), self.document_code.file_type())
