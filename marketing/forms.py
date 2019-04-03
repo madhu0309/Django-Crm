@@ -278,7 +278,7 @@ class SendCampaignForm(forms.ModelForm):
 
     class Meta:
         model = Campaign
-        fields = ['title', 'subject', 'html', 'email_template']
+        fields = ['title', 'subject', 'html', 'email_template', 'attachment']
 
     def __init__(self, *args, **kwargs):
         super(SendCampaignForm, self).__init__(*args, **kwargs)
@@ -291,11 +291,11 @@ class SendCampaignForm(forms.ModelForm):
     def clean_contact_list(self):
         contact_list = self.cleaned_data.get("contact_list")
         if not contact_list or contact_list == '[]' or \
-                json.loads(contact_list) == []:
+                contact_list == []:
             raise forms.ValidationError(
                 "Please choose any of the Contact List")
         else:
-            for each in json.loads(contact_list):
+            for each in contact_list:
                 if not ContactList.objects.filter(id=each).first():
                     raise forms.ValidationError(
                         "Please choose a valid Contact List")

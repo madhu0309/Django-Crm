@@ -263,3 +263,4 @@ class AttachmentTestCase(ContactObjectsCreation, TestCase):
             '/contacts/attachment/remove/',
             {'attachment_id': self.attachment.id})
         self.assertEqual(response.status_code, 200)
+
