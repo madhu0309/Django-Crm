@@ -7,7 +7,6 @@ Cases
 |  **Fig** cases Home Page
 
 |  The above figure shows the cases view, this page gives details and list view of leads
-|  They are two types of leads open and closed
 |  You can filter the results by name, status, priority, account.
 
 |  Create a new Lead using the button on right corner ``+ Add New case``

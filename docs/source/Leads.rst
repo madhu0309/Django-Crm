@@ -7,7 +7,6 @@ Leads
 |  **Fig** Accounts Home Page
 
 |  The above figure shows the leads view, this page gives details and list view of leads
-|  They are two types of leads open and closed
 |  You can filter the results by name, source, assigned user, status, tags
 
 |  Create a new Lead using the button on right corner ``+ Add New Lead``

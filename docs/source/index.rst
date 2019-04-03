@@ -12,10 +12,10 @@ Source Code is available in Micropyramid Repository() `Link <https://github.com/
 Tech stack used:
 ================
 
-    * Python >= 3.4
-    * Django >= 2.0
-    * Redis
-    * django-simple-pagination
+* Python >= 3.4
+* Django >= 2.0
+* Redis
+* django-simple-pagination
 
 Modules available in Django-CRM:
 ================================
