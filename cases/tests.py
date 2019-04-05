@@ -337,7 +337,7 @@ class TestCasesListViewForUser(CaseCreation, TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-    def create_case(self):
+    def test_create_case(self):
         upload_file = open('static/images/user.png', 'rb')
         response = self.client.post('/cases/create/', {
             'name': 'new case', 'closed_on': '2019-03-14',
@@ -350,22 +350,45 @@ class TestCasesListViewForUser(CaseCreation, TestCase):
         })
         self.assertEqual(response.status_code, 200)
 
-    def case_detail_view_error(self):
-        self.client.login(email='mpmp1@micropyramid.com', password='mp')
-        response = self.client.get(reverse('cases:view_case', args=(self.case_user.id,)))
-        self.assertEqual(self.status_code, 403)
+    def test_case_detail_view_error(self):
+        self.usermp1 = User.objects.create(
+                        first_name="mpmp3",
+                        username='mpmp3',
+                        email='mpmp3@micropyramid.com',
+                        role="USER")
+        self.usermp1.set_password('mp')
+        self.usermp1.save()
+        self.client.login(email='mpmp3@micropyramid.com', password='mp')
+        response = self.client.get(reverse('cases:view_case', args=(self.case.id,)))
+        self.assertEqual(response.status_code, 403)
 
-    def case_detail_view_assigned_users(self):
-        self.case_2 = Case.objects.create(
-                            name="mp_case_1", case_type="Problem", status="New",
-                            account=self.account_mp,
-                            priority="Low", description="something",
-                            created_by=self.usermp, closed_on="2016-05-04", assigned_to=str(self.user.id))
-        response = self.client.get(reverse('cases:view_case', args=(self.case_2.id,)))
+    # def test_case_detail_view_assigned_users(self):
+    #     self.usermp = User.objects.create(
+    #                     first_name="mpmp6",
+    #                     username='mpmp6',
+    #                     email='mpmp6@micropyramid.com',
+    #                     role="USER")
+    #     self.usermp.set_password('mp')
+    #     self.usermp.save()
+    #     self.account_mp = Account.objects.create(
+    #                         name="mike", email="mike@micropyramid.com", phone="8322855552",
+    #                         billing_address_line="", billing_street="KPHB",
+    #                         billing_city="New York",
+    #                         billing_state="usa", billing_postcode="500073",
+    #                         billing_country="IN",
+    #                         website="www.mike.com", created_by=self.usermp, status="open",
+    #                         industry="SOFTWARE", description="Yes.. Testing Done")
+    #     self.case_2 = Case.objects.create(
+    #                         name="mp_case_1", case_type="Problem", status="New",
+    #                         account=self.account_mp,
+    #                         priority="Low", description="something",
+    #                         created_by=self.usermp, closed_on="2016-05-04", assigned_to=str(self.user.id))
+    #     response = self.client.get(reverse('cases:view_case', args=(self.case_2.id,)))
+    #     self.assertEqual(200, response.status_code)
 
-    def case_update_test(self):
-        self.client.login(email='mpmp@micropyramid.com', password='mp')
-        response = self.client.post(reverse('cases:edit_case', args=(self.case_user.id,)), {
+    def test_case_update_test(self):
+
+        response = self.client.post(reverse('cases:edit_case', args=(self.case.id,)), {
             'name':'some case',
             'status':'New',
             'priority':'Low',
@@ -373,8 +396,30 @@ class TestCasesListViewForUser(CaseCreation, TestCase):
             })
         self.assertEqual(response.status_code, 200)
 
-        self.client.login(email='mpmp1@micropyramid.com', password='mp')
-        response = self.client.post(reverse('cases:edit_case', args=(self.case_user.id,)), {
+    def test_permissions(self):
+
+        self.user = User.objects.create(
+                        first_name="mpmp6",
+                        username='mpmp6',
+                        email='mpmp6@micropyramid.com',
+                        role="USER")
+        self.user.set_password('mp')
+        self.user.save()
+
+        self.case_new = Case.objects.create(
+            name="robert", case_type="Problem", status="New",
+            priority="Low", description="something",
+            created_by=self.user, closed_on="2016-05-04")
+
+        self.usermp = User.objects.create(
+                        first_name="mpmp7",
+                        username='mpmp7',
+                        email='mpmp7@micropyramid.com',
+                        role="USER")
+        self.usermp.set_password('mp')
+        self.usermp.save()
+        self.client.login(username='mpmp7@micropyramid.com', password='mp')
+        response = self.client.get(reverse('cases:edit_case', args=(self.case_new.id,)), {
             'name':'some case',
             'status':'New',
             'priority':'Low',
@@ -382,14 +427,14 @@ class TestCasesListViewForUser(CaseCreation, TestCase):
             })
         self.assertEqual(response.status_code, 403)
 
-        response = self.client.get(reverse('cases:remove_case', args=(self.case_user.id)))
+        response = self.client.get(reverse('cases:remove_case', args=(self.case.id,)))
         self.assertEqual(response.status_code, 403)
 
-        response = self.client.post(reverse('cases:remove_case', args=(self.case_user.id)),
-            {'case_id':self.case_user.id})
+        response = self.client.post(reverse('cases:remove_case', args=(self.case.id,)),
+            {'case_id':self.case_new.id})
         self.assertEqual(response.status_code, 403)
 
-        response = self.client.post(reverse('cases:close_case'), {'case_id':self.case_user.id})
+        response = self.client.post(reverse('cases:close_case'), {'case_id':self.case.id})
         self.assertEqual(response.status_code, 403)
 
     # def test_comment_add_error(self):

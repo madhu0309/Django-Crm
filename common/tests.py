@@ -6,6 +6,7 @@ from common.forms import *
 from django.core.files.uploadedfile import SimpleUploadedFile
 from leads.models import Lead
 from django.utils.encoding import force_text
+import json
 
 
 class ObjectsCreation(object):
@@ -646,3 +647,21 @@ class TestGetFullNameModel(ObjectsCreation, TestCase):
         self.assertEqual(("video", "fa fa-file-video"), self.document_video.file_type())
         self.assertEqual(("audio", "fa fa-file-audio"), self.document_audio.file_type())
         self.assertEqual(("code", "fa fa-file-code"), self.document_code.file_type())
+
+class TestUserCreationView(ObjectsCreation, TestCase):
+
+    def test_user_creation_view(self):
+        response = self.client.post(reverse('common:create_user'),{},
+                              HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(force_text(response.content),
+            json.dumps({"error": True, "errors": {"email": ["This field is required."], "first_name": ["This field is required."], "username": ["This field is required."], "role": ["This field is required."], "password": ["This field is required."]}}))
+
+        response = self.client.post(reverse('common:create_user'),{
+            'email':'user@create.com',
+            'first_name':'first name?',
+            'username':'joe',
+            'role':'USER',
+            'password':'testpassword'
+            },HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(force_text(response.content), json.dumps({"success_url": "/users/list/", "error": False}))
+
