@@ -7,6 +7,7 @@ from leads.tasks import *
 from leads.forms import *
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils.encoding import force_text
 
 
 class TestLeadModel(object):
@@ -34,6 +35,14 @@ class TestLeadModel(object):
             role="USER")
         self.user2.set_password('mp')
         self.user2.save()
+
+        self.user3 = User.objects.create(
+            first_name="mp3",
+            username='mp3',
+            email='mp3@mp.com',
+            role="USER")
+        self.user3.set_password('mp')
+        self.user3.save()
 
         self.client.login(username='j@mp.com', password='jorge2293')
 
@@ -69,7 +78,10 @@ class TestLeadModel(object):
                                         created_by=self.user,
                                         account_name="account",
                                         phone="+91-123-456-7890")
+
+        self.lead1 = Lead.objects.create(title="LeadCreation1", created_by=self.user3)
         self.lead.assigned_to.add(self.user)
+        self.lead.assigned_to.add(self.user3)
         self.case = Case.objects.create(
             name="Rose", case_type="Problem",
             status="New",
@@ -78,6 +90,8 @@ class TestLeadModel(object):
             created_by=self.user, closed_on="2016-05-04")
         self.comment = Comment.objects.create(
             comment='testikd', case=self.case, commented_by=self.user)
+        self.comment_mp = Comment.objects.create(
+            comment='testikd', case=self.case, commented_by=self.user2)
         self.attachment = Attachments.objects.create(
             attachment='image.png',
             case=self.case, created_by=self.user,
@@ -298,6 +312,7 @@ class CommentTestCase(TestLeadModel, TestCase):
             '/leads/comment/add/', {'leadid': self.lead.id})
         self.assertEqual(response.status_code, 200)
 
+
     def test_comment_create(self):
         response = self.client.post(
             '/leads/comment/add/', {'leadid': self.lead.id, 'comment': "comment"})
@@ -471,6 +486,10 @@ class TestLeadListView(TestCase):
         response = self.client.get('/leads/list/')
         self.assertEqual(response.status_code, 200)
 
+        # response = self.client.post('/leads/create/',{})
+        # self.assertEqual(force_text(response.content), {"errors": {"title": ["This field is required."]}, "error": True})
+
+
 
 
 class TestUpdateLeadView(TestLeadModel, TestCase):
@@ -516,6 +535,25 @@ class TestLeadDetailView1(TestLeadModel, TestCase):
         resp = self.client.get(reverse('leads:view_lead', args=(self.lead.id,)))
         self.assertEqual(resp.status_code, 403)
         self.client.logout()
+
+
+class TestCommentAddResponse(TestLeadModel, TestCase):
+
+    def test_comment_add_response(self):
+        self.client.login(username='mp3@mp.com', password='mp')
+        response = self.client.post(
+            '/leads/comment/add/', {'leadid': self.lead.id})
+        self.assertJSONEqual(force_text(response.content), {"error": ["This field is required."]})
+
+        self.comment_mp = Comment.objects.create(
+            comment='testikd', case=self.case, commented_by=self.user3)
+        response = self.client.post(
+            '/leads/comment/edit/', {'commentid': self.comment_mp.id})
+        self.assertJSONEqual(force_text(response.content), {"error": ["This field is required."]})
+
+        response = self.client.post(
+            '/leads/attachment/add/', {'leadid': self.lead1.id})
+        self.assertJSONEqual(force_text(response.content), {"error": ["This field is required."]})
 
 
 # class TestAddAttachmentView(TestLeadModel, TestCase):
