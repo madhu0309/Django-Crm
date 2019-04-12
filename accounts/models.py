@@ -102,3 +102,47 @@ class Account(models.Model):
             else:
                 address += self.get_billing_country_display()
         return address
+
+
+class EmailSender(models.Model):
+    created_by = models.ForeignKey(
+        User, related_name="email_by_user",
+        null=True, on_delete=models.SET_NULL)
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
+    title = models.CharField(max_length=5000)
+    subject = models.CharField(max_length=5000)
+    html = models.TextField()
+
+    @property
+    def created_by_user(self):
+        return self.created_by if self.created_by else None
+
+
+class EmailToUser(models.Model):
+    email = models.ForeignKey(
+        EmailSender, related_name="email_to_user", null=True, on_delete=models.SET_NULL)
+    to_users = models.ForeignKey(
+        User, related_name="email_to_user", null=True, on_delete=models.SET_NULL)
+
+
+class Email(models.Model):
+    sender = models.ForeignKey(
+        User, related_name='sent_email', on_delete=models.CASCADE)
+
+    recipient = models.ForeignKey(
+        User, related_name='recieved_email', on_delete=models.CASCADE)
+
+    sent_at = models.DateTimeField(auto_now_add=True)
+    message_subject = models.TextField(null=True)
+    message_body = models.TextField(null=True)
+    delete_from_sender = models.BooleanField(default=False, null=True)
+    delete_from_recipient = models.BooleanField(default=False, null=True)
+
+    def __str__(self):
+        return self.message_body
+
+    def save(self, *args, **kwargs):
+        # prevent user from sending messages to himself
+        if self.sender != self.recipient:
+            super(Email, self).save(*args, **kwargs)

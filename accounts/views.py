@@ -1,11 +1,11 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import (
-    CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
+    CreateView, UpdateView, DetailView, TemplateView, View, DeleteView, FormView)
 from accounts.forms import AccountForm, AccountCommentForm, \
-    AccountAttachmentForm
-from accounts.models import Account, Tags
+    AccountAttachmentForm, EmailForm
+from accounts.models import Account, Tags, Email
 from common.models import User, Comment, Attachments
 from common.utils import INDCHOICES, COUNTRIES, \
     CURRENCY_CODES, CASE_TYPE, PRIORITY_CHOICE, STATUS_CHOICE
@@ -446,3 +446,15 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
         data = {
             'error': "You don't have permission to delete this attachment."}
         return JsonResponse(data)
+
+
+class CreateMail(LoginRequiredMixin, TemplateView):
+    Model = Account # should be email model
+    form_class = EmailForm
+    template_name = 'create_mail.html'
+
+    def get_context_data(self, **kwargs):
+        account = get_object_or_404(Account, pk=kwargs['account_id'])
+        context = super(CreateMail, self).get_context_data(**kwargs)
+        context['contacts_list'] = account.contacts.all()
+        return context
