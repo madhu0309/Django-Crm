@@ -12,6 +12,7 @@ from common.templatetags.common_tags import (
     is_document_file_sheet, is_document_file_zip
 )
 from common.utils import COUNTRIES, ROLES
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 def img_url(self, filename):
@@ -298,3 +299,23 @@ class Google(models.Model):
 
     def __str__(self):
         return self.email
+
+# https://github.com/MicroPyramid/Django-CRM/issues/211
+# this model is common to all modules
+class Task(models.Model):
+    assigned_to = models.ManyToManyField(User, related_name='task_assigned_to')
+    subject = models.CharField(max_length=200, default='')
+    related_to = models.ForeignKey(User) # to account
+    name = models.ForeignKey(User) # should be contact
+    due_date = models.DateField(auto_now=False, auto_now_add=False)
+    comments = models.CharField(max_length=500)
+
+    # optional fields
+    # status = models.CharField(max_length=50, choices=)
+    # type_task = models.CharField(max_length=50)
+    # priority = models.CharField(max_length=50)
+    # phone = models.phonenumber_field(null=True)
+    # email = models.EmailField(max_length=254)
+
+    send_notification_mail = models.BooleanField(default=False)
+    reminder_field = models.DateTimeField(auto_now=False, auto_now_add=False)

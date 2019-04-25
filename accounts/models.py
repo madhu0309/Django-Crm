@@ -104,28 +104,7 @@ class Account(models.Model):
         return address
 
 
-class EmailSender(models.Model):
-    created_by = models.ForeignKey(
-        User, related_name="email_by_user",
-        null=True, on_delete=models.SET_NULL)
-    created_on = models.DateTimeField(auto_now_add=True)
-    updated_on = models.DateTimeField(auto_now=True)
-    title = models.CharField(max_length=5000)
-    subject = models.CharField(max_length=5000)
-    html = models.TextField()
-
-    @property
-    def created_by_user(self):
-        return self.created_by if self.created_by else None
-
-
-class EmailToUser(models.Model):
-    email = models.ForeignKey(
-        EmailSender, related_name="email_to_user", null=True, on_delete=models.SET_NULL)
-    to_users = models.ForeignKey(
-        User, related_name="email_to_user", null=True, on_delete=models.SET_NULL)
-
-
+# https://git.micropyramid.com/github/Django-CRM/issues/179
 class Email(models.Model):
     sender = models.ForeignKey(
         User, related_name='sent_email', on_delete=models.CASCADE)

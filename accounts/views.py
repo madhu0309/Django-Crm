@@ -449,12 +449,25 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
 
 
 class CreateMail(LoginRequiredMixin, TemplateView):
-    Model = Account # should be email model
-    form_class = EmailForm
+    # Model = Account # should be email model
     template_name = 'create_mail.html'
 
     def get_context_data(self, **kwargs):
-        account = get_object_or_404(Account, pk=kwargs['account_id'])
+        account = get_object_or_404(Account, pk=self.kwargs['account_id'])
         context = super(CreateMail, self).get_context_data(**kwargs)
         context['contacts_list'] = account.contacts.all()
+        context['account_id'] = self.kwargs['account_id']
+        context['email_form'] = EmailForm()
+        # import pdb; pdb.set_trace()
         return context
+
+    def get(self, request, *args, **kwargs):
+        return self.render_to_response(self.get_context_data())
+
+    def post(self, request, *args, **kwargs):
+        form = EmailForm(self.request.POST)
+        if form.is_valid():
+            # save and redirect page
+            return JsonResponse({'error':False})
+        else:
+            return JsonResponse({'error':True, 'errors':form.errors})

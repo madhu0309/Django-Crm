@@ -78,10 +78,12 @@ class AccountAttachmentForm(forms.ModelForm):
 
 
 class EmailForm(forms.Form):
-    # sender = forms.CharField(max_length=500, required=False)
     recipients = forms.CharField(max_length=100)
-    message_subject = forms.CharField(max_length=100)
+    message_subject = forms.CharField(max_length=500)
     message_body = forms.CharField(widget=forms.Textarea)
 
-    # def __init__(self, *args, **kwargs):
-    #     super(EmailForm, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(EmailForm, self).__init__(*args, **kwargs)
+        self.fields['message_subject'].widget.attrs['class'] = 'form-control'
+        self.fields['message_subject'].widget.attrs['required'] = True
+        self.fields['message_subject'].widget.attrs['placeholder'] = 'Email Subject'

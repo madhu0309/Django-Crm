@@ -8,127 +8,128 @@
 {% block content %}
 <!-- main_container starts here -->
 <div class="main_container">
-    <!-- heading_create starts here -->
-    <div class="row marl">
-        <div class="col-md-12">
-            <form id="add_form" method="POST" action='' novalidate>
-            <div class="overview_form_block row marl justify-content-center">
-                <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                    <div class="card-title text-center">
-                        Send Mail
+  <!-- heading_create starts here -->
+  <div class="row marl">
+    <div class="col-md-12">
+      <form id="add_form" method="POST" action='' novalidate>
+        <div class="overview_form_block row marl justify-content-center">
+          <div class="col-md-12">
+            <div class="card">
+              <div class="card-body">
+                <div class="card-title text-center">
+                  Send Mail
+                </div>
+                <form>
+                  <div class="row marl">
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <label for="">Contacts</label>
+                        <!-- <input type="text" class="form-control" name="contacts_list" id="id_contacts"> -->
+                        <select name="recipients" id="_id_recipients" multiple>
+
+                          {% for contact in contacts_list %}
+                          <option value="{{contact.id}}">{{contact}}</option>
+                          {% endfor %}
+
+                        </select>
+                      </div>
+                      <span id="id_recipients"></span>
                     </div>
-                    <form>
-                        <div class="row marl">
-                        <div class="col-md-12">
-                            <div class="form-group">
-                            <label for="">Contacts</label>
-                            <!-- <input type="text" class="form-control" name="contacts_list" id="id_contacts"> -->
-                            <select name="" id="id_contacts" multiple>
-
-                                {% for contact in contacts_list %}
-                                    <option value="{{contact.id}}">{{contact}}</option>
-                                {% endfor %}
-
-                            </select>
-                            </div>
-                            <span id="id_title"></span>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                            <label for="">Subject</label>
-                            <input type="text" class="form-control" name="subject"  placeholder="Enter Subject">
-                            </div>
-                            <span id="id_title"></span>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                            <label>Message</label>
-                            <div id="editor-container"></div>
-                            </div>
-                            <input type="hidden" name="html" id="html_content">
-                            <span id="id_html"></span>
-                        </div>
-                        <!-- <div class="col-md-12 text-center">
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <label for="">Subject</label>
+                        <h1> required {{ email_form.fields.message_subject.required }}</h1>
+                        <input type="text" class="form-control" name="message_subject"  placeholder="Enter Subject">
+                      </div>
+                      <span id="id_message_subject"></span>
+                    </div>
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <label>Message</label>
+                        <div id="editor-container"></div>
+                      </div>
+                      <input type="hidden" name="message_body" id="html_content">
+                      <span id="id_message_body"></span>
+                    </div>
+                    <!-- <div class="col-md-12 text-center">
                             <pre id="myPrecious"></pre>
                             <div id="justText"></div>
                             <div id="justHtml"></div>
                         </div> -->
-                        <div class="col-md-12 text-center">
-                            <button type="submit" class="primary_btn mar_btm save_btn">Send</button>
-                            <a href="{% url 'accounts:create_mail' %}" class="primary_btn">Cancel</a>
-                        </div>
-                        </div>
-                    </form>
+                    <div class="col-md-12 text-center">
+                      <button type="submit" class="primary_btn mar_btm save_btn">Send</button>
+                      <a href="{% url 'accounts:create_mail' account_id %}" class="primary_btn">Cancel</a>
                     </div>
-                </div>
-                </div>
+                  </div>
+                </form>
+              </div>
             </div>
-            </form>
+          </div>
         </div>
+      </form>
     </div>
+  </div>
 </div>
 {% endblock %}
 {% block js_block %}
-	<script src="https://malsup.github.com/jquery.form.js"></script>
-	<script>
-        $(document).ready(function() {
-            $("#id_contacts").select2();
-        });
-		var quill = new Quill('#editor-container', {
-		  modules: {
-		    toolbar: [
-		      [{ header: [1, 2, false] }],
-		      ['bold', 'italic', 'underline'],
-		      ['image', 'code-block']
-		    ]
-		  },
-		  placeholder: 'Compose an epic...',
-		  theme: 'snow' // or 'bubble'
-		});
+<script src="https://malsup.github.com/jquery.form.js"></script>
+<script>
+  $(document).ready(function () {
+    $("#id_contacts").select2();
+  });
+  var quill = new Quill('#editor-container', {
+    modules: {
+      toolbar: [
+        [{ header: [1, 2, false] }],
+        ['bold', 'italic', 'underline'],
+        ['image', 'code-block']
+      ]
+    },
+    placeholder: 'Compose an epic...',
+    theme: 'snow' // or 'bubble'
+  });
 
-		var preciousContent = document.getElementById('myPrecious');
-		var justTextContent = document.getElementById('justText');
-		var justHtmlContent = document.getElementById('justHtml');
+  var preciousContent = document.getElementById('myPrecious');
+  var justTextContent = document.getElementById('justText');
+  var justHtmlContent = document.getElementById('justHtml');
 
-		quill.on('text-change', function() {
-		  var delta = quill.getContents();
-		  var text = quill.getText();
-		  var justHtml = quill.root.innerHTML;
-		  /*preciousContent.innerHTML = JSON.stringify(delta);
-		  justTextContent.innerHTML = text;
-		  justHtmlContent.innerHTML = justHtml;*/
-		  $('#html_content').val(justHtml);
-		});
+  quill.on('text-change', function () {
+    var delta = quill.getContents();
+    var text = quill.getText();
+    var justHtml = quill.root.innerHTML;
+    /*preciousContent.innerHTML = JSON.stringify(delta);
+    justTextContent.innerHTML = text;
+    justHtmlContent.innerHTML = justHtml;*/
+    $('#html_content').val(justHtml);
+  });
 
 
-		$('.save_btn').click(function(e){
-	  	e.preventDefault();
-	  	$("form#add_form").submit()
-		})
+  $('.save_btn').click(function (e) {
+    e.preventDefault();
+    $("form#add_form").submit()
+  })
 
-    $('form#add_form').ajaxForm({
-    	type: 'POST',
-      dataType: 'json',
-      url: $(this).attr('action'),
-      data: $(this).serialize(),
-      success: function(data) {
-      	console.log("data", data)
-        if (data.error == false) {
-          window.location = "{% url 'marketing:email_template_list' %}";
-        } else {
-          /*$(document).ajaxStop($.unblockUI);*/
-          // $.unblockUI();
-          $('p.failure').remove();
-          for (var key in data.errors) {
-            $('#id_' + key).html('<p class="error failure"> *' + data.errors[key] + '</p>');
-          }
+  $('form#add_form').ajaxForm({
+    type: 'POST',
+    dataType: 'json',
+    url: $(this).attr('action'),
+    data: $(this).serialize(),
+    success: function (data) {
+      console.log("data", data)
+      if (data.error == false) {
+        window.location = "{% url 'accounts:list' %}";
+      } else {
+        /*$(document).ajaxStop($.unblockUI);*/
+        // $.unblockUI();
+        $('p.failure').remove();
+        for (var key in data.errors) {
+          $('#id_' + key).html('<p class="error failure"> *' + data.errors[key] + '</p>');
         }
-      },
-      error: function(xhr, errmsg, err) {
-      	console.log('error data', errmsg, err)
       }
-    });
-	</script>
+    },
+    error: function (xhr, errmsg, err) {
+      console.log('error data', errmsg, err)
+    }
+  });
+</script>
 {% endblock js_block %}
