@@ -104,7 +104,7 @@ class Account(models.Model):
         return address
 
 
-# https://git.micropyramid.com/github/Django-CRM/issues/179
+
 class Email(models.Model):
     sender = models.ForeignKey(
         User, related_name='sent_email', on_delete=models.CASCADE)

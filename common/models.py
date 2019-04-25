@@ -300,8 +300,7 @@ class Google(models.Model):
     def __str__(self):
         return self.email
 
-# https://github.com/MicroPyramid/Django-CRM/issues/211
-# this model is common to all modules
+
 class Task(models.Model):
     assigned_to = models.ManyToManyField(User, related_name='task_assigned_to')
     subject = models.CharField(max_length=200, default='')
