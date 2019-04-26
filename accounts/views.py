@@ -455,7 +455,7 @@ class CreateMail(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         account = get_object_or_404(Account, pk=self.kwargs['account_id'])
         context = super(CreateMail, self).get_context_data(**kwargs)
-        context['contacts_list'] = account.contacts.all()
+        context['contacts_list'] = list(account.contacts.all().values('email'))
         context['account_id'] = self.kwargs['account_id']
         context['email_form'] = EmailForm()
         # import pdb; pdb.set_trace()

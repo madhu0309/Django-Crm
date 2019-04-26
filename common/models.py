@@ -304,8 +304,8 @@ class Google(models.Model):
 class Task(models.Model):
     assigned_to = models.ManyToManyField(User, related_name='task_assigned_to')
     subject = models.CharField(max_length=200, default='')
-    related_to = models.ForeignKey(User) # to account
-    name = models.ForeignKey(User) # should be contact
+    related_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='to_account') # to account
+    name = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='user_task') # should be contact
     due_date = models.DateField(auto_now=False, auto_now_add=False)
     comments = models.CharField(max_length=500)
 

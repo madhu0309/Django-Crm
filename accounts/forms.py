@@ -78,7 +78,7 @@ class AccountAttachmentForm(forms.ModelForm):
 
 
 class EmailForm(forms.Form):
-    recipients = forms.CharField(max_length=100)
+    recipients = forms.CharField(max_length=500)
     message_subject = forms.CharField(max_length=500)
     message_body = forms.CharField(widget=forms.Textarea)
 

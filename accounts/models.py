@@ -104,13 +104,12 @@ class Account(models.Model):
         return address
 
 
-
 class Email(models.Model):
     sender = models.ForeignKey(
-        User, related_name='sent_email', on_delete=models.CASCADE)
+        User, related_name='sent_email', on_delete=models.SET_NULL, null=True)
 
     recipient = models.ForeignKey(
-        User, related_name='recieved_email', on_delete=models.CASCADE)
+        User, related_name='recieved_email', on_delete=models.SET_NULL, null=True)
 
     sent_at = models.DateTimeField(auto_now_add=True)
     message_subject = models.TextField(null=True)
@@ -122,6 +121,6 @@ class Email(models.Model):
         return self.message_body
 
     def save(self, *args, **kwargs):
-        # prevent user from sending messages to himself
+        # prevent user from sending messages to themselves
         if self.sender != self.recipient:
             super(Email, self).save(*args, **kwargs)
