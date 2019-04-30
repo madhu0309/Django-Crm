@@ -258,6 +258,11 @@
                 <div class="panel-heading-list card-title view-pad">
                   Contacts
                   <a href="{% url 'contacts:add_contact' %}?view_account={{account_record.id}}"><span class="fa fa-plus pull-right" style="color:black;"></span></a>
+                  {% if contacts|length > 0 %}
+                  <a href="{% url 'accounts:create_mail' account_record.id %}" style="color:black">
+                    <span class="pull-right mr-2">Send Mail</span>
+                  </a>
+                  {% endif %}
                 </div>
                 <div class="table-responsive">
                   <table class="table table-bordered table-striped table-condensed">

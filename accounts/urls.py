@@ -2,7 +2,7 @@ from django.urls import path
 from accounts.views import (
     AccountsListView, CreateAccountView, AccountDetailView, AccountUpdateView,
     AccountDeleteView, AddCommentView, UpdateCommentView, DeleteCommentView,
-    AddAttachmentView, DeleteAttachmentsView, CreateMail
+    AddAttachmentView, DeleteAttachmentsView, create_mail
 )
 
 app_name = 'accounts'
@@ -23,6 +23,6 @@ urlpatterns = [
          name="add_attachment"),
     path('attachment/remove/', DeleteAttachmentsView.as_view(),
          name="remove_attachment"),
-    path('create-mail/<int:account_id>/', CreateMail.as_view(),
+    path('create-mail/<int:account_id>/', create_mail,
          name="create_mail"),
 ]

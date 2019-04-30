@@ -16,7 +16,8 @@ from django.urls import reverse_lazy, reverse
 from leads.models import Lead
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
-
+from django.contrib.auth.decorators import login_required
+from accounts.tasks import send_email
 
 class AccountsListView(LoginRequiredMixin, TemplateView):
     model = Account
@@ -447,27 +448,22 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
             'error': "You don't have permission to delete this attachment."}
         return JsonResponse(data)
 
+@login_required
+def create_mail(request, account_id):
 
-class CreateMail(LoginRequiredMixin, TemplateView):
-    # Model = Account # should be email model
-    template_name = 'create_mail.html'
+    if request.method == 'GET':
+        account = get_object_or_404(Account, pk=account_id)
+        contacts_list = list(account.contacts.all().values('email'))
+        email_form = EmailForm()
+        return render(request, 'create_mail.html', {'account_id': account_id,
+            'contacts_list': contacts_list, 'email_form': email_form})
 
-    def get_context_data(self, **kwargs):
-        account = get_object_or_404(Account, pk=self.kwargs['account_id'])
-        context = super(CreateMail, self).get_context_data(**kwargs)
-        context['contacts_list'] = list(account.contacts.all().values('email'))
-        context['account_id'] = self.kwargs['account_id']
-        context['email_form'] = EmailForm()
-        # import pdb; pdb.set_trace()
-        return context
-
-    def get(self, request, *args, **kwargs):
-        return self.render_to_response(self.get_context_data())
-
-    def post(self, request, *args, **kwargs):
-        form = EmailForm(self.request.POST)
+    if request.method == 'POST':
+        form = EmailForm(request.POST)
         if form.is_valid():
-            # save and redirect page
-            return JsonResponse({'error':False})
+            send_email.delay(form.data.get('message_subject'), form.data.get('message_body'),
+                from_email=account_id, recipients=form.data.get('recipients').split(','))
+
+            return JsonResponse({'error': False})
         else:
-            return JsonResponse({'error':True, 'errors':form.errors})
+            return JsonResponse({'error': True, 'errors': form.errors})
