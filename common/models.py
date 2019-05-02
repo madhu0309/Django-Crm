@@ -302,17 +302,28 @@ class Google(models.Model):
 
 
 class Task(models.Model):
+
+    # assigned_to can be assigned to contact, oppurtunity, case
     assigned_to = models.ManyToManyField(User, related_name='task_assigned_to')
+    status = models.CharField(max_length=50, choices=)
     subject = models.CharField(max_length=200, default='')
-    related_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='to_account') # to account
-    name = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='user_task') # should be contact
+    name = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='user_task')
+
     due_date = models.DateField(auto_now=False, auto_now_add=False)
-    comments = models.CharField(max_length=500)
+    # this could be choice field
+    related_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='to_account')
+    # related_to = models.CharField(max_length=50, choices=)
+    priority = models.CharField(max_length=50, , choices=)
+
+
+
+    comments = models.TextField()
+    recurrence = models.BooleanField()
+
 
     # optional fields
-    # status = models.CharField(max_length=50, choices=)
+    status = models.CharField(max_length=50, choices=)
     # type_task = models.CharField(max_length=50)
-    # priority = models.CharField(max_length=50)
     # phone = models.phonenumber_field(null=True)
     # email = models.EmailField(max_length=254)
 
