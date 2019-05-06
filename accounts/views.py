@@ -456,7 +456,7 @@ def create_mail(request, account_id):
         account = get_object_or_404(Account, pk=account_id)
         contacts_list = list(account.contacts.all().values('email'))
         email_form = EmailForm()
-        return render(request, 'create_mail.html', {'account_id': account_id,
+        return render(request, 'create_mail_accounts.html', {'account_id': account_id,
             'contacts_list': contacts_list, 'email_form': email_form})
 
     if request.method == 'POST':
