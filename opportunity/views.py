@@ -479,7 +479,8 @@ class AddAttachmentsView(LoginRequiredMixin, CreateView):
             "created_by": attachment.created_by.email,
             "download_url": reverse('common:download_attachment',
                                     kwargs={'pk': attachment.id}),
-            "attachment_display": attachment.get_file_type_display()
+            "attachment_display": attachment.get_file_type_display(),
+            "file_type": attachment.file_type()
         })
 
     def form_invalid(self, form):
