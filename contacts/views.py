@@ -203,7 +203,8 @@ class ContactDetailView(LoginRequiredMixin, DetailView):
                         context["contact_record"].contact_comments.all(),
                         'attachments':
                         context["contact_record"].contact_attachment.all(),
-                        "assigned_data": json.dumps(assigned_data)
+                        "assigned_data": json.dumps(assigned_data),
+                        "tasks" : context['object'].contacts_tasks.all()
                         })
         return context
 

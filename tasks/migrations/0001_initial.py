@@ -21,9 +21,9 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('title', models.CharField(max_length=200, verbose_name='title')),
-                ('status', models.CharField(choices=[('new', 'New'), ('in progress', 'In Progress'), ('completed', 'Completed')], max_length=50, verbose_name='status')),
-                ('priority', models.CharField(choices=[('low', 'Low'), ('medium', 'Medium'), ('high', 'High')], max_length=50, verbose_name='priority')),
-                ('due_date', models.DateField()),
+                ('status', models.CharField(choices=[('New', 'New'), ('In Progress', 'In Progress'), ('Completed', 'Completed')], max_length=50, verbose_name='status')),
+                ('priority', models.CharField(choices=[('Low', 'Low'), ('Medium', 'Medium'), ('High', 'High')], max_length=50, verbose_name='priority')),
+                ('due_date', models.DateField(blank=True, null=True)),
                 ('account', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='accounts_tasks', to='accounts.Account')),
                 ('assigned_to', models.ManyToManyField(related_name='users_tasks', to=settings.AUTH_USER_MODEL)),
                 ('contacts', models.ManyToManyField(related_name='contacts_tasks', to='contacts.Contact')),

@@ -2,7 +2,7 @@ from django import forms
 from tasks.models import Task
 from accounts.models import Account
 from contacts.models import Contact
-from common.models import User
+from common.models import User, Attachments, Comment
 from django.db.models import Q
 
 
@@ -10,13 +10,14 @@ class TaskForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         request_user = kwargs.pop('request_user', None)
+        self.obj_instance = kwargs.get('instance', None)
         super(TaskForm, self).__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs = {"class": "form-control"}
 
         if request_user:
             self.fields["account"].queryset = Account.objects.filter(
-                created_by=request_user, is_active=True)
+                created_by=request_user)
 
             self.fields["contacts"].queryset = Contact.objects.filter(
                 Q(assigned_to__in=[request_user]) | Q(created_by=request_user))
@@ -31,8 +32,11 @@ class TaskForm(forms.ModelForm):
 
     def clean_title(self):
         title = self.cleaned_data.get('title')
-        if Task.objects.filter(title=title).exists():
-            raise forms.ValidationError('Task with that title already exists')
+        if not self.obj_instance:
+            if Task.objects.filter(title=title).exists():
+                raise forms.ValidationError(
+                    'Task with that title already exists')
+            return title
         return title
 
     class Meta:
@@ -41,3 +45,19 @@ class TaskForm(forms.ModelForm):
             'title', 'status', 'priority', 'assigned_to', 'account', 'contacts',
             'due_date'
         )
+
+
+class TaskCommentForm(forms.ModelForm):
+    comment = forms.CharField(max_length=64, required=True)
+
+    class Meta:
+        model = Comment
+        fields = ('comment', 'task', 'commented_by')
+
+
+class TaskAttachmentForm(forms.ModelForm):
+    attachment = forms.FileField(max_length=1001, required=True)
+
+    class Meta:
+        model = Attachments
+        fields = ('attachment', 'task')
