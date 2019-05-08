@@ -50,11 +50,11 @@
                 </div>
                 <div class="filter_col col-md-3">
                   <div class="form-group">
-                    <label for="exampleInputEmail1">Status</label>
+                    <label for="exampleInputEmail1">Priority</label>
                     <select class="form-control" id="id_priority" name="priority">
-                      <option value="">--Priority--</option>
+                      <option value="">--Priority-- </option>
                       {% for each_priority in priority_choices %}
-                      <option value="{{each_status.0}}" {% if request.POST.priority %}
+                      <option value="{{each_priority.0}}" {% if request.POST.priority %}
                         {% ifequal each_priority.0 request.POST.priority %}selected{% endifequal %}{% endif %}>
                         {{each_priority.1}} </option>
                       {% endfor%}

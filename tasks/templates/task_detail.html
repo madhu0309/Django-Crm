@@ -59,6 +59,14 @@
               {% endif %}
             </div>
             <div class="col-md-4">
+              {% if task.due_date %}
+              <div class="filter_col col-md-12">
+                <div class="form-group">
+                  <label class="acc_field_label" for="id_due_date" data-name="name">Due Date</label>
+                  <div class="account_field" id="account_email" data-name="name">{{ task.due_date }}</div>
+                </div>
+              </div>
+              {% endif %}
               {% if task.account %}
               <div class="filter_col col-md-12">
                 <div class="form-group">
