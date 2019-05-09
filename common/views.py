@@ -36,6 +36,8 @@ from django.core.exceptions import PermissionDenied
 import boto3
 import botocore
 
+from common.utils import ROLES
+
 
 def handler404(request, exception):
     return render(request, '404.html', status=404)
@@ -210,6 +212,19 @@ class UsersListView(AdminRequiredMixin, TemplateView):
 
     def get_queryset(self):
         queryset = self.model.objects.all()
+
+        request_post = self.request.POST
+        if request_post:
+            if request_post.get('username'):
+                queryset = queryset.filter(
+                    username__icontains=request_post.get('username'))
+            if request_post.get('email'):
+                queryset = queryset.filter(
+                    email=request_post.get('email'))
+            if request_post.get('role'):
+                queryset = queryset.filter(
+                    role=request_post.get('role'))
+
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -217,6 +232,7 @@ class UsersListView(AdminRequiredMixin, TemplateView):
         context["users"] = self.get_queryset()
         context["per_page"] = self.request.POST.get('per_page')
         context['admin_email'] = settings.ADMIN_EMAIL
+        context['roles'] = ROLES
         return context
 
     def post(self, request, *args, **kwargs):

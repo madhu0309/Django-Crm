@@ -95,7 +95,7 @@
                 {% for contact in contact_obj_list %}
                 <tr style="text-align:center;">
                   <td scope="row">{{ forloop.counter }}</td>
-                  <td><a href="{% url 'contacts:view_contact' contact.id %}">{{contact.first_name}}</a></td>
+                  <td><a href="{% url 'contacts:view_contact' contact.id %}">{{contact.first_name}} {{contact.last_name}}</a></td>
                   <td>
                   {% with contact_users=contact.assigned_to.all %}
                   {% for user in contact_users %}
