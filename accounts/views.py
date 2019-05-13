@@ -18,6 +18,9 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from accounts.tasks import send_email
+from common.tasks import send_email_user_mentions
+from django.contrib.sites.shortcuts import get_current_site
+
 
 class AccountsListView(LoginRequiredMixin, TemplateView):
     model = Account
@@ -186,6 +189,13 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
             self.request.user.is_superuser or self.request.user.role == 'ADMIN'
         ) else False
 
+        if self.request.user.is_superuser or self.request.user.role == 'ADMIN':
+            users_mention = list(User.objects.all().values('username'))
+        elif self.request.user != account_record.created_by:
+            users_mention = {'username': account_record.created_by.username}
+        else:
+            users_mention = []
+
         context.update({
             "comments": account_record.accounts_comments.all(),
             "attachments": account_record.account_attachment.all(),
@@ -203,6 +213,7 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
             "case_status": STATUS_CHOICE,
             'comment_permission': comment_permission,
             'tasks':account_record.accounts_tasks.all(),
+            'users_mention': users_mention,
         })
         return context
 
@@ -333,6 +344,11 @@ class AddCommentView(LoginRequiredMixin, CreateView):
         comment.commented_by = self.request.user
         comment.account = self.account
         comment.save()
+        comment_id = comment.id
+        current_site = get_current_site(self.request)
+        send_email_user_mentions.delay(comment_id, 'accounts', domain=current_site.domain,
+            protocol=self.request.scheme)
+
         return JsonResponse({
             "comment_id": comment.id, "comment": comment.comment,
             "commented_on": comment.commented_on,
@@ -362,6 +378,10 @@ class UpdateCommentView(LoginRequiredMixin, View):
     def form_valid(self, form):
         self.comment_obj.comment = form.cleaned_data.get("comment")
         self.comment_obj.save(update_fields=["comment"])
+        comment_id = self.comment_obj.id
+        current_site = get_current_site(self.request)
+        send_email_user_mentions.delay(comment_id, 'accounts', domain=current_site.domain,
+            protocol=self.request.scheme)
         return JsonResponse({
             "comment_id": self.comment_obj.id,
             "comment": self.comment_obj.comment,

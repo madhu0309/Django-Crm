@@ -17,6 +17,7 @@ from opportunity.models import Opportunity
 from django.urls import reverse
 from django.db.models import Q
 from django.core.exceptions import PermissionDenied
+from common.tasks import send_email_user_mentions
 
 
 class OpportunityListView(LoginRequiredMixin, TemplateView):
@@ -197,10 +198,19 @@ class OpportunityDetailView(LoginRequiredMixin, DetailView):
             assigned_data.append(assigned_dict)
 
         comments = context["opportunity_record"].opportunity_comments.all()
+
+        if self.request.user.is_superuser or self.request.user.role == 'ADMIN':
+            users_mention = list(User.objects.all().values('username'))
+        elif self.request.user != context['object'].created_by:
+            users_mention = {'username': context['object'].created_by.username}
+        else:
+            users_mention = context['object'].assigned_to.all().values('username')
+
         context.update({
             "comments": comments,
             'attachments': context[
                 "opportunity_record"].opportunity_attachment.all(),
+            "users_mention": users_mention,
             "assigned_data": json.dumps(assigned_data)})
         return context
 
@@ -384,6 +394,10 @@ class AddCommentView(LoginRequiredMixin, CreateView):
         comment.commented_by = self.request.user
         comment.opportunity = self.opportunity
         comment.save()
+        comment_id = comment.id
+        current_site = get_current_site(self.request)
+        send_email_user_mentions.delay(comment_id, 'opportunity', domain=current_site.domain,
+            protocol=self.request.scheme)
         return JsonResponse({
             "comment_id": comment.id, "comment": comment.comment,
             "commented_on": comment.commented_on,
@@ -413,6 +427,10 @@ class UpdateCommentView(LoginRequiredMixin, View):
     def form_valid(self, form):
         self.comment_obj.comment = form.cleaned_data.get("comment")
         self.comment_obj.save(update_fields=["comment"])
+        comment_id = self.comment_obj.id
+        current_site = get_current_site(self.request)
+        send_email_user_mentions.delay(comment_id, 'opportunity', domain=current_site.domain,
+            protocol=self.request.scheme)
         return JsonResponse({
             "commentid": self.comment_obj.id,
             "comment": self.comment_obj.comment,
