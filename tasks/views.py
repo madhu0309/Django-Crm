@@ -2,21 +2,22 @@ from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.views.generic import (CreateView, DeleteView, DetailView, FormView,
                                   TemplateView, UpdateView, View)
-from django.contrib.sites.shortcuts import get_current_site
 
 from accounts.models import Account
 from common.models import Attachments, Comment, User
+from common.tasks import send_email_user_mentions
 from contacts.models import Contact
 from tasks.celery_tasks import send_email
 from tasks.forms import TaskAttachmentForm, TaskCommentForm, TaskForm
 from tasks.models import Task
 from tasks.utils import *
-from common.tasks import send_email_user_mentions
 
 
 @login_required
@@ -26,7 +27,7 @@ def tasks_list(request):
         if request.user.role == 'ADMIN' or request.user.is_superuser:
             tasks = Task.objects.all()
         else:
-            tasks = Task.objects.filter(created_by=request.user)
+            tasks = Task.objects.filter(Q(created_by=request.user) | Q(assigned_to=request.user))
         today = datetime.today().date()
         return render(request, 'tasks_tasks_list.html', {'tasks': tasks, 'today': today, 'status_choices': STATUS_CHOICES, 'priority_choices': PRIORITY_CHOICES})
 
@@ -74,7 +75,7 @@ def task_detail(request, task_id):
 
     task = get_object_or_404(Task, pk=task_id)
 
-    if not (request.user.role == 'ADMIN' or request.user.is_superuser or task.created_by == request.user):
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or task.created_by == request.user or request.user in task.assigned_to.all()):
         raise PermissionDenied
 
     if request.method == 'GET':
@@ -86,12 +87,12 @@ def task_detail(request, task_id):
         if request.user.is_superuser or request.user.role == 'ADMIN':
             users_mention = list(User.objects.all().values('username'))
         elif request.user != task.created_by:
-            users_mention = {'username': account_record.created_by.username}
+            users_mention = {'username': task.created_by.username}
         else:
-            users_mention = task.assigned_to.all().values('username')
+            users_mention = list(task.assigned_to.all().values('username'))
         comment_permission = True if (
             request.user == task.created_by or
-            request.user.is_superuser or self.request.user.role == 'ADMIN'
+            request.user.is_superuser or request.user.role == 'ADMIN'
         ) else False
         return render(request, 'task_detail.html',
                       {'task': task, 'comment_permission': comment_permission,

@@ -1,10 +1,8 @@
 from celery.task import task
-from django.conf import settings
 from django.core.mail import EmailMessage
 from django.shortcuts import reverse
 from django.template.loader import render_to_string
 
-from accounts.models import Account, Email
 from common.models import Comment, User
 from contacts.models import Contact
 

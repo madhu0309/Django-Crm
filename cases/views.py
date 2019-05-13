@@ -182,7 +182,7 @@ class CaseDetailView(LoginRequiredMixin, DetailView):
         elif self.request.user != context['object'].created_by:
             users_mention = {'username': context['object'].created_by.username}
         else:
-            users_mention = context['object'].assigned_to.all().values('username')
+            users_mention = list(context['object'].assigned_to.all().values('username'))
 
         context.update({"comments": context["case_record"].cases.all(),
                         "attachments": context['case_record'].case_attachment.all(),

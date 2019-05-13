@@ -205,7 +205,7 @@ class ContactDetailView(LoginRequiredMixin, DetailView):
         elif self.request.user != context['object'].created_by:
             users_mention = [{'username': context['object'].created_by.username}]
         else:
-            users_mention = context['object'].assigned_to.all().values('username')
+            users_mention = list(context['object'].assigned_to.all().values('username'))
 
         context.update({"comments":
                         context["contact_record"].contact_comments.all(),
