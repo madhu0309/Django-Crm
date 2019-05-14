@@ -377,9 +377,6 @@ def document_create(request):
     if request.POST:
         form = DocumentForm(request.POST, request.FILES, users=users)
         if form.is_valid():
-            if Document.objects.filter(title=request.POST.get('title')).exists():
-                return JsonResponse({'error': True,
-                'errors': {'title':['Document with that title already exists']}})
             doc = form.save(commit=False)
             doc.created_by = request.user
             doc.save()
@@ -475,8 +472,8 @@ class DocumentDeleteView(LoginRequiredMixin, DeleteView):
 def document_update(request, pk):
     template_name = "doc_create.html"
     users = User.objects.filter(is_active=True).order_by('email')
-    form = DocumentForm(users=users)
     document = Document.objects.filter(id=pk).first()
+    form = DocumentForm(users=users, instance=document)
 
     if request.POST:
         form = DocumentForm(request.POST, request.FILES,
