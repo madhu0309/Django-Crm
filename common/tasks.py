@@ -4,7 +4,6 @@ from django.shortcuts import reverse
 from django.template.loader import render_to_string
 
 from common.models import Comment, User
-from contacts.models import Contact
 
 
 @task

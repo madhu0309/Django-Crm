@@ -377,6 +377,9 @@ def document_create(request):
     if request.POST:
         form = DocumentForm(request.POST, request.FILES, users=users)
         if form.is_valid():
+            if Document.objects.filter(title=request.POST.get('title')).exists():
+                return JsonResponse({'error': True,
+                'errors': {'title':['Document with that title already exists']}})
             doc = form.save(commit=False)
             doc.created_by = request.user
             doc.save()
