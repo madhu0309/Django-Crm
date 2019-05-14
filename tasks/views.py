@@ -87,16 +87,11 @@ def task_detail(request, task_id):
         if request.user.is_superuser or request.user.role == 'ADMIN':
             users_mention = list(User.objects.all().values('username'))
         elif request.user != task.created_by:
-            users_mention = {'username': task.created_by.username}
+            users_mention = [{'username': task.created_by.username}]
         else:
             users_mention = list(task.assigned_to.all().values('username'))
-        comment_permission = True if (
-            request.user == task.created_by or
-            request.user.is_superuser or request.user.role == 'ADMIN'
-        ) else False
         return render(request, 'task_detail.html',
-                      {'task': task, 'comment_permission': comment_permission,
-                      'users_mention':users_mention,
+                      {'task': task, 'users_mention':users_mention,
                        'attachments': attachments, 'comments': comments})
 
 

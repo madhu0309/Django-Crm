@@ -246,7 +246,7 @@ class LeadDetailView(LoginRequiredMixin, DetailView):
         if self.request.user.is_superuser or self.request.user.role == 'ADMIN':
             users_mention = list(User.objects.all().values('username'))
         elif self.request.user != context['object'].created_by:
-            users_mention = {'username': context['object'].created_by.username}
+            users_mention = [{'username': context['object'].created_by.username}]
         else:
             users_mention = list(context['object'].assigned_to.all().values('username'))
 

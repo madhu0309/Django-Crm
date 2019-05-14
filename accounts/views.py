@@ -192,7 +192,7 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
         if self.request.user.is_superuser or self.request.user.role == 'ADMIN':
             users_mention = list(User.objects.all().values('username'))
         elif self.request.user != account_record.created_by:
-            users_mention = {'username': account_record.created_by.username}
+            users_mention = [{'username': account_record.created_by.username}]
         else:
             users_mention = []
 
