@@ -182,7 +182,7 @@
 </form>
 {% else %}
 <div class="justify-content-center text-center">
-    <h3 class="mt-5">create a contacts and leads for creating an account</h3>
+    <h3 class="mt-5">Create a <a href="{% url 'contacts:add_contact' %}">contact</a> and <a href="{% url 'leads:add_lead' %}">lead</a> to create an account</h3>
  </div>
 {% endif %}
 {% endblock %}
