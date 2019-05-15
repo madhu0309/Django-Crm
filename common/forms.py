@@ -198,7 +198,8 @@ class DocumentForm(forms.ModelForm):
             (each[0], each[1]) for each in Document.DOCUMENT_STATUS_CHOICE]
         self.fields['status'].required = False
         self.fields['title'].required = True
-        self.fields['shared_to'].queryset = users
+        if users:
+            self.fields['shared_to'].queryset = users
         self.fields['shared_to'].required = False
 
     class Meta:

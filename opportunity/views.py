@@ -86,9 +86,11 @@ def create_opportunity(request):
             created_by=request.user)
         contacts = Contact.objects.filter(
             Q(assigned_to__in=[request.user]) | Q(created_by=request.user))
-
+    users = []
+    if request.user.role == 'ADMIN' or request.user.is_superuser:
+        users = User.objects.filter(is_active=True).order_by('email')
     kwargs_data = {
-        "assigned_to": User.objects.filter(is_active=True).order_by('email'),
+        "assigned_to": users,
         "account": accounts, "contacts": contacts}
     if request.POST:
         form = OpportunityForm(request.POST, request.FILES, **kwargs_data)
@@ -224,9 +226,11 @@ def update_opportunity(request, pk):
             created_by=request.user)
         contacts = Contact.objects.filter(
             Q(assigned_to__in=[request.user]) | Q(created_by=request.user))
-
+    users = []
+    if request.user.role == 'ADMIN' or request.user.is_superuser:
+        users = User.objects.filter(is_active=True).order_by('email')
     kwargs_data = {
-        "assigned_to": User.objects.filter(is_active=True).order_by('email'),
+        "assigned_to": users,
         "account": accounts, "contacts": contacts}
     form = OpportunityForm(instance=opportunity_object, **kwargs_data)
 

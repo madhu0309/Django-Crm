@@ -83,13 +83,18 @@ class CreateContactView(LoginRequiredMixin, CreateView):
     template_name = "create_contact.html"
 
     def dispatch(self, request, *args, **kwargs):
-        self.users = User.objects.filter(is_active=True).order_by('email')
+        if self.request.user.role == 'ADMIN' or self.request.user.is_superuser:
+            self.users = User.objects.filter(is_active=True).order_by('email')
+        else:
+            self.users = []
         return super(CreateContactView, self).dispatch(
             request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super(CreateContactView, self).get_form_kwargs()
-        kwargs.update({"assigned_to": self.users})
+        if self.request.user.role == 'ADMIN' or self.request.user.is_superuser:
+            self.users = User.objects.filter(is_active=True).order_by('email')
+            kwargs.update({"assigned_to": self.users})
         return kwargs
 
     def post(self, request, *args, **kwargs):
@@ -224,13 +229,18 @@ class UpdateContactView(LoginRequiredMixin, UpdateView):
     template_name = "create_contact.html"
 
     def dispatch(self, request, *args, **kwargs):
-        self.users = User.objects.filter(is_active=True).order_by('email')
+        if self.request.user.role == 'ADMIN' or self.request.user.is_superuser:
+            self.users = User.objects.filter(is_active=True).order_by('email')
+        else:
+            self.users = []
         return super(UpdateContactView, self).dispatch(
             request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super(UpdateContactView, self).get_form_kwargs()
-        kwargs.update({"assigned_to": self.users})
+        if self.request.user.role == 'ADMIN' or self.request.user.is_superuser:
+            self.users = User.objects.filter(is_active=True).order_by('email')
+            kwargs.update({"assigned_to": self.users})
         return kwargs
 
     def post(self, request, *args, **kwargs):

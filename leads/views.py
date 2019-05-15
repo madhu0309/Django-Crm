@@ -103,7 +103,9 @@ class LeadListView(LoginRequiredMixin, TemplateView):
 
 def create_lead(request):
     template_name = "create_lead.html"
-    users = User.objects.filter(is_active=True).order_by('email')
+    users = []
+    if request.user.role == 'ADMIN' or request.user.is_superuser:
+        users = User.objects.filter(is_active=True).order_by('email')
     form = LeadForm(assigned_to=users)
 
     if request.POST:
@@ -263,7 +265,9 @@ class LeadDetailView(LoginRequiredMixin, DetailView):
 def update_lead(request, pk):
     lead_record = Lead.objects.filter(pk=pk).first()
     template_name = "create_lead.html"
-    users = User.objects.filter(is_active=True).order_by('email')
+    users = []
+    if request.user.role == 'ADMIN' or request.user.is_superuser:
+        users = User.objects.filter(is_active=True).order_by('email')
     status = request.GET.get('status', None)
     initial = {}
     if status and status == "converted":

@@ -371,8 +371,9 @@ class PasswordResetView(PasswordResetView):
 
 def document_create(request):
     template_name = "doc_create.html"
-
-    users = User.objects.filter(is_active=True).order_by('email')
+    users = []
+    if request.user.role == 'ADMIN' or request.user.is_superuser:
+        users = User.objects.filter(is_active=True).order_by('email')
     form = DocumentForm(users=users)
     if request.POST:
         form = DocumentForm(request.POST, request.FILES, users=users)
@@ -471,7 +472,9 @@ class DocumentDeleteView(LoginRequiredMixin, DeleteView):
 
 def document_update(request, pk):
     template_name = "doc_create.html"
-    users = User.objects.filter(is_active=True).order_by('email')
+    users = []
+    if request.user.role == 'ADMIN' or request.user.is_superuser:
+        users = User.objects.filter(is_active=True).order_by('email')
     document = Document.objects.filter(id=pk).first()
     form = DocumentForm(users=users, instance=document)
 
