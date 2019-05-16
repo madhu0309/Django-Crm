@@ -374,6 +374,10 @@ def document_create(request):
     users = []
     if request.user.role == 'ADMIN' or request.user.is_superuser:
         users = User.objects.filter(is_active=True).order_by('email')
+    elif request.user.google.all():
+        users = []
+    else:
+        users = User.objects.filter(role='ADMIN').order_by('email')
     form = DocumentForm(users=users)
     if request.POST:
         form = DocumentForm(request.POST, request.FILES, users=users)
@@ -475,6 +479,10 @@ def document_update(request, pk):
     users = []
     if request.user.role == 'ADMIN' or request.user.is_superuser:
         users = User.objects.filter(is_active=True).order_by('email')
+    elif request.user.google.all():
+        users = []
+    else:
+        users = User.objects.filter(role='ADMIN').order_by('email')
     document = Document.objects.filter(id=pk).first()
     form = DocumentForm(users=users, instance=document)
 

@@ -53,13 +53,13 @@ class LeadListView(LoginRequiredMixin, TemplateView):
             if request_post.get('status'):
                 queryset = queryset.filter(status=request_post.get('status'))
             if request_post.get('tag'):
-                queryset = queryset.filter(tags__in=request_post.get('tag'))
+                queryset = queryset.filter(tags__in=request_post.getlist('tag'))
             if request_post.get('source'):
                 queryset = queryset.filter(source=request_post.get('source'))
             if request_post.getlist('assigned_to'):
                 queryset = queryset.filter(
                     assigned_to__id__in=request_post.getlist('assigned_to'))
-        return queryset
+        return queryset.distinct()
 
     def get_context_data(self, **kwargs):
         context = super(LeadListView, self).get_context_data(**kwargs)
@@ -75,6 +75,7 @@ class LeadListView(LoginRequiredMixin, TemplateView):
             is_active=True).order_by('email')
         context["assignedto_list"] = [
             int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
+        context["request_tags"] = self.request.POST.getlist('tag')
 
         search = True if (
             self.request.POST.get('name') or self.request.POST.get('city') or
@@ -106,6 +107,10 @@ def create_lead(request):
     users = []
     if request.user.role == 'ADMIN' or request.user.is_superuser:
         users = User.objects.filter(is_active=True).order_by('email')
+    elif request.user.google.all():
+        users = []
+    else:
+        users = User.objects.filter(role='ADMIN').order_by('email')
     form = LeadForm(assigned_to=users)
 
     if request.POST:
@@ -268,6 +273,10 @@ def update_lead(request, pk):
     users = []
     if request.user.role == 'ADMIN' or request.user.is_superuser:
         users = User.objects.filter(is_active=True).order_by('email')
+    elif request.user.google.all():
+        users = []
+    else:
+        users = User.objects.filter(role='ADMIN').order_by('email')
     status = request.GET.get('status', None)
     initial = {}
     if status and status == "converted":

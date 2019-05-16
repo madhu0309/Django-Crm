@@ -25,9 +25,10 @@ def tasks_list(request):
     if request.method == 'GET':
 
         if request.user.role == 'ADMIN' or request.user.is_superuser:
-            tasks = Task.objects.all()
+            tasks = Task.objects.all().distinct()
         else:
-            tasks = Task.objects.filter(Q(created_by=request.user) | Q(assigned_to=request.user))
+            tasks = Task.objects.filter(
+                Q(created_by=request.user) | Q(assigned_to=request.user)).distinct()
         today = datetime.today().date()
         return render(request, 'tasks_tasks_list.html', {'tasks': tasks, 'today': today, 'status_choices': STATUS_CHOICES, 'priority_choices': PRIORITY_CHOICES})
 
@@ -47,6 +48,8 @@ def tasks_list(request):
         if request.POST.get('priority', None):
             tasks = tasks.filter(priority=request.POST.get('priority'))
 
+        task = task.distinct()
+
         today = datetime.today().date()
         return render(request, 'tasks_tasks_list.html', {'tasks': tasks, 'today': today, 'status_choices': STATUS_CHOICES, 'priority_choices': PRIORITY_CHOICES})
 
@@ -54,12 +57,18 @@ def tasks_list(request):
 @login_required
 def task_create(request):
     if request.method == 'GET':
+        if request.user.role == 'ADMIN' or request.user.is_superuser:
+            users = User.objects.filter(is_active=True).order_by('email')
+        elif request.user.google.all():
+            users = []
+        else:
+            users = User.objects.filter(role='ADMIN').order_by('email')
         form = TaskForm(request_user=request.user)
-        users = User.objects.filter(is_active=True).order_by('email')
-        return render(request, 'task_create.html', {'users': users, 'form': form})
+        return render(request, 'task_create.html', {'form': form, 'users': users})
 
     if request.method == 'POST':
         form = TaskForm(request.POST)
+        # import pdb; pdb.set_trace()
         if form.is_valid():
             task = form.save(commit=False)
             task.created_by = request.user
@@ -91,7 +100,7 @@ def task_detail(request, task_id):
         else:
             users_mention = list(task.assigned_to.all().values('username'))
         return render(request, 'task_detail.html',
-                      {'task': task, 'users_mention':users_mention,
+                      {'task': task, 'users_mention': users_mention,
                        'attachments': attachments, 'comments': comments})
 
 
@@ -103,8 +112,15 @@ def task_edit(request, task_id):
         raise PermissionDenied
 
     if request.method == 'GET':
+        if request.user.role == 'ADMIN' or request.user.is_superuser:
+            users = User.objects.filter(is_active=True).order_by('email')
+        elif request.user.google.all():
+            users = []
+        else:
+            users = User.objects.filter(role='ADMIN').order_by('email')
+        # form = TaskForm(request_user=request.user)
         form = TaskForm(instance=task_obj)
-        return render(request, 'task_create.html', {'form': form, 'task_obj': task_obj})
+        return render(request, 'task_create.html', {'form': form, 'task_obj': task_obj, 'users': users})
 
     if request.method == 'POST':
         form = TaskForm(request.POST, instance=task_obj)
@@ -162,7 +178,7 @@ class AddCommentView(LoginRequiredMixin, CreateView):
         comment_id = comment.id
         current_site = get_current_site(self.request)
         send_email_user_mentions.delay(comment_id, 'tasks', domain=current_site.domain,
-            protocol=self.request.scheme)
+                                       protocol=self.request.scheme)
         return JsonResponse({
             "comment_id": comment.id, "comment": comment.comment,
             "commented_on": comment.commented_on,
@@ -195,7 +211,7 @@ class UpdateCommentView(LoginRequiredMixin, View):
         comment_id = self.comment_obj.id
         current_site = get_current_site(self.request)
         send_email_user_mentions.delay(comment_id, 'tasks', domain=current_site.domain,
-            protocol=self.request.scheme)
+                                       protocol=self.request.scheme)
         return JsonResponse({
             "comment_id": self.comment_obj.id,
             "comment": self.comment_obj.comment,

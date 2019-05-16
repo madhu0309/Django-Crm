@@ -44,9 +44,9 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
                 queryset = queryset.filter(
                     industry__icontains=request_post.get('industry'))
             if request_post.get('tag'):
-                queryset = queryset.filter(tags__in=request_post.get('tag'))
+                queryset = queryset.filter(tags__in=request_post.getlist('tag'))
 
-        return queryset
+        return queryset.distinct()
 
     def get_context_data(self, **kwargs):
         context = super(AccountsListView, self).get_context_data(**kwargs)
@@ -61,6 +61,7 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
         context["per_page"] = self.request.POST.get('per_page')
         tag_ids = list(set(Account.objects.values_list('tags', flat=True)))
         context["tags"] = Tags.objects.filter(id__in=tag_ids)
+        context["request_tags"] = self.request.POST.getlist('tag')
 
         search = False
         if (
@@ -94,8 +95,10 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
     def dispatch(self, request, *args, **kwargs):
         if self.request.user.role == 'ADMIN' or self.request.user.is_superuser:
             self.users = User.objects.filter(is_active=True).order_by('email')
-        else:
+        elif request.user.google.all():
             self.users = []
+        else:
+            self.users = User.objects.filter(role='ADMIN').order_by('email')
         return super(
             CreateAccountView, self).dispatch(request, *args, **kwargs)
 

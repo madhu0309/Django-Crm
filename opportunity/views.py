@@ -50,7 +50,9 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
             if request_post.get('contacts'):
                 queryset = queryset.filter(
                     contacts=request_post.get('contacts'))
-        return queryset
+            if request_post.get('tag'):
+                queryset = queryset.filter(tags__in=request_post.getlist('tag'))
+        return queryset.distinct()
 
     def get_context_data(self, **kwargs):
         context = super(OpportunityListView, self).get_context_data(**kwargs)
@@ -60,7 +62,9 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
         context["stages"] = STAGES
         context["sources"] = SOURCES
         context["per_page"] = self.request.POST.get('per_page')
-
+        tag_ids = list(set(Opportunity.objects.values_list('tags', flat=True)))
+        context["tags"] = Tags.objects.filter(id__in=tag_ids)
+        context["request_tags"] = self.request.POST.getlist('tag')
         search = False
         if (
             self.request.POST.get('name') or self.request.POST.get('stage') or
@@ -89,6 +93,10 @@ def create_opportunity(request):
     users = []
     if request.user.role == 'ADMIN' or request.user.is_superuser:
         users = User.objects.filter(is_active=True).order_by('email')
+    elif request.user.google.all():
+        users = []
+    else:
+        users = User.objects.filter(role='ADMIN').order_by('email')
     kwargs_data = {
         "assigned_to": users,
         "account": accounts, "contacts": contacts}
@@ -229,6 +237,10 @@ def update_opportunity(request, pk):
     users = []
     if request.user.role == 'ADMIN' or request.user.is_superuser:
         users = User.objects.filter(is_active=True).order_by('email')
+    elif request.user.google.all():
+        users = []
+    else:
+        users = User.objects.filter(role='ADMIN').order_by('email')
     kwargs_data = {
         "assigned_to": users,
         "account": accounts, "contacts": contacts}

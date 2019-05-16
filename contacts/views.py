@@ -50,7 +50,7 @@ class ContactsListView(LoginRequiredMixin, TemplateView):
             if request_post.getlist('assigned_to'):
                 queryset = queryset.filter(
                     assigned_to__id__in=request_post.getlist('assigned_to'))
-        return queryset
+        return queryset.distinct()
 
     def get_context_data(self, **kwargs):
         context = super(ContactsListView, self).get_context_data(**kwargs)
@@ -85,8 +85,10 @@ class CreateContactView(LoginRequiredMixin, CreateView):
     def dispatch(self, request, *args, **kwargs):
         if self.request.user.role == 'ADMIN' or self.request.user.is_superuser:
             self.users = User.objects.filter(is_active=True).order_by('email')
-        else:
+        elif request.user.google.all():
             self.users = []
+        else:
+            self.users = User.objects.filter(role='ADMIN').order_by('email')
         return super(CreateContactView, self).dispatch(
             request, *args, **kwargs)
 
@@ -231,8 +233,10 @@ class UpdateContactView(LoginRequiredMixin, UpdateView):
     def dispatch(self, request, *args, **kwargs):
         if self.request.user.role == 'ADMIN' or self.request.user.is_superuser:
             self.users = User.objects.filter(is_active=True).order_by('email')
-        else:
+        elif request.user.google.all():
             self.users = []
+        else:
+            self.users = User.objects.filter(role='ADMIN').order_by('email')
         return super(UpdateContactView, self).dispatch(
             request, *args, **kwargs)
 
