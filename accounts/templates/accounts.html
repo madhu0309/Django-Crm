@@ -116,7 +116,7 @@
                         <tr id="account_details{{each_account.id}}" class="text-center">
                           <td scope="row">{{ forloop.counter }}</td>
                           <td>{% if each_account.name %}<a
-                              href="{% url 'accounts:view_account' each_account.id %}">{{ each_account.name }}</a>{% endif %}
+                              href="{% url 'accounts:view_account' each_account.id %}" style="color:#0088cc;">{{ each_account.name }}</a>{% endif %}
                           </td>
                           <td>
                             {% if each_account.created_by.profile_pic %}

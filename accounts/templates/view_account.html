@@ -80,7 +80,7 @@
                 </div>
               </div>
               {% endif %}
-              {% if account_record.contacts %}
+              {% if account_record.contacts.all %}
               <div class="filter_col col-md-12">
                 <div class="form-group">
                   <label class="acc_field_label" for="id_website" data-name="name">Contacts</label>
@@ -110,6 +110,18 @@
                 </div>
               </div>
               {% endif %}
+              <div class="filter_col col-md-12">
+                {% if account_record.assigned_to.all %}
+                <div class="form-group">
+                  <label class="case_field_label" for="id_contact" data-name="name">Assigned To</label>
+                  <div class="case_field" id="case_contact" data-name="name">
+                    {% for user in account_record.assigned_to.all %}
+                    <div>{{ user }}</div>
+                    {% endfor %}
+                  </div>
+                </div>
+                {% endif %}
+              </div>
               {% if account_record.description %}
               <div class="filter_col col-md-12">
                 <div class="form-group">
@@ -149,7 +161,9 @@
                     <form id="attachment_form" method="POST" enctype="multipart/form-data">
                       <div class="form-group ">
                         <input type="file" class="form-control-file" cols="40" id="id_attachments" name="attachment">
-                        <div><p id="AttachmentError" style="display:none; color:red"></p></div>
+                        <div>
+                          <p id="AttachmentError" style="display:none; color:red"></p>
+                        </div>
                         <br>
                         <div class="buttons_row">
                           <button class="btn btn-default save" style="text-align: center;"
@@ -202,7 +216,9 @@
                       <div class="form-group">
                         <textarea class="form-control mentions" textarea cols="40" rows="3" id="id_comments"
                           name="comment" placeholder="Submit Your Comments Here"></textarea>
-                        <div><p id="CommentError" style="display:none; color:red"></p></div>
+                        <div>
+                          <p id="CommentError" style="display:none; color:red"></p>
+                        </div>
                         </br>
                         <div class="buttons_row">
                           <button class="btn btn-default save" style="text-align: center;" id="comment_submit"
@@ -253,8 +269,9 @@
                         <div class="modal-body">
                           <div class="form-group">
                             <textarea class="form-control mentions" textarea cols="40" rows="3" id="id_editcomment"
-                              name="comment" placeholder="Submit Your Comments" style="color:black;"></textarea><span><p
-                                id="CommentEditError" style="display:none; color:red"></p></span>
+                              name="comment" placeholder="Submit Your Comments" style="color:black;"></textarea><span>
+                              <p id="CommentEditError" style="display:none; color:red"></p>
+                            </span>
                             <input type="hidden" value="{{ account.id }}" name="accountid">
                             <input type="hidden" value="" name="commentid" id="commentid">
                           </div>

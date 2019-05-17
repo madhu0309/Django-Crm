@@ -34,6 +34,9 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
                 Q(assigned_to__in=[self.request.user]) |
                 Q(created_by=self.request.user.id))
 
+        if self.request.GET.get('tag', None):
+            queryset = queryset.filter(tags__in = self.request.GET.getlist('tag'))
+
         request_post = self.request.POST
         if request_post:
             if request_post.get('name'):
@@ -64,7 +67,12 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
         context["per_page"] = self.request.POST.get('per_page')
         tag_ids = list(set(Opportunity.objects.values_list('tags', flat=True)))
         context["tags"] = Tags.objects.filter(id__in=tag_ids)
-        context["request_tags"] = self.request.POST.getlist('tag')
+        if self.request.POST.get('tag', None):
+            context["request_tags"] = self.request.POST.getlist('tag')
+        elif self.request.GET.get('tag', None):
+            context["request_tags"] = self.request.GET.getlist('tag')
+        else:
+            context["request_tags"] = None
         search = False
         if (
             self.request.POST.get('name') or self.request.POST.get('stage') or

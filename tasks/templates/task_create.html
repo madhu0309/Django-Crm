@@ -94,10 +94,10 @@
                 </div>
                 <div class="filter_col col-md-12">
                   <div class="form-group ">
-                    <label for="exampleInputEmail1">Assigned Users</label>
+                    <label for="exampleInputEmail1">Assign To</label>
                     <select id="id_assigned_to" class="assigned_users form-control" name="assigned_to" multiple="multiple">
                     {% for user in users %}
-                    <option value="{{user.id}}" {% if user in opportunity_obj.assigned_to.all or user.id in assignedto_list %} selected="" {% endif %}>{{user.email}}</option>
+                    <option value="{{user.id}}" {% if user in task_obj.assigned_to.all %} selected="" {% endif %}>{{user.email}}</option>
                     {% endfor %}
                     </select>
                   </div>
