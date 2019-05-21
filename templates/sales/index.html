@@ -84,6 +84,8 @@
                         {% for user in users %}
                         {{user}}
                         {% endfor %}
+                        {% else %}
+                        Not Assigned to Any
                         {% endif %}
                         {% endwith %}
                       </td>
@@ -136,6 +138,8 @@
                       {% for user in users %}
                       {{user}}
                       {% endfor %}
+                      {% else %}
+                      Not Assigned to Any
                       {% endif %}
                       {% endwith %}
                     </td>

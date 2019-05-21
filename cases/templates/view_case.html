@@ -53,7 +53,7 @@
                   <label class="case_field_label" for="id_contact" data-name="name">Contact</label>
                   <div class="case_field" id="case_contact" data-name="name">
                     {% for contact in case_record.contacts.all %}
-                    <li>{{ contact }}</li>
+                    <div>{{ contact }}</div>
                     {% endfor %}
                   </div>
                 </div>
@@ -102,7 +102,7 @@
             </div>
             <div class="col-md-12">
               <div class="created_information">
-                Created by <b>{{ case_record.created_by }}</b> created on <i><b>{{ case_record.created_on }}</b></i>
+                Created by <b>{{ case_record.created_by }}</b> created on <b>{{ case_record.created_on }}</b>
               </div>
             </div>
           </div>

@@ -147,7 +147,7 @@
             <div class="col-md-12">
               <div class="created_information">
                 Created by <b>{{ account_record.created_by }}</b> created on
-                <i><b>{{ account_record.created_on }}</b></i>
+                <b>{{ account_record.created_on }}</b>
               </div>
             </div>
             <div class="col-md-12 " style="padding:0">
@@ -326,7 +326,7 @@
                         <td>{{ contact.phone }}</td>
                         <td>{{ contact.email }}</td>
                         <td class="actions">
-                          <a href="{% url 'contacts:view_contact' pk=contact.id %}" class="btn btn-primary">View</a>
+                          <a href="{% url 'contacts:view_contact' pk=contact.id %}" class="btn btn-primary" style="color: white;">View</a>
                           <a href="{% url 'contacts:edit_contact' pk=contact.id %}?view_account={{account_record.id}}"
                             class="btn btn-success">Edit</a>
                           <a href="{% url 'contacts:remove_contact' pk=contact.id %}?view_account={{account_record.id}}"
@@ -378,7 +378,7 @@
                         <td>{{opportunity.probability}} {% if opportunity.probability %} % {% endif %}</td>
                         <td class="actions">
                           <a href="{% url 'opportunities:opp_view' pk=opportunity.id %}"
-                            class="btn btn-primary">View</a>
+                            class="btn btn-primary" style="color: white;">View</a>
                           <a href="{% url 'opportunities:opp_edit' pk=opportunity.id %}?view_account={{account_record.id}}"
                             class="btn btn-success">Edit</a>
                           <a href="{% url 'opportunities:opp_remove' pk=opportunity.id %}?view_account={{account_record.id}}"
@@ -429,7 +429,7 @@
                         <td>{{ case.status }}</td>
                         <td>{{ case.priority }}</td>
                         <td class="actions">
-                          <a href="{% url 'cases:view_case' pk=case.id %}" class="btn btn-primary">View</a>
+                          <a href="{% url 'cases:view_case' pk=case.id %}" class="btn btn-primary" style="color: white;">View</a>
                           <a href="{% url 'cases:edit_case' pk=case.id %}?view_account={{account_record.id}}"
                             class="btn btn-success">Edit</a>
                           <a href="{% url 'cases:remove_case' case_id=case.id %}?view_account={{account_record.id}}"
@@ -480,7 +480,7 @@
                         <td>{{task.status}}</td>
                         <td>{{task.priority}} {% if task.probability %} % {% endif %}</td>
                         <td class="actions">
-                          <a href="{% url 'tasks:task_detail' task.id %}" class="btn btn-primary">View</a>
+                          <a href="{% url 'tasks:task_detail' task.id %}" class="btn btn-primary" style="color: white;">View</a>
                           <a href="{% url 'tasks:task_edit' task.id %}?view_account={{account_record.id}}"
                             class="btn btn-success">Edit</a>
                           <a href="{% url 'tasks:task_delete' task.id %}?view_account={{account_record.id}}"

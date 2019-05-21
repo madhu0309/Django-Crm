@@ -85,7 +85,7 @@
             <div class="col-md-12">
               <div class="created_information">
                 Created by <b>{{ contact_record.created_by }}</b> created on
-                <i><b>{{ contact_record.created_on }}</b></i>
+                <b>{{ contact_record.created_on }}</b>
               </div>
             </div>
           </div>
@@ -259,7 +259,7 @@
                         <td>{{task.status}}</td>
                         <td>{{task.priority}} {% if task.probability %} % {% endif %}</td>
                         <td class="actions">
-                          <a href="{% url 'tasks:task_detail' task.id %}" class="btn btn-primary">View</a>
+                          <a href="{% url 'tasks:task_detail' task.id %}" class="btn btn-primary" style="color: white;">View</a>
                           <a href="{% url 'tasks:task_edit' task.id %}?view_account={{account_record.id}}"
                             class="btn btn-success">Edit</a>
                           <a href="{% url 'tasks:task_delete' task.id %}?view_account={{account_record.id}}"
