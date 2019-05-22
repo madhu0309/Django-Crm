@@ -34,6 +34,9 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
                 Q(assigned_to__in=[self.request.user]) |
                 Q(created_by=self.request.user.id))
 
+        if self.request.GET.get('tag', None):
+            queryset = queryset.filter(tags__in = self.request.GET.getlist('tag'))
+
         request_post = self.request.POST
         if request_post:
             if request_post.get('name'):
@@ -50,7 +53,9 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
             if request_post.get('contacts'):
                 queryset = queryset.filter(
                     contacts=request_post.get('contacts'))
-        return queryset
+            if request_post.get('tag'):
+                queryset = queryset.filter(tags__in=request_post.getlist('tag'))
+        return queryset.distinct()
 
     def get_context_data(self, **kwargs):
         context = super(OpportunityListView, self).get_context_data(**kwargs)
@@ -60,7 +65,14 @@ class OpportunityListView(LoginRequiredMixin, TemplateView):
         context["stages"] = STAGES
         context["sources"] = SOURCES
         context["per_page"] = self.request.POST.get('per_page')
-
+        tag_ids = list(set(Opportunity.objects.values_list('tags', flat=True)))
+        context["tags"] = Tags.objects.filter(id__in=tag_ids)
+        if self.request.POST.get('tag', None):
+            context["request_tags"] = self.request.POST.getlist('tag')
+        elif self.request.GET.get('tag', None):
+            context["request_tags"] = self.request.GET.getlist('tag')
+        else:
+            context["request_tags"] = None
         search = False
         if (
             self.request.POST.get('name') or self.request.POST.get('stage') or
@@ -86,9 +98,15 @@ def create_opportunity(request):
             created_by=request.user)
         contacts = Contact.objects.filter(
             Q(assigned_to__in=[request.user]) | Q(created_by=request.user))
-
+    users = []
+    if request.user.role == 'ADMIN' or request.user.is_superuser:
+        users = User.objects.filter(is_active=True).order_by('email')
+    elif request.user.google.all():
+        users = []
+    else:
+        users = User.objects.filter(role='ADMIN').order_by('email')
     kwargs_data = {
-        "assigned_to": User.objects.filter(is_active=True).order_by('email'),
+        "assigned_to": users,
         "account": accounts, "contacts": contacts}
     if request.POST:
         form = OpportunityForm(request.POST, request.FILES, **kwargs_data)
@@ -224,9 +242,15 @@ def update_opportunity(request, pk):
             created_by=request.user)
         contacts = Contact.objects.filter(
             Q(assigned_to__in=[request.user]) | Q(created_by=request.user))
-
+    users = []
+    if request.user.role == 'ADMIN' or request.user.is_superuser:
+        users = User.objects.filter(is_active=True).order_by('email')
+    elif request.user.google.all():
+        users = []
+    else:
+        users = User.objects.filter(role='ADMIN').order_by('email')
     kwargs_data = {
-        "assigned_to": User.objects.filter(is_active=True).order_by('email'),
+        "assigned_to": users,
         "account": accounts, "contacts": contacts}
     form = OpportunityForm(instance=opportunity_object, **kwargs_data)
 

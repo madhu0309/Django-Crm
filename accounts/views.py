@@ -32,6 +32,9 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
             queryset = queryset.filter(created_by=self.request.user.id)
 
+        if self.request.GET.get('tag', None):
+            queryset = queryset.filter(tags__in = self.request.GET.getlist('tag'))
+
         request_post = self.request.POST
         if request_post:
             if request_post.get('name'):
@@ -44,9 +47,9 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
                 queryset = queryset.filter(
                     industry__icontains=request_post.get('industry'))
             if request_post.get('tag'):
-                queryset = queryset.filter(tags__in=request_post.get('tag'))
+                queryset = queryset.filter(tags__in=request_post.getlist('tag'))
 
-        return queryset
+        return queryset.distinct()
 
     def get_context_data(self, **kwargs):
         context = super(AccountsListView, self).get_context_data(**kwargs)
@@ -61,6 +64,12 @@ class AccountsListView(LoginRequiredMixin, TemplateView):
         context["per_page"] = self.request.POST.get('per_page')
         tag_ids = list(set(Account.objects.values_list('tags', flat=True)))
         context["tags"] = Tags.objects.filter(id__in=tag_ids)
+        if self.request.POST.get('tag', None):
+            context["request_tags"] = self.request.POST.getlist('tag')
+        elif self.request.GET.get('tag', None):
+            context["request_tags"] = self.request.GET.getlist('tag')
+        else:
+            context["request_tags"] = None
 
         search = False
         if (
@@ -92,7 +101,12 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
     template_name = "create_account.html"
 
     def dispatch(self, request, *args, **kwargs):
-        self.users = User.objects.filter(is_active=True).order_by('email')
+        if self.request.user.role == 'ADMIN' or self.request.user.is_superuser:
+            self.users = User.objects.filter(is_active=True).order_by('email')
+        elif request.user.google.all():
+            self.users = []
+        else:
+            self.users = User.objects.filter(role='ADMIN').order_by('email')
         return super(
             CreateAccountView, self).dispatch(request, *args, **kwargs)
 
@@ -129,6 +143,8 @@ class CreateAccountView(LoginRequiredMixin, CreateView):
                 account_object.tags.add(tag)
         if self.request.POST.getlist('contacts', []):
             account_object.contacts.add(*self.request.POST.getlist('contacts'))
+        if self.request.POST.getlist('assigned_to', []):
+            account_object.assigned_to.add(*self.request.POST.getlist('assigned_to'))
         if self.request.FILES.get('account_attachment'):
             attachment = Attachments()
             attachment.created_by = self.request.user
@@ -224,7 +240,12 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
     template_name = "create_account.html"
 
     def dispatch(self, request, *args, **kwargs):
-        self.users = User.objects.filter(is_active=True).order_by('email')
+        if self.request.user.role == 'ADMIN' or self.request.user.is_superuser:
+            self.users = User.objects.filter(is_active=True).order_by('email')
+        elif request.user.google.all():
+            self.users = []
+        else:
+            self.users = User.objects.filter(role='ADMIN').order_by('email')
         return super(AccountUpdateView, self).dispatch(
             request, *args, **kwargs)
 
@@ -261,6 +282,11 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         if self.request.POST.getlist('contacts', []):
             account_object.contacts.clear()
             account_object.contacts.add(*self.request.POST.getlist('contacts'))
+        if self.request.POST.getlist('assigned_to', []):
+            account_object.assigned_to.clear()
+            account_object.assigned_to.add(*self.request.POST.getlist('assigned_to'))
+        else:
+            account_object.assigned_to.clear()
         if self.request.FILES.get('account_attachment'):
             attachment = Attachments()
             attachment.created_by = self.request.user

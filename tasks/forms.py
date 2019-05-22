@@ -9,6 +9,7 @@ from django.db.models import Q
 class TaskForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
+        # assigned_users = kwargs.pop('assigned_to', [])
         request_user = kwargs.pop('request_user', None)
         self.obj_instance = kwargs.get('instance', None)
         super(TaskForm, self).__init__(*args, **kwargs)
@@ -22,10 +23,14 @@ class TaskForm(forms.ModelForm):
             self.fields["contacts"].queryset = Contact.objects.filter(
                 Q(assigned_to__in=[request_user]) | Q(created_by=request_user))
 
+        self.fields['assigned_to'].required = False
+        # if assigned_users:
+        #     self.fields['assigned_to'].queryset = assigned_users
+        # else:
+        #     self.fields.get('assigned_to').queryset = User.objects.none()
         self.fields['title'].required = True
         self.fields['status'].required = True
         self.fields['priority'].required = True
-        self.fields['assigned_to'].required = False
         self.fields['account'].required = False
         self.fields['contacts'].required = False
         self.fields['due_date'].required = False

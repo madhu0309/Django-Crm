@@ -66,6 +66,8 @@ class Account(models.Model):
         "Name of Contact", "Contact Name"), max_length=120)
     contacts = models.ManyToManyField(
         'contacts.Contact', related_name="account_contacts")
+    assigned_to = models.ManyToManyField(
+        User, related_name='account_assigned_users')
 
     def __str__(self):
         return self.name

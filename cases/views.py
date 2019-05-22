@@ -77,7 +77,13 @@ class CasesListView(LoginRequiredMixin, TemplateView):
 
 
 def create_case(request):
-    users = User.objects.filter(is_active=True).order_by('email')
+    users = []
+    if request.user.role == 'ADMIN' or request.user.is_superuser:
+        users = User.objects.filter(is_active=True).order_by('email')
+    elif request.user.google.all():
+        users = []
+    else:
+        users = User.objects.filter(role='ADMIN').order_by('email')
     accounts = Account.objects.filter(status="open")
     contacts = Contact.objects.all()
     if request.user.role != "ADMIN" and not request.user.is_superuser:
@@ -200,8 +206,15 @@ def update_case(request, pk):
             created_by=request.user)
         contacts = Contact.objects.filter(
             Q(assigned_to__in=[request.user]) | Q(created_by=request.user))
+    users = []
+    if request.user.role == 'ADMIN' or request.user.is_superuser:
+        users = User.objects.filter(is_active=True).order_by('email')
+    elif request.user.google.all():
+        users = []
+    else:
+        users = User.objects.filter(role='ADMIN').order_by('email')
     kwargs_data = {
-        "assigned_to": User.objects.filter(is_active=True).order_by('email'),
+        "assigned_to": users,
         "account": accounts, "contacts": contacts}
     form = CaseForm(instance=case_object, **kwargs_data)
 

@@ -137,7 +137,7 @@
             <div class="col-md-12">
               <div class="created_information">
                 Created by <b>{{ opportunity_record.created_by }}</b> created on
-                <i><b>{{ opportunity_record.created_on }}</b></i>
+                <b>{{ opportunity_record.created_on }}</b>
               </div>
             </div>
           </div>
@@ -153,7 +153,7 @@
                 <form id="attachment_form" method="POST" enctype="multipart/form-data">
                   <div class="form-group ">
                     <input type="file" class="form-control-file" cols="40" id="id_attachments" name="attachment">
-                    <div><i id="AttachmentError" style="display:none; color:red"></i></div>
+                    <div><p id="AttachmentError" style="display:none; color:red"></p></div>
                     <br>
                     <div class="buttons_row">
                       <button class="btn btn-default save" style="text-align: center;"
@@ -207,7 +207,7 @@
                   <div class="form-group">
                     <textarea class="form-control mentions" textarea cols="40" rows="3" id="id_comments" name="comment"
                       placeholder="Submit Your Comments Here"></textarea>
-                    <div><i id="CommentError" style="display:none; color:red"></i></div>
+                    <div><p id="CommentError" style="display:none; color:red"></p></div>
                     </br>
                     <div class="buttons_row">
                       <button class="btn btn-default save" style="text-align: center;" id="comment_submit"
@@ -259,8 +259,8 @@
                     <div class="modal-body">
                       <div class="form-group">
                         <textarea class="form-control mentions" textarea cols="40" rows="3" id="id_editcomment"
-                          name="comment" placeholder="Submit Your Comments" style="color:black;"></textarea><span><i
-                            id="CommentEditError" style="display:none; color:red"></i></span>
+                          name="comment" placeholder="Submit Your Comments" style="color:black;"></textarea><span><p
+                            id="CommentEditError" style="display:none; color:red"></p></span>
                         <input type="hidden" value="{{ opportunity.id }}" name="opportunityid">
                         <input type="hidden" value="" name="commentid" id="commentid">
                       </div>
