@@ -210,7 +210,59 @@
           <!-- Comments Section Ends-->
         </div>
       </div>
-   
+      <br>
+      <form method='GET' class="accountdetails_row" >
+          <div class="table_container_row row marl no-gutters">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-body">
+                  <div class="panel-heading-list card-title view-pad">
+                    Tasks
+                    <!-- <a href="{% url 'opportunity:save' %}?view_account={{account_record.id}}"><span
+                        class="fa fa-plus pull-right" style="color:black;"></span></a> -->
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-condensed ">
+                      {% if tasks|length > 0 %}
+                      <thead>
+                        <tr>
+                          <th width="5%" style="text-align:center;">S.No</th>
+                          <th width="30%" style="text-align:center;">Title</th>
+                          <th width="20%" style="text-align:center;">Status</th>
+                          <th width="20%" style="text-align:center;">Priority</th>
+                          <th width="25%" style="text-align:center;">Actions </th>
+                        </tr>
+                      </thead>
+                      {% endif %}
+                      <tbody>
+                        {% for task in tasks %}
+                        <tr id="task_{{task.id}}" class="text-center">
+                          <td scope="row">{{ forloop.counter }}</td>
+                          <td>{{task.title}}</td>
+                          <td>{{task.status}}</td>
+                          <td>{{task.priority}} {% if task.probability %} % {% endif %}</td>
+                          <td class="actions">
+                            <a href="{% url 'tasks:task_detail' task.id %}"
+                              class="btn btn-primary">View</a>
+                            <a href="{% url 'tasks:task_edit' task.id %}?view_account={{account_record.id}}"
+                              class="btn btn-success">Edit</a>
+                            <a href="{% url 'tasks:task_delete' task.id %}?view_account={{account_record.id}}"
+                              class="btn btn-danger">Remove</a>
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  {% ifequal tasks|length 0 %}
+                  <h6 class="text-center">No tasks Records Found</h6>
+                  {% endifequal %}
+                </div>
+              </div>
+              <br clear="all">
+            </div>
+          </div>
+        </form>
     </div>
   </div>
 <!-- CONTACTS VIEW ENDS -->

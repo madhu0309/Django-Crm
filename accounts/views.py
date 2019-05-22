@@ -202,6 +202,7 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
             "case_priority": PRIORITY_CHOICE,
             "case_status": STATUS_CHOICE,
             'comment_permission': comment_permission,
+            'tasks':account_record.accounts_tasks.all(),
         })
         return context
 

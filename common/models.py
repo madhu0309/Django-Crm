@@ -137,6 +137,9 @@ class Comment(models.Model):
         related_name="user_comments",
         on_delete=models.CASCADE)
 
+    task = models.ForeignKey('tasks.Task', blank=True, null=True,
+                             related_name='tasks_comments', on_delete=models.CASCADE)
+
     def get_files(self):
         return Comment_Files.objects.filter(comment_id=self)
 
@@ -180,6 +183,9 @@ class Attachments(models.Model):
     case = models.ForeignKey(
         'cases.Case', blank=True, null=True,
         on_delete=models.CASCADE, related_name='case_attachment')
+
+    task = models.ForeignKey('tasks.Task', blank=True, null=True,
+                             related_name='tasks_attachment', on_delete=models.CASCADE)
 
     def file_type(self):
         name_ext_list = self.attachment.url.split(".")
@@ -314,7 +320,6 @@ class Google(models.Model):
 #     related_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='to_account')
 #     # related_to = models.CharField(max_length=50, choices=)
 #     priority = models.CharField(max_length=50, , choices=)
-
 
 
 #     comments = models.TextField()
