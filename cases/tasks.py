@@ -1,16 +1,18 @@
 from celery.task import task
-from django.core.mail import EmailMessage
+from django.conf import settings
+from django.core.mail import EmailMultiAlternatives, EmailMessage
+from django.db.models import Q
 from django.shortcuts import reverse
 from django.template.loader import render_to_string
 
-from common.models import User
-from contacts.models import Contact
+from accounts.models import User
+from cases.models import Case
 
 
 @task
-def send_email_to_assigned_user(recipients, contact_id, domain='demo.django-crm.io', protocol='http'):
-    """ Send Mail To Users When they are assigned to a contact """
-    contact = Contact.objects.get(id=contact_id)
+def send_email_to_assigned_user(recipients, case_id, domain='demo.django-crm.io', protocol='http'):
+    """ Send Mail To Users When they are assigned to a case """
+    case = Case.objects.get(id=case_id)
     for user in recipients:
         recipients_list = []
         user = User.objects.filter(id=user).first()
@@ -18,12 +20,12 @@ def send_email_to_assigned_user(recipients, contact_id, domain='demo.django-crm.
             recipients_list.append(user.email)
             context = {}
             context["url"] = protocol + '://' + domain + \
-                reverse('contacts:view_contact', args=(contact.id,))
+                reverse('cases:view_case', args=(case.id,))
             context["user"] = user
-            context["contact"] = contact
-            subject = 'Assigned to contact.'
+            context["case"] = case
+            subject = 'Assigned to case.'
             html_content = render_to_string(
-                'assigned_to/contact_assigned.html', context=context)
+                'assigned_to/cases_assigned.html', context=context)
 
             msg = EmailMessage(
                 subject,

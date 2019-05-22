@@ -12,7 +12,7 @@ you are assigned to contact {{ contact.first_name }} {{ contact.last_name }}<br>
 
 {% block button_link %}
 <div style="margin-bottom:20px">
-    <a href="{{ protocol }}://{{ domain }}{% url 'contacts:view_contact' pk=contact.id %}"
+    <a href="{{url}}"
         style="display:inline-block;width:170px;background:#38abdd;padding:10px;text-align:center;color:#fff;font-size:1rem;font-weight:600;margin:0px auto;margin-bottom:20px;border-radius:5px;text-decoration:none;display:block">click here</a>
 </div>
 {% endblock button_link %}

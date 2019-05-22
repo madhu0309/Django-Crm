@@ -18,6 +18,7 @@ from common.utils import PRIORITY_CHOICE, STATUS_CHOICE, CASE_TYPE
 from django.urls import reverse
 from django.core.exceptions import PermissionDenied
 from common.tasks import send_email_user_mentions
+from cases.tasks import send_email_to_assigned_user
 
 
 class CasesListView(LoginRequiredMixin, TemplateView):
@@ -106,20 +107,23 @@ def create_case(request):
                 case.assigned_to.add(*request.POST.getlist('assigned_to'))
                 assigned_to_list = request.POST.getlist('assigned_to')
                 current_site = get_current_site(request)
-                for assigned_to_user in assigned_to_list:
-                    user = get_object_or_404(User, pk=assigned_to_user)
-                    mail_subject = 'Assigned to case.'
-                    message = render_to_string(
-                        'assigned_to/cases_assigned.html', {
-                            'user': user,
-                            'domain': current_site.domain,
-                            'protocol': request.scheme,
-                            'case': case
-                        })
-                    email = EmailMessage(
-                        mail_subject, message, to=[user.email])
-                    email.content_subtype = "html"
-                    email.send()
+                recipients = assigned_to_list
+                send_email_to_assigned_user.delay(recipients, case.id, domain=current_site.domain,
+                    protocol=request.scheme)
+                # for assigned_to_user in assigned_to_list:
+                #     user = get_object_or_404(User, pk=assigned_to_user)
+                #     mail_subject = 'Assigned to case.'
+                #     message = render_to_string(
+                #         'assigned_to/cases_assigned.html', {
+                #             'user': user,
+                #             'domain': current_site.domain,
+                #             'protocol': request.scheme,
+                #             'case': case
+                #         })
+                #     email = EmailMessage(
+                #         mail_subject, message, to=[user.email])
+                #     email.content_subtype = "html"
+                #     email.send()
 
             if request.POST.getlist('contacts', []):
                 case.contacts.add(*request.POST.getlist('contacts'))
@@ -237,22 +241,24 @@ def update_case(request, pk):
                 all_members_list = list(
                     set(list(assigned_form_users)) -
                     set(list(assigned_to_ids)))
-
-                if all_members_list:
-                    for assigned_to_user in all_members_list:
-                        user = get_object_or_404(User, pk=assigned_to_user)
-                        mail_subject = 'Assigned to case.'
-                        message = render_to_string(
-                            'assigned_to/cases_assigned.html', {
-                                'user': user,
-                                'domain': current_site.domain,
-                                'protocol': request.scheme,
-                                'case': case_obj
-                            })
-                        email = EmailMessage(
-                            mail_subject, message, to=[user.email])
-                        email.content_subtype = "html"
-                        email.send()
+                recipients = all_members_list
+                send_email_to_assigned_user.delay(recipients, case_obj.id, domain=current_site.domain,
+                    protocol=request.scheme)
+                # if all_members_list:
+                #     for assigned_to_user in all_members_list:
+                #         user = get_object_or_404(User, pk=assigned_to_user)
+                #         mail_subject = 'Assigned to case.'
+                #         message = render_to_string(
+                #             'assigned_to/cases_assigned.html', {
+                #                 'user': user,
+                #                 'domain': current_site.domain,
+                #                 'protocol': request.scheme,
+                #                 'case': case_obj
+                #             })
+                #         email = EmailMessage(
+                #             mail_subject, message, to=[user.email])
+                #         email.content_subtype = "html"
+                #         email.send()
 
                 case_obj.assigned_to.clear()
                 case_obj.assigned_to.add(*request.POST.getlist('assigned_to'))

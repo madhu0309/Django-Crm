@@ -23,7 +23,7 @@ from planner.forms import ReminderForm
 from leads.tasks import send_lead_assigned_emails
 from django.core.exceptions import PermissionDenied
 from common.tasks import send_email_user_mentions
-
+from leads.tasks import send_email_to_assigned_user
 
 class LeadListView(LoginRequiredMixin, TemplateView):
     model = Lead
@@ -133,20 +133,23 @@ def create_lead(request):
                 lead_obj.assigned_to.add(*request.POST.getlist('assigned_to'))
                 assigned_to_list = request.POST.getlist('assigned_to')
                 current_site = get_current_site(request)
-                for assigned_to_user in assigned_to_list:
-                    user = get_object_or_404(User, pk=assigned_to_user)
-                    mail_subject = 'Assigned to lead.'
-                    message = render_to_string(
-                        'assigned_to/leads_assigned.html', {
-                            'user': user,
-                            'domain': current_site.domain,
-                            'protocol': request.scheme,
-                            'lead': lead_obj
-                        })
-                    email = EmailMessage(
-                        mail_subject, message, to=[user.email])
-                    email.content_subtype = "html"
-                    email.send()
+                recipients = assigned_to_list
+                send_email_to_assigned_user.delay(recipients, lead_obj.id, domain=current_site.domain,
+                    protocol=request.scheme)
+                # for assigned_to_user in assigned_to_list:
+                #     user = get_object_or_404(User, pk=assigned_to_user)
+                #     mail_subject = 'Assigned to lead.'
+                #     message = render_to_string(
+                #         'assigned_to/leads_assigned.html', {
+                #             'user': user,
+                #             'domain': current_site.domain,
+                #             'protocol': request.scheme,
+                #             'lead': lead_obj
+                #         })
+                #     email = EmailMessage(
+                #         mail_subject, message, to=[user.email])
+                #     email.content_subtype = "html"
+                #     email.send()
 
             if request.FILES.get('lead_attachment'):
                 attachment = Attachments()
@@ -177,20 +180,23 @@ def create_lead(request):
                     # account_object.assigned_to.add(*request.POST.getlist('assigned_to'))
                     assigned_to_list = request.POST.getlist('assigned_to')
                     current_site = get_current_site(request)
-                    for assigned_to_user in assigned_to_list:
-                        user = get_object_or_404(User, pk=assigned_to_user)
-                        mail_subject = 'Assigned to account.'
-                        message = render_to_string(
-                            'assigned_to/account_assigned.html', {
-                                'user': user,
-                                'domain': current_site.domain,
-                                'protocol': request.scheme,
-                                'account': account_object
-                            })
-                        email = EmailMessage(
-                            mail_subject, message, to=[user.email])
-                        email.content_subtype = "html"
-                        email.send()
+                    recipients = assigned_to_list
+                    send_email_to_assigned_user.delay(recipients, lead_obj.id, domain=current_site.domain,
+                        protocol=request.scheme)
+                    # for assigned_to_user in assigned_to_list:
+                    #     user = get_object_or_404(User, pk=assigned_to_user)
+                    #     mail_subject = 'Assigned to account.'
+                    #     message = render_to_string(
+                    #         'assigned_to/account_assigned.html', {
+                    #             'user': user,
+                    #             'domain': current_site.domain,
+                    #             'protocol': request.scheme,
+                    #             'account': account_object
+                    #         })
+                    #     email = EmailMessage(
+                    #         mail_subject, message, to=[user.email])
+                    #     email.content_subtype = "html"
+                    #     email.send()
 
                 account_object.save()
             success_url = reverse('leads:list')
@@ -325,21 +331,25 @@ def update_lead(request, pk):
                     all_members_list = list(
                         set(list(assigned_form_users)) -
                         set(list(assigned_to_ids)))
-                    if all_members_list:
-                        for assigned_to_user in all_members_list:
-                            user = get_object_or_404(User, pk=assigned_to_user)
-                            mail_subject = 'Assigned to lead.'
-                            message = render_to_string(
-                                'assigned_to/leads_assigned.html', {
-                                    'user': user,
-                                    'domain': current_site.domain,
-                                    'protocol': request.scheme,
-                                    'lead': lead_obj
-                                })
-                            email = EmailMessage(
-                                mail_subject, message, to=[user.email])
-                            email.content_subtype = "html"
-                            email.send()
+                    current_site = get_current_site(request)
+                    recipients = all_members_list
+                    send_email_to_assigned_user.delay(recipients, lead_obj.id, domain=current_site.domain,
+                        protocol=request.scheme)
+                    # if all_members_list:
+                    #     for assigned_to_user in all_members_list:
+                    #         user = get_object_or_404(User, pk=assigned_to_user)
+                    #         mail_subject = 'Assigned to lead.'
+                    #         message = render_to_string(
+                    #             'assigned_to/leads_assigned.html', {
+                    #                 'user': user,
+                    #                 'domain': current_site.domain,
+                    #                 'protocol': request.scheme,
+                    #                 'lead': lead_obj
+                    #             })
+                    #         email = EmailMessage(
+                    #             mail_subject, message, to=[user.email])
+                    #         email.content_subtype = "html"
+                    #         email.send()
 
                 lead_obj.assigned_to.clear()
                 lead_obj.assigned_to.add(*request.POST.getlist('assigned_to'))
@@ -375,20 +385,24 @@ def update_lead(request, pk):
                     # account_object.assigned_to.add(*request.POST.getlist('assigned_to'))
                     assigned_to_list = request.POST.getlist('assigned_to')
                     current_site = get_current_site(request)
-                    for assigned_to_user in assigned_to_list:
-                        user = get_object_or_404(User, pk=assigned_to_user)
-                        mail_subject = 'Assigned to account.'
-                        message = render_to_string(
-                            'assigned_to/account_assigned.html', {
-                                'user': user,
-                                'domain': current_site.domain,
-                                'protocol': request.scheme,
-                                'account': account_object
-                            })
-                        email = EmailMessage(
-                            mail_subject, message, to=[user.email])
-                        email.content_subtype = "html"
-                        email.send()
+                    recipients = assigned_to_list
+                    send_email_to_assigned_user.delay(recipients, lead_obj.id, domain=current_site.domain,
+                        protocol=request.scheme)
+                    # current_site = get_current_site(request)
+                    # for assigned_to_user in assigned_to_list:
+                    #     user = get_object_or_404(User, pk=assigned_to_user)
+                    #     mail_subject = 'Assigned to account.'
+                    #     message = render_to_string(
+                    #         'assigned_to/account_assigned.html', {
+                    #             'user': user,
+                    #             'domain': current_site.domain,
+                    #             'protocol': request.scheme,
+                    #             'account': account_object
+                    #         })
+                    #     email = EmailMessage(
+                    #         mail_subject, message, to=[user.email])
+                    #     email.content_subtype = "html"
+                    #     email.send()
 
                 account_object.save()
             status = request.GET.get('status', None)
