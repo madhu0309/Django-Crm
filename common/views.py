@@ -472,8 +472,8 @@ class DocumentDeleteView(LoginRequiredMixin, DeleteView):
 def document_update(request, pk):
     template_name = "doc_create.html"
     users = User.objects.filter(is_active=True).order_by('email')
-    form = DocumentForm(users=users)
     document = Document.objects.filter(id=pk).first()
+    form = DocumentForm(users=users, instance=document)
 
     if request.POST:
         form = DocumentForm(request.POST, request.FILES,

@@ -184,6 +184,7 @@ class PasswordResetEmailForm(PasswordResetForm):
 class DocumentForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
+        self.instance = kwargs.get('instance', None)
         users = kwargs.pop('users', [])
         super(DocumentForm, self).__init__(*args, **kwargs)
 
@@ -200,6 +201,19 @@ class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
         fields = ['title', 'document_file', 'status', 'shared_to']
+
+    def clean_title(self):
+        title = self.cleaned_data.get('title')
+        if not self.instance:
+            if Document.objects.filter(title=title).exists():
+                raise forms.ValidationError(
+                    'Document with that title already exists')
+                return title
+        if Document.objects.filter(title=title).exclude(id=self.instance.id).exists():
+            raise forms.ValidationError(
+                'Document with that title already exists')
+            return title
+        return title
 
 
 class UserCommentForm(forms.ModelForm):
