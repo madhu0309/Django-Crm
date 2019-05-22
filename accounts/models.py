@@ -118,7 +118,6 @@ class Email(models.Model):
     message_subject = models.TextField(null=True)
     message_body = models.TextField(null=True)
 
-
     def __str__(self):
         return self.message_body
 
