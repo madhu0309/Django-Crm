@@ -18,6 +18,7 @@ from accounts.models import Account
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from common.tasks import send_email_user_mentions
+from contacts.tasks import send_email_to_assigned_user
 
 
 class ContactsListView(LoginRequiredMixin, TemplateView):
@@ -125,19 +126,22 @@ class CreateContactView(LoginRequiredMixin, CreateView):
                 *self.request.POST.getlist('assigned_to'))
             assigned_to_list = self.request.POST.getlist('assigned_to')
             current_site = get_current_site(self.request)
-            for assigned_to_user in assigned_to_list:
-                user = get_object_or_404(User, pk=assigned_to_user)
-                mail_subject = 'Assigned to contact.'
-                message = render_to_string(
-                    'assigned_to/contact_assigned.html', {
-                        'user': user,
-                        'domain': current_site.domain,
-                        'protocol': self.request.scheme,
-                        'contact': contact_obj
-                    })
-                email = EmailMessage(mail_subject, message, to=[user.email])
-                email.content_subtype = "html"
-                email.send()
+            recipients = assigned_to_list
+            send_email_to_assigned_user(recipients, contact_obj.id, domain=current_site.domain,
+                protocol=self.request.scheme)
+            # for assigned_to_user in assigned_to_list:
+            #     user = get_object_or_404(User, pk=assigned_to_user)
+            #     mail_subject = 'Assigned to contact.'
+            #     message = render_to_string(
+            #         'assigned_to/contact_assigned.html', {
+            #             'user': user,
+            #             'domain': current_site.domain,
+            #             'protocol': self.request.scheme,
+            #             'contact': contact_obj
+            #         })
+            #     email = EmailMessage(mail_subject, message, to=[user.email])
+            #     email.content_subtype = "html"
+            #     email.send()
 
         if self.request.FILES.get('contact_attachment'):
             attachment = Attachments()
