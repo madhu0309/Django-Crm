@@ -17,6 +17,7 @@ from contacts.forms import (ContactForm,
 from accounts.models import Account
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
+from common.tasks import send_email_user_mentions
 
 
 class ContactsListView(LoginRequiredMixin, TemplateView):
@@ -199,12 +200,20 @@ class ContactDetailView(LoginRequiredMixin, DetailView):
             assigned_dict['name'] = each.email
             assigned_data.append(assigned_dict)
 
+        if self.request.user.is_superuser or self.request.user.role == 'ADMIN':
+            users_mention = list(User.objects.all().values('username'))
+        elif self.request.user != context['object'].created_by:
+            users_mention = [{'username': context['object'].created_by.username}]
+        else:
+            users_mention = list(context['object'].assigned_to.all().values('username'))
+
         context.update({"comments":
                         context["contact_record"].contact_comments.all(),
                         'attachments':
                         context["contact_record"].contact_attachment.all(),
                         "assigned_data": json.dumps(assigned_data),
-                        "tasks" : context['object'].contacts_tasks.all()
+                        "tasks" : context['object'].contacts_tasks.all(),
+                        'users_mention':  users_mention,
                         })
         return context
 
@@ -376,6 +385,10 @@ class AddCommentView(LoginRequiredMixin, CreateView):
         comment.commented_by = self.request.user
         comment.contact = self.contact
         comment.save()
+        comment_id = comment.id
+        current_site = get_current_site(self.request)
+        send_email_user_mentions.delay(comment_id, 'contacts', domain=current_site.domain,
+            protocol=self.request.scheme)
         return JsonResponse({
             "comment_id": comment.id, "comment": comment.comment,
             "commented_on": comment.commented_on,
@@ -405,6 +418,10 @@ class UpdateCommentView(LoginRequiredMixin, View):
     def form_valid(self, form):
         self.comment_obj.comment = form.cleaned_data.get("comment")
         self.comment_obj.save(update_fields=["comment"])
+        comment_id = self.comment_obj.id
+        current_site = get_current_site(self.request)
+        send_email_user_mentions.delay(comment_id, 'contacts', domain=current_site.domain,
+            protocol=self.request.scheme)
         return JsonResponse({
             "commentid": self.comment_obj.id,
             "comment": self.comment_obj.comment,

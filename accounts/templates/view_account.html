@@ -2,6 +2,11 @@
 {% load staticfiles %}
 {% load thumbnail %}
 {% block breadcrumb %}
+
+{% block extralinks %}
+<link rel="stylesheet" href="{% static 'css/bootstrap-suggest.css' %}">
+{% endblock extralinks %}
+
 <!-- breadcrumb starts here -->
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -195,8 +200,8 @@
                     {% if comment_permission %}
                     <form id="comment_form" method="POST" enctype="multipart/form-data">
                       <div class="form-group">
-                        <textarea class="form-control" textarea cols="40" rows="3" id="id_comments" name="comment"
-                          placeholder="Submit Your Comments Here"></textarea>
+                        <textarea class="form-control mentions" textarea cols="40" rows="3" id="id_comments"
+                          name="comment" placeholder="Submit Your Comments Here"></textarea>
                         <div><i id="CommentError" style="display:none; color:red"></i></div>
                         </br>
                         <div class="buttons_row">
@@ -247,7 +252,7 @@
                       <form id="comment_edit_form" method="POST">
                         <div class="modal-body">
                           <div class="form-group">
-                            <textarea class="form-control" textarea cols="40" rows="3" id="id_editcomment"
+                            <textarea class="form-control mentions" textarea cols="40" rows="3" id="id_editcomment"
                               name="comment" placeholder="Submit Your Comments" style="color:black;"></textarea><span><i
                                 id="CommentEditError" style="display:none; color:red"></i></span>
                             <input type="hidden" value="{{ account.id }}" name="accountid">
@@ -458,8 +463,7 @@
                         <td>{{task.status}}</td>
                         <td>{{task.priority}} {% if task.probability %} % {% endif %}</td>
                         <td class="actions">
-                          <a href="{% url 'tasks:task_detail' task.id %}"
-                            class="btn btn-primary">View</a>
+                          <a href="{% url 'tasks:task_detail' task.id %}" class="btn btn-primary">View</a>
                           <a href="{% url 'tasks:task_edit' task.id %}?view_account={{account_record.id}}"
                             class="btn btn-success">Edit</a>
                           <a href="{% url 'tasks:task_delete' task.id %}?view_account={{account_record.id}}"
@@ -485,6 +489,7 @@
 <!-- ACCOUNTS VIEW ENDS -->
 {% endblock content %}
 {% block js_block %}
+
 <script type="text/javascript">
   $("#comment_form").submit(function (e) {
     e.preventDefault()
@@ -623,5 +628,16 @@
   });
 
 </script>
-<script src="{% static 'js/mention.js' %}"></script>
+<script src="{% static 'js/bootstrap-suggest.js' %}"></script>
+<script>
+  $('.mentions').suggest('@', {
+    data: {{ users_mention| safe}},
+    map: function (user) {
+      return {
+        value: user.username,
+        text: '<strong>' + user.username + '</strong>'
+      }
+    }
+})
+</script>
 {% endblock js_block %}

@@ -2,7 +2,9 @@ from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.views.generic import (CreateView, DeleteView, DetailView, FormView,
@@ -10,6 +12,7 @@ from django.views.generic import (CreateView, DeleteView, DetailView, FormView,
 
 from accounts.models import Account
 from common.models import Attachments, Comment, User
+from common.tasks import send_email_user_mentions
 from contacts.models import Contact
 from tasks.celery_tasks import send_email
 from tasks.forms import TaskAttachmentForm, TaskCommentForm, TaskForm
@@ -24,7 +27,7 @@ def tasks_list(request):
         if request.user.role == 'ADMIN' or request.user.is_superuser:
             tasks = Task.objects.all()
         else:
-            tasks = Task.objects.filter(created_by=request.user)
+            tasks = Task.objects.filter(Q(created_by=request.user) | Q(assigned_to=request.user))
         today = datetime.today().date()
         return render(request, 'tasks_tasks_list.html', {'tasks': tasks, 'today': today, 'status_choices': STATUS_CHOICES, 'priority_choices': PRIORITY_CHOICES})
 
@@ -72,7 +75,7 @@ def task_detail(request, task_id):
 
     task = get_object_or_404(Task, pk=task_id)
 
-    if not (request.user.role == 'ADMIN' or request.user.is_superuser or task.created_by == request.user):
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or task.created_by == request.user or request.user in task.assigned_to.all()):
         raise PermissionDenied
 
     if request.method == 'GET':
@@ -81,12 +84,14 @@ def task_detail(request, task_id):
         #         'assigned_to', 'contacts').get(id=task_id)
         attachments = task.tasks_attachment.all()
         comments = task.tasks_comments.all()
-        comment_permission = True if (
-            request.user == task.created_by or
-            request.user.is_superuser or self.request.user.role == 'ADMIN'
-        ) else False
+        if request.user.is_superuser or request.user.role == 'ADMIN':
+            users_mention = list(User.objects.all().values('username'))
+        elif request.user != task.created_by:
+            users_mention = [{'username': task.created_by.username}]
+        else:
+            users_mention = list(task.assigned_to.all().values('username'))
         return render(request, 'task_detail.html',
-                      {'task': task, 'comment_permission': comment_permission,
+                      {'task': task, 'users_mention':users_mention,
                        'attachments': attachments, 'comments': comments})
 
 
@@ -154,6 +159,10 @@ class AddCommentView(LoginRequiredMixin, CreateView):
         comment.commented_by = self.request.user
         comment.task = self.task
         comment.save()
+        comment_id = comment.id
+        current_site = get_current_site(self.request)
+        send_email_user_mentions.delay(comment_id, 'tasks', domain=current_site.domain,
+            protocol=self.request.scheme)
         return JsonResponse({
             "comment_id": comment.id, "comment": comment.comment,
             "commented_on": comment.commented_on,
@@ -183,6 +192,10 @@ class UpdateCommentView(LoginRequiredMixin, View):
     def form_valid(self, form):
         self.comment_obj.comment = form.cleaned_data.get("comment")
         self.comment_obj.save(update_fields=["comment"])
+        comment_id = self.comment_obj.id
+        current_site = get_current_site(self.request)
+        send_email_user_mentions.delay(comment_id, 'tasks', domain=current_site.domain,
+            protocol=self.request.scheme)
         return JsonResponse({
             "comment_id": self.comment_obj.id,
             "comment": self.comment_obj.comment,
