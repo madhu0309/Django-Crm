@@ -781,3 +781,21 @@ class TestUserCreationView(ObjectsCreation, TestCase):
         self.attachment = Attachments.objects.create(
             attachment=SimpleUploadedFile(upload_file.name, upload_file.read()), created_by=self.user)
         response = self.client.get(reverse('common:download_attachment', kwargs=({'pk':self.attachment.id})))
+
+    def test_document_update(self):
+        self.client.login(username='mp@micropyramid.com', password='mp')
+        response = self.client.get(reverse('common:download_document', args=(self.document.id,)))
+        self.assertEqual(403, response.status_code)
+
+    def test_user_status(self):
+        self.user_status = User.objects.create(
+            first_name="mpus",
+            username='mpus',
+            email='mpus@micropyramid.com',
+            role="USER",
+            is_active=False
+        )
+        self.user_status.set_password('mp')
+        self.user_status.save()
+        response = self.client.get(reverse('common:change_user_status', kwargs={'pk': self.user_status.id}))
+        self.assertEqual(302, response.status_code)

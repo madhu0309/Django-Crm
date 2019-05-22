@@ -483,6 +483,7 @@ class AddAttachmentView(LoginRequiredMixin, CreateView):
             "created_by": attachment.created_by.email,
             "message": "attachment Created",
             "attachment_display": attachment.get_file_type_display(),
+            "file_type": attachment.file_type(),
             "error": False
         })
 

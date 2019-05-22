@@ -1,6 +1,6 @@
 {% extends 'sales/base.html' %}
 {% load staticfiles %}
-
+{% load thumbnail %}
 {% block breadcrumb %}
 <nav aria-label="breadcrumb">
 <ol class="breadcrumb">
@@ -116,6 +116,13 @@
                             {% endif %}
 
                               <div class="stream-post-container" id="attachment_name{{attachment.id}}">
+                                {% if attachment.attachment %}
+                                {% if 'image' in attachment.file_type %}
+                                  {% thumbnail attachment.attachment "80x80" crop="center" as im %}
+                                      <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" class="mb-2">
+                                  {% endthumbnail %}
+                                {% endif %}
+                                {% endif %}
                                 <pre> <span class="icon"><i style="font-size:1.5rem;" class="{{attachment.get_file_type_display}}"></i>{{attachment.file_name}} </span> <a href="{% url 'common:download_attachment' attachment.id %}">Download</a></pre>
                               </div>
 
@@ -330,7 +337,8 @@ $("#attachment_form").submit(function (e) {
               "<li class='list-group-item list-row' id='attachment" + data.attachment_id + "'>" +
                 "<div class='float-right right-container'><div class='list-row-buttons btn-group float-right'><button class='action btn primary_btn' onclick='remove_attachment("+data.attachment_id+")''>Remove</button></div></div>" +
                 "<div class='stream-post-container' id='attachment_name"+data.attachment_id+"'>"+
-                "<pre><span class='icon'><i style='font-size:1.5rem;' class='"+data.attachment_display+"'></i>&nbsp;&nbsp;</span><a href='"+data.download_url+"'>Download</a></pre></div>"+
+                    `${ (data.file_type[0]).startsWith('image') ? `<img src=${data.attachment_url} width="80px" height="80px" class="mb-2">` : '' }` +
+                "<pre><span class='icon'><i style='font-size:1.5rem;' class='"+data.attachment_display+"'></i>&nbsp;&nbsp;</span>" + data.attachment + "&nbsp; &nbsp;<a href='"+data.download_url+"'>Download</a></pre></div>"+
                 "<div class='stream-container'><pre class='float-left'>"+data.created_by+"</pre><pre class='float-right date'>"+d.toLocaleString('en-US', { hour12: true })+"</pre></div>" +
               "</li>"
         )

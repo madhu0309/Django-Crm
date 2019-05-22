@@ -1,11 +1,11 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import (
-    CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
+    CreateView, UpdateView, DetailView, TemplateView, View, DeleteView, FormView)
 from accounts.forms import AccountForm, AccountCommentForm, \
-    AccountAttachmentForm
-from accounts.models import Account, Tags
+    AccountAttachmentForm, EmailForm
+from accounts.models import Account, Tags, Email
 from common.models import User, Comment, Attachments
 from common.utils import INDCHOICES, COUNTRIES, \
     CURRENCY_CODES, CASE_TYPE, PRIORITY_CHOICE, STATUS_CHOICE
@@ -16,7 +16,8 @@ from django.urls import reverse_lazy, reverse
 from leads.models import Lead
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
-
+from django.contrib.auth.decorators import login_required
+from accounts.tasks import send_email
 
 class AccountsListView(LoginRequiredMixin, TemplateView):
     model = Account
@@ -422,7 +423,8 @@ class AddAttachmentView(LoginRequiredMixin, CreateView):
                                     kwargs={'pk': attachment.id}),
             "attachment_display": attachment.get_file_type_display(),
             "created_on": attachment.created_on,
-            "created_by": attachment.created_by.email
+            "created_by": attachment.created_by.email,
+            "file_type": attachment.file_type()
         })
 
     def form_invalid(self, form):
@@ -446,3 +448,23 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
         data = {
             'error': "You don't have permission to delete this attachment."}
         return JsonResponse(data)
+
+@login_required
+def create_mail(request, account_id):
+
+    if request.method == 'GET':
+        account = get_object_or_404(Account, pk=account_id)
+        contacts_list = list(account.contacts.all().values('email'))
+        email_form = EmailForm()
+        return render(request, 'create_mail_accounts.html', {'account_id': account_id,
+            'contacts_list': contacts_list, 'email_form': email_form})
+
+    if request.method == 'POST':
+        form = EmailForm(request.POST)
+        if form.is_valid():
+            send_email.delay(form.data.get('message_subject'), form.data.get('message_body'),
+                from_email=account_id, recipients=form.data.get('recipients').split(','))
+
+            return JsonResponse({'error': False})
+        else:
+            return JsonResponse({'error': True, 'errors': form.errors})

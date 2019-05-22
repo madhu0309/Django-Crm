@@ -1,5 +1,6 @@
 {% extends 'sales/base.html' %}
 {% load staticfiles %}
+{% load thumbnail %}
 {% block breadcrumb %}
 <!-- breadcrumb starts here -->
 <nav aria-label="breadcrumb">
@@ -127,7 +128,7 @@
             </div>
             <div class="col-md-12">
               <div class="created_information">
-                Created by <b>{{ account_record.created_by }}</b> created on <i><b>{{ account_record.created_on }}</b></i> 
+                Created by <b>{{ account_record.created_by }}</b> created on <i><b>{{ account_record.created_on }}</b></i>
               </div>
             </div>
             <div class="col-md-12 " style="padding:0">
@@ -160,6 +161,13 @@
                         </div>
                         {% endif %}
                         <div class="stream-post-container" id="attachment_name{{attachment.id}}">
+                          {% if attachment.attachment %}
+                          {% if 'image' in attachment.file_type %}
+                            {% thumbnail attachment.attachment "80x80" crop="center" as im %}
+                                <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" class="mb-2">
+                            {% endthumbnail %}
+                          {% endif %}
+                          {% endif %}
                           <pre> <span class="icon"><i style="font-size:1.5rem;" class="{{attachment.get_file_type_display}}"></i> </span>{{attachment.file_name}} <a href="{% url 'common:download_attachment' attachment.id %}">Download</a></pre>
                         </div>
                         <div class="stream-container">
@@ -258,6 +266,11 @@
                 <div class="panel-heading-list card-title view-pad">
                   Contacts
                   <a href="{% url 'contacts:add_contact' %}?view_account={{account_record.id}}"><span class="fa fa-plus pull-right" style="color:black;"></span></a>
+                  {% if contacts|length > 0 %}
+                  <a href="{% url 'accounts:create_mail' account_record.id %}" style="color:black">
+                    <span class="pull-right mr-2">Send Mail</span>
+                  </a>
+                  {% endif %}
                 </div>
                 <div class="table-responsive">
                   <table class="table table-bordered table-striped table-condensed">
@@ -327,7 +340,7 @@
                         <td>{{opportunity.name}}</td>
                         <td>{{opportunity.stage}}</td>
                         <td>{{opportunity.probability}} {% if opportunity.probability %} % {% endif %}</td>
-                        <td class="actions"> 
+                        <td class="actions">
                           <a href="{% url 'opportunities:opp_view' pk=opportunity.id %}" class="btn btn-primary">View</a>
                           <a href="{% url 'opportunities:opp_edit' pk=opportunity.id %}?view_account={{account_record.id}}" class="btn btn-success">Edit</a>
                           <a href="{% url 'opportunities:opp_remove' pk=opportunity.id %}?view_account={{account_record.id}}" class="btn btn-danger">Remove</a>
@@ -375,7 +388,7 @@
                         <td>{{ case.name }}</td>
                         <td>{{ case.status }}</td>
                         <td>{{ case.priority }}</td>
-                        <td class="actions"> 
+                        <td class="actions">
                           <a href="{% url 'cases:view_case' pk=case.id %}" class="btn btn-primary">View</a>
                           <a href="{% url 'cases:edit_case' pk=case.id %}?view_account={{account_record.id}}" class="btn btn-success">Edit</a>
                           <a href="{% url 'cases:remove_case' case_id=case.id %}?view_account={{account_record.id}}" class="btn btn-danger">Remove</a>
@@ -441,7 +454,7 @@
     $("#id_editcomment").val(comment)
     $("#edit_file_field").html($("#comment_file_div" + x).clone())
   }
-  
+
   $("#comment_edit").click(function (e) {
     e.preventDefault()
     var formData = new FormData($("#comment_edit_form")[0]);
@@ -465,16 +478,16 @@
       }
     })
   })
-  
+
   /*Comment Edit Js Ends*/
-  
+
   function HideError(e) {
     $("#CommentError").hide()
     $("#CommentEditError").hide()
   }
-  
+
   /*Comment Remove Js Start*/
-  
+
   function remove_comment(x) {
     var con = confirm("Do you want to Delete it for Sure!?")
     if (con == true) {
@@ -504,7 +517,7 @@
       })
     }
   }
-  
+
   $("#attachment_form").submit(function (e) {
     e.preventDefault()
     const formData = new FormData($("#attachment_form")[0]);
@@ -524,7 +537,8 @@
               "<li class='list-group-item list-row' id='attachment" + data.attachment_id + "'>" +
                 "<div class='float-right right-container'><div class='list-row-buttons btn-group float-right'><button class='action btn primary_btn' onclick='remove_attachment("+data.attachment_id+")''>Remove</button></div></div>" +
                 "<div class='stream-post-container' id='attachment_name"+data.attachment_id+"'>"+
-                "<pre><span class='icon'><i style='font-size:1.5rem;' class='"+data.attachment_display+"'></i>&nbsp;&nbsp;</span><a href='"+data.download_url+"'>Download</a></pre></div>"+
+                    `${ (data.file_type[0]).startsWith('image') ? `<img src=${data.attachment_url} width="80px" height="80px" class="mb-2">` : '' }` +
+                "<pre><span class='icon'><i style='font-size:1.5rem;' class='"+data.attachment_display+"'></i>&nbsp;&nbsp;</span>" + data.attachment + "&nbsp; &nbsp;<a href='"+data.download_url+"'>Download</a></pre></div>"+
                 "<div class='stream-container'><pre class='float-left'>"+data.created_by+"</pre><pre class='float-right date'>"+d.toLocaleString('en-US', { hour12: true })+"</pre></div>" +
               "</li>"
           )
@@ -535,7 +549,7 @@
       }
     })
   });
-  
+
 </script>
 <script src="{% static 'js/mention.js' %}"></script>
 {% endblock js_block %}

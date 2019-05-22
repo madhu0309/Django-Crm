@@ -75,3 +75,15 @@ class AccountAttachmentForm(forms.ModelForm):
     class Meta:
         model = Attachments
         fields = ('attachment', 'account')
+
+
+class EmailForm(forms.Form):
+    recipients = forms.CharField(max_length=500)
+    message_subject = forms.CharField(max_length=500)
+    message_body = forms.CharField(widget=forms.Textarea)
+
+    def __init__(self, *args, **kwargs):
+        super(EmailForm, self).__init__(*args, **kwargs)
+        self.fields['message_subject'].widget.attrs['class'] = 'form-control'
+        self.fields['message_subject'].widget.attrs['required'] = True
+        self.fields['message_subject'].widget.attrs['placeholder'] = 'Email Subject'

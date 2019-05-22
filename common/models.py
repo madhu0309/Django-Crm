@@ -12,6 +12,7 @@ from common.templatetags.common_tags import (
     is_document_file_sheet, is_document_file_zip
 )
 from common.utils import COUNTRIES, ROLES
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 def img_url(self, filename):
@@ -298,3 +299,33 @@ class Google(models.Model):
 
     def __str__(self):
         return self.email
+
+# # Need to be reviewed
+# class Task(models.Model):
+
+#     # assigned_to can be assigned to contact, oppurtunity, case
+#     assigned_to = models.ManyToManyField(User, related_name='task_assigned_to')
+#     status = models.CharField(max_length=50, choices=)
+#     subject = models.CharField(max_length=200, default='')
+#     name = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='user_task')
+
+#     due_date = models.DateField(auto_now=False, auto_now_add=False)
+#     # this could be choice field
+#     related_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='to_account')
+#     # related_to = models.CharField(max_length=50, choices=)
+#     priority = models.CharField(max_length=50, , choices=)
+
+
+
+#     comments = models.TextField()
+#     recurrence = models.BooleanField()
+
+
+#     # optional fields
+#     status = models.CharField(max_length=50, choices=)
+#     # type_task = models.CharField(max_length=50)
+#     # phone = models.phonenumber_field(null=True)
+#     # email = models.EmailField(max_length=254)
+
+#     send_notification_mail = models.BooleanField(default=False)
+#     reminder_field = models.DateTimeField(auto_now=False, auto_now_add=False)
