@@ -45,11 +45,11 @@ class TaskForm(forms.ModelForm):
         if not self.obj_instance:
             if Task.objects.filter(title=title).exists():
                 raise forms.ValidationError(
-                    'Task with that title already exists')
+                    'Task with this Title already exists')
             return title
         if Task.objects.filter(title=title).exclude(id=self.obj_instance.id).exists():
             raise forms.ValidationError(
-                'Task with that title already exists')
+                'Task with this Title already exists')
             return title
         return title
 
