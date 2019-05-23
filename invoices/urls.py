@@ -5,6 +5,6 @@ app_name = 'invoices'
 
 
 urlpatterns = [
-    # path('list/', tasks_list, name='tasks_list'),
+    path('list/', invoices_list, name='invoices_list'),
 
 ]

@@ -11,7 +11,6 @@ class Invoice(models.Model):
     INVOICE_STATUS = (
         ('Draft', 'Draft'),
         ('Sent', 'Sent'),
-        ('Partial', 'Partial'),
         ('Paid', 'Paid'),
         ('Cancel', 'Cancel'),
         ('Pending', 'Pending'),
@@ -20,8 +19,9 @@ class Invoice(models.Model):
     invoice_title = models.CharField(_('Invoice Title'), max_length=50)
     invoice_number = models.CharField(_('Invoice Number'), max_length=50)
     from_address = models.ForeignKey(
-        Address, related_name='invoice_from_address')
-    to_address = models.ForeignKey(Address, related_name='invoice_to_address')
+        Address, related_name='invoice_from_address', on_delete=models.SET_NULL, null=True)
+    to_address = models.ForeignKey(
+        Address, related_name='invoice_to_address', on_delete=models.SET_NULL, null=True)
     name = models.CharField(_('Name'), max_length=100)
     email = models.EmailField(_('Email'))
     assigned_to = models.ManyToManyField(
@@ -33,7 +33,7 @@ class Invoice(models.Model):
     # total amount is product of rate and quantity
     total_amount = models.DecimalField(
         blank=True, null=True, max_digits=12, decimal_places=2)
-    currency = currency = models.CharField(
+    currency = models.CharField(
         max_length=3, choices=CURRENCY_CODES, blank=True, null=True)
     phone = PhoneNumberField(null=True, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
@@ -46,7 +46,8 @@ class Invoice(models.Model):
     amount_paid = models.DecimalField(
         blank=True, null=True, max_digits=12, decimal_places=2)
     is_email_sent = models.BooleanField(default=False)
-    status = models.CharField(choices=INVOICE_STATUS, max_length=15, default="Draft")
+    status = models.CharField(choices=INVOICE_STATUS,
+                              max_length=15, default="Draft")
 
     class Meta:
         """Meta definition for Invoice."""
@@ -56,4 +57,4 @@ class Invoice(models.Model):
 
     def __str__(self):
         """Unicode representation of Invoice."""
-        pass
+        return self.invoice_number
