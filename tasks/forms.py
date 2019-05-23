@@ -16,12 +16,17 @@ class TaskForm(forms.ModelForm):
         for field in self.fields.values():
             field.widget.attrs = {"class": "form-control"}
 
-        if request_user:
+        if request_user.role == 'USER':
             self.fields["account"].queryset = Account.objects.filter(
                 created_by=request_user)
 
             self.fields["contacts"].queryset = Contact.objects.filter(
                 Q(assigned_to__in=[request_user]) | Q(created_by=request_user))
+
+        if request_user.role == 'ADMIN' or request_user.is_superuser:
+            self.fields["account"].queryset = Account.objects.filter()
+
+            self.fields["contacts"].queryset = Contact.objects.filter()
 
         self.fields['assigned_to'].required = False
         # if assigned_users:

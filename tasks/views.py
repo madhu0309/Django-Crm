@@ -33,8 +33,9 @@ def tasks_list(request):
         return render(request, 'tasks_tasks_list.html', {'tasks': tasks, 'today': today, 'status_choices': STATUS_CHOICES, 'priority_choices': PRIORITY_CHOICES})
 
     if request.method == 'POST':
+        tasks = Task.objects.filter()
         if request.user.role == 'ADMIN' or request.user.is_superuser:
-            tasks = Task.objects.filter()
+            tasks = tasks
         else:
             tasks = Task.objects.filter(created_by=request.user)
 
@@ -48,7 +49,7 @@ def tasks_list(request):
         if request.POST.get('priority', None):
             tasks = tasks.filter(priority=request.POST.get('priority'))
 
-        task = task.distinct()
+        tasks = tasks.distinct()
 
         today = datetime.today().date()
         return render(request, 'tasks_tasks_list.html', {'tasks': tasks, 'today': today, 'status_choices': STATUS_CHOICES, 'priority_choices': PRIORITY_CHOICES})
@@ -67,13 +68,15 @@ def task_create(request):
         return render(request, 'task_create.html', {'form': form, 'users': users})
 
     if request.method == 'POST':
-        form = TaskForm(request.POST)
-        # import pdb; pdb.set_trace()
+        form = TaskForm(request.POST, request_user=request.user)
         if form.is_valid():
             task = form.save(commit=False)
             task.created_by = request.user
             task.save()
-            send_email.delay(task.id)
+            task.assigned_to.add(*request.POST.getlist('assigned_to'))
+            task.contacts.add(*request.POST.getlist('contacts'))
+            kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
+            send_email.delay(task.id, **kwargs)
             return JsonResponse({'error': False, 'success_url': reverse('tasks:tasks_list')})
         else:
             return JsonResponse({'error': True, 'errors': form.errors})
@@ -119,13 +122,21 @@ def task_edit(request, task_id):
         else:
             users = User.objects.filter(role='ADMIN').order_by('email')
         # form = TaskForm(request_user=request.user)
-        form = TaskForm(instance=task_obj)
+        form = TaskForm(instance=task_obj, request_user=request.user)
         return render(request, 'task_create.html', {'form': form, 'task_obj': task_obj, 'users': users})
 
     if request.method == 'POST':
-        form = TaskForm(request.POST, instance=task_obj)
+        form = TaskForm(request.POST, instance=task_obj,
+                        request_user=request.user)
         if form.is_valid():
-            form.save()
+            task = form.save(commit=False)
+            form.save_m2m()
+            # task.assigned_to.clear()
+            # task.contacts.clear()
+            # task.assigned_to.add(*request.POST.getlist('assigned_to'))
+            # task.contacts.add(*request.POST.getlist('contacts'))
+            kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
+            send_email.delay(task.id, **kwargs)
             return JsonResponse({'error': False, 'success_url': reverse('tasks:tasks_list')})
         else:
             return JsonResponse({'error': True, 'errors': form.errors})
