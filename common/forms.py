@@ -211,11 +211,11 @@ class DocumentForm(forms.ModelForm):
         if not self.instance:
             if Document.objects.filter(title=title).exists():
                 raise forms.ValidationError(
-                    'Document with that title already exists')
+                    'Document with this Title already exists')
                 return title
         if Document.objects.filter(title=title).exclude(id=self.instance.id).exists():
             raise forms.ValidationError(
-                'Document with that title already exists')
+                'Document with this Title already exists')
             return title
         return title
 
