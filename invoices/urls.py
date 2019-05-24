@@ -6,5 +6,18 @@ app_name = 'invoices'
 
 urlpatterns = [
     path('list/', invoices_list, name='invoices_list'),
+    path('create/', invoices_create, name='invoices_create'),
+    path('detail/<int:invoice_id>/', invoice_details, name='invoice_details'),
+    path('edit/<int:invoice_id>/', invoice_edit, name='invoice_edit'),
+    path('delete/<int:invoice_id>/', invoice_delete, name='invoice_delete'),
+    path('send-mail/<int:invoice_id>/', invoice_send_mail, name='invoice_send_mail'),
+
+    path('comment/add/', AddCommentView.as_view(), name="add_comment"),
+    path('comment/edit/', UpdateCommentView.as_view(), name="edit_comment"),
+    path('comment/remove/', DeleteCommentView.as_view(), name="remove_comment"),
+
+    path('attachment/add/', AddAttachmentView.as_view(), name="add_attachment"),
+    path('attachment/remove/', DeleteAttachmentsView.as_view(),
+         name="remove_attachment"),
 
 ]

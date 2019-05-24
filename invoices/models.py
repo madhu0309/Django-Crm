@@ -12,8 +12,8 @@ class Invoice(models.Model):
         ('Draft', 'Draft'),
         ('Sent', 'Sent'),
         ('Paid', 'Paid'),
-        ('Cancel', 'Cancel'),
         ('Pending', 'Pending'),
+        ('Cancel', 'Cancel'),
     )
 
     invoice_title = models.CharField(_('Invoice Title'), max_length=50)

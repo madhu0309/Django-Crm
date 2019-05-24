@@ -11,9 +11,10 @@
   <!-- heading_create starts here -->
   <div class="row marl">
     <div class="col-lg-12 text-right">
-      <span class="d-inline"><a class="primary_btn" href="{% url 'leads:add_lead'%}"><i class="fa fa-plus"></i>
+      <span class="d-inline"><a class="primary_btn" href="{% url 'invoices:invoices_create'%}"><i
+            class="fa fa-plus"></i>
           Add New
-          Lead</a></span>
+          Invoice</a></span>
     </div>
   </div>
   <!-- heading_create ends here -->
@@ -27,22 +28,16 @@
               <div class="row marl">
                 <div class="filter_col col-md-2">
                   <div class="form-group">
-                    <label for="exampleInputEmail1">Name</label>
-                    <input type="text" class="form-control" placeholder="First Name" name="name"
-                      value="{{request.POST.name}}">
+                    <label for="exampleInputEmail1">Invoice Title</label>
+                    <input type="text" class="form-control" placeholder="Invoice Title" name="invoice_title"
+                      value="{{request.POST.invoice_title}}">
                   </div>
                 </div>
                 <div class="filter_col col-md-2">
                   <div class="form-group">
-                    <label for="exampleInputEmail1">Source</label>
-                    <select class="form-control" id="id_source" name="source">
-                      <option value="">--Source of Lead--</option>
-                      {% for each_source in source %}
-                      <option value="{{each_source.0}}" {% if request.POST.source %}
-                        {% ifequal each_source.0 request.POST.source %}selected{% endifequal %}{% endif %}>
-                        {{each_source.1}} </option>
-                      {% endfor %}
-                    </select>
+                    <label for="exampleInputEmail1">Invoice Number</label>
+                    <input type="text" class="form-control" placeholder="Invoice Number" name="invoice_number"
+                      value="{{request.POST.invoice_number}}">
                   </div>
                 </div>
                 <div class="filter_col col-md-2">
@@ -50,7 +45,7 @@
                     <label for="exampleInputEmail1">Assigned Users</label>
                     <select class="assigned_users form-control" name="assigned_to" multiple="multiple">
                       {% for user in users %}
-                      <option value="{{user.id}}" {% if user.id in assignedto_list %} selected="" {% endif %}>
+                      <option value="{{user.id}}" {% if user.id|slugify in assigned_to %} selected="" {% endif %}>
                         {{user.email}}</option>
                       {% endfor %}
                     </select>
@@ -60,7 +55,7 @@
                   <div class="form-group">
                     <label for="exampleInputEmail1">Status</label>
                     <select class="form-control" id="id_status" name="status">
-                      <option value="">--Status of Lead--</option>
+                      <option value="">--Status of Invoice--</option>
                       {% for each_status in status %}
                       <option value="{{each_status.0}}" {% if request.POST.status %}
                         {% ifequal each_status.0 request.POST.status %}selected{% endifequal %}{% endif %}>
@@ -71,15 +66,9 @@
                 </div>
                 <div class="filter_col col-md-2">
                   <div class="form-group">
-                    <label for="exampleInputEmail1">Tags</label>
-                    <select class="form-control" id="id_tag" name="tag" multiple>
-                      <!-- <option value="">--Select Tags--</option> -->
-                      {% for tag in tags %}
-                      <option value="{{tag.id}}" {% if request_tags %}
-                        {% if tag.id|slugify in request_tags %}selected{% endif %}{% endif %}>
-                        {{ tag.name }} </option>
-                      {% endfor%}
-                    </select>
+                    <label for="exampleInputEmail1">Total Amount</label>
+                    <input type="number" class="form-control" placeholder="Total Amount" name="total_amount"
+                      value="{{request.POST.total_amount}}">
                   </div>
                 </div>
                 <input type="hidden" name="tab_status" id="tab_status">
@@ -99,7 +88,7 @@
   <div class="col-md-12 col-lg-12 col-xl-12">
     <div class="table_container_row row marl no-gutters">
       <div class="col-md-12">
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <!-- <ul class="nav nav-tabs" id="myTab" role="tablist">
           <li class="nav-item">
             <a class="nav-link active" id="open-tab" data-toggle="tab" href="#open" role="tab" aria-controls="open"
               aria-selected="true">Open ({{open_leads|length}})</a>
@@ -108,15 +97,15 @@
             <a class="nav-link" id="close-tab" data-toggle="tab" href="#close" role="tab" aria-controls="close"
               aria-selected="false">Closed ({{close_leads|length}})</a>
           </li>
-        </ul>
+        </ul> -->
         <div class="tab-content" id="myTabContent">
           <div class="tab-pane fade show active" id="open" role="tabpanel" aria-labelledby="open">
             <div class="card">
               <div class="card-body">
                 <div class="card-title text-right">
-                  <span class="float-left">Open Leads - {% if show_pageitems %}
+                  <span class="float-left">Invoices - {% if show_pageitems %}
                     {% show_pageitems %}{% else %}
-                    {{ open_leads|length }}{% endif %}</span>
+                    {{ invoices|length }}{% endif %}</span>
                   <span class="filter_toggle">
                     <a href="#" class="primary_btn"><i class="fas fa-filter"></i></a>
                   </span>
@@ -124,15 +113,15 @@
                 <div class="table-responsive">
                   <table class="table ">
                     <thead>
-                      {% if open_leads|length > 0 %}
+                      {% if invoices|length > 0 %}
                       <tr>
                         <th width="5%">ID</th>
-                        <th width="10%">Title</th>
-                        <th width="8%">Created By</th>
-                        <th width="10%">Source</th>
+                        <th width="10%">Invoice Title</th>
+                        <th width="8%">Invoice Number</th>
+                        <th width="10%">Email</th>
                         <th width="10%">Status</th>
                         <th width="20%">Assigned To</th>
-                        <th width="15%">Tags</th>
+                        <th width="15%">Created by</th>
                         <th width="10%">Created On</th>
                         <th width="10%">Actions</th>
                       </tr>
@@ -140,31 +129,21 @@
                     </thead>
                     <tbody>
                       {% if per_page %}
-                      {% paginate per_page open_leads %}
+                      {% paginate per_page invoices %}
                       {% else %}
-                      {% paginate 10 open_leads %}
+                      {% paginate 10 invoices %}
                       {% endif %}
-                      {% for lead in open_leads %}
+                      {% for invoice in invoices %}
                       <tr class="text-center">
                         <td scope="row">{{ forloop.counter }}</td>
-                        <td><a href="{% url 'leads:view_lead' lead.id %}">
-                            {{ lead.title }} </a></td>
+                        <td><a href="{% url 'invoices:invoice_details' invoice.id %}">
+                            {{ invoice.invoice_title }} </a></td>
+                        <td>{{ invoice.invoice_number }} </td>
+                        <td>{{ invoice.email }} </td>
+                        <td>{{ invoice.status }} </td>
                         <td>
-                          {% if lead.created_by.profile_pic %}
-                          {% thumbnail lead.created_by.profile_pic "40x40" crop="center" as im %}
-                          <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"
-                            title="{{ lead.created_by }}">
-                          {% endthumbnail %}
-                          {% else %}
-                          <img src="{% static 'images/user.png' %}" alt="Micro profile pic"
-                            style="width: 40px;height: 40px;" />
-                          {% endif %}
-                        </td>
-                        <td>{{ lead.source }}</td>
-                        <td>{{ lead.get_status_display }}</td>
-                        <td>
-                          {% with lead_users=lead.assigned_to.all %}
-                          {% for user in lead_users %}
+                          {% with users=invoice.assigned_to.all %}
+                          {% for user in users %}
                           {% if user.profile_pic %}
                           {% thumbnail user.profile_pic "40x40" crop="center" as im %}
                           <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"
@@ -179,23 +158,29 @@
                           {% endwith %}
                         </td>
                         <td>
-                          {% with tags=lead.tags.all %}
-                          {% if tags %}
-                          {% for tag in tags %}
-                          <span class="text-left color{{forloop.counter}}" id="list_tag">{{ tag.name }}</span>
-                          {% endfor %}
+                          {% if invoice.created_by.profile_pic %}
+                          {% thumbnail invoice.created_by.profile_pic "40x40" crop="center" as im %}
+                          <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"
+                            title="{{ lead.created_by }}">
+                          {% endthumbnail %}
                           {% else %}
-                          No Tags
+                          <img src="{% static 'images/user.png' %}" alt="Micro profile pic"
+                            style="width: 40px;height: 40px;" />
                           {% endif %}
-                          {% endwith %}
                         </td>
-                        <td>{{ lead.created_on }}</td>
+                        <td>{{ invoice.created_on }}</td>
                         <td class="actions">
-                          <a href="{% url 'leads:edit_lead' lead.id %}" class="btn btn-success edit"><i
+                          <a href="{% url 'invoices:invoice_edit' invoice.id %}" class="btn btn-success edit"><i
                               class="fas fa-pencil-alt"></i></a>
-                          {% if request.user == lead.created_by or request.user.role == "ADMIN" or request.user.is_superuser %}
-                          <a href="{% url 'leads:remove_lead' lead.id %}"
+                          {% if request.user == invoice.created_by or request.user.role == "ADMIN" or request.user.is_superuser %}
+                          <a href="{% url 'invoices:invoice_delete' invoice.id %}"
                             class="btn btn-danger delete remove_account"><i class="fas fa-trash-alt"></i></a>
+                          {% if invoice.is_email_sent == False %}
+                          <a href="{% url 'invoices:invoice_send_mail' invoice.id %}" title="send mail" class="btn btn-info"><i class="fas fa-paper-plane"></i></a>
+                          {% endif %}
+                          {% if invoice.is_email_sent == True %}
+                          <a href="{% url 'invoices:invoice_send_mail' invoice.id %}" title="re send mail" class="btn btn-secondary"><i class="fas fa-paper-plane"></i></a>
+                          {% endif %}
                           {% endif %}
                         </td>
                       </tr>
@@ -203,8 +188,8 @@
                     </tbody>
                   </table>
                 </div>
-                {%ifequal open_leads|length 0%}
-                <h6 class="text-center">No Open Lead Records Found</h6>
+                {%ifequal invoices|length 0%}
+                <h6 class="text-center">No Invoices Found</h6>
                 {%endifequal%}
                 <div class="marl row text-center">
                   {% show_pages %}
@@ -212,13 +197,15 @@
               </div>
             </div>
           </div>
-          <div class="tab-pane fade" id="close" role="tabpanel" aria-labelledby="close">
+          <!-- second tab for closed and other statuses -->
+          <!--
+          <div class="tab-pane fade show active" id="open" role="tabpanel" aria-labelledby="open">
             <div class="card">
               <div class="card-body">
                 <div class="card-title text-right">
-                  <span class="float-left">Closed Leads - {% if show_pageitems %}
+                  <span class="float-left">Open Leads - {% if show_pageitems %}
                     {% show_pageitems %}{% else %}
-                    {{ close_leads|length }}{% endif %}</span>
+                    {{ open_leads|length }}{% endif %}</span>
                   <span class="filter_toggle">
                     <a href="#" class="primary_btn"><i class="fas fa-filter"></i></a>
                   </span>
@@ -226,58 +213,67 @@
                 <div class="table-responsive">
                   <table class="table ">
                     <thead>
-                      {% if close_leads|length > 0 %}
+                      {% if invoices|length > 0 %}
                       <tr>
                         <th width="5%">ID</th>
-                        <th width="10%">Title</th>
-                        <th width="10%">Source</th>
+                        <th width="10%">Invoice Title</th>
+                        <th width="8%">Invoice Number</th>
+                        <th width="10%">Email</th>
                         <th width="10%">Status</th>
-                        <th width="20%">Assigned User</th>
-                        <th width="20%">Tags</th>
-                        <th width="15%">Created On</th>
+                        <th width="20%">Assigned To</th>
+                        <th width="15%">Created by</th>
+                        <th width="10%">Created On</th>
                         <th width="10%">Actions</th>
                       </tr>
                       {% endif %}
                     </thead>
                     <tbody>
                       {% if per_page %}
-                      {% paginate per_page close_leads %}
+                      {% paginate per_page invoices %}
                       {% else %}
-                      {% paginate 10 close_leads %}
+                      {% paginate 10 invoices %}
                       {% endif %}
-                      {% for lead in close_leads %}
+                      {% for invoice in invoices %}
                       <tr class="text-center">
                         <td scope="row">{{ forloop.counter }}</td>
-                        <td><a href="{% url 'leads:view_lead' lead.id %}">
-                            {{ lead.title }}</a></td>
-                        <td>{{ lead.source }}</td>
-                        <td>{{ lead.get_status_display }}</td>
+                        <td><a href="">
+                            {{ invoice.invoice_title }} </a></td>
+                        <td>{{ invoice.invoice_number }} </td>
+                        <td>{{ invoice.email }} </td>
+                        <td>{{ invoice.status }} </td>
                         <td>
-                          {% with lead_users=lead.assigned_to.all %}
-                          {% for user in lead_users %}
-                          <span class="text-left">{{ user.email }}</span><br>
+                          {% with users=invoice.assigned_to.all %}
+                          {% for user in users %}
+                          {% if user.profile_pic %}
+                          {% thumbnail user.profile_pic "40x40" crop="center" as im %}
+                          <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"
+                            title="{{ user.email }}">
+                          {% endthumbnail %}
+                          {% else %}
+                          <img src="{% static 'images/user.png' %}" title="{{ user.email }}" width="40" height="40">
+                          {% endif %}
                           {% empty %}
                           Not Assigned to Any
                           {% endfor %}
                           {% endwith %}
                         </td>
                         <td>
-                          {% with tags=lead.tags.all %}
-                          {% if tags %}
-                          {% for tag in tags %}
-                          <span class="text-left color{{forloop.counter}}" id="list_tag">{{ tag.name }}</span>
-                          {% endfor %}
+                          {% if invoice.created_by.profile_pic %}
+                          {% thumbnail invoice.created_by.profile_pic "40x40" crop="center" as im %}
+                          <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"
+                            title="{{ lead.created_by }}">
+                          {% endthumbnail %}
                           {% else %}
-                          No Tags
+                          <img src="{% static 'images/user.png' %}" alt="Micro profile pic"
+                            style="width: 40px;height: 40px;" />
                           {% endif %}
-                          {% endwith %}
                         </td>
-                        <td>{{ lead.created_on }}</td>
+                        <td>{{ invoice.created_on }}</td>
                         <td class="actions">
-                          <a href="{% url 'leads:edit_lead' lead.id %}" class="btn btn-success edit"><i
+                          <a href="" class="btn btn-success edit"><i
                               class="fas fa-pencil-alt"></i></a>
-                          {% if request.user == lead.created_by %}
-                          <a href="{% url 'leads:remove_lead' lead.id %}"
+                          {% if request.user == lead.created_by or request.user.role == "ADMIN" or request.user.is_superuser %}
+                          <a href=""
                             class="btn btn-danger delete remove_account"><i class="fas fa-trash-alt"></i></a>
                           {% endif %}
                         </td>
@@ -286,8 +282,8 @@
                     </tbody>
                   </table>
                 </div>
-                {%ifequal close_leads|length 0%}
-                <h6 class="text-center">No Closed Lead Records Found</h6>
+                {%ifequal invoices|length 0%}
+                <h6 class="text-center">No Invoices Found</h6>
                 {%endifequal%}
                 <div class="marl row text-center">
                   {% show_pages %}
@@ -295,6 +291,8 @@
               </div>
             </div>
           </div>
+        -->
+          <!-- second tab div for closed or another status -->
         </div>
       </div>
     </div>
