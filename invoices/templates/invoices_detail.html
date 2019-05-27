@@ -25,6 +25,8 @@
               <span class="float-left title">Overview</span>
               <span style="margin-top: 0px">
                 <div class="dropdown buttons_row">
+                  <a href="{% url 'invoices:invoice_download' invoice.id %}" id="download_btn_" class="btn btn-info"
+                    style="padding: 0.12em 0.6em;border-radius: 0;">Download</a>
                   <button class="btn primary_btn dropdown-toggle" type="button" data-toggle="dropdown">Actions
                     <span class="caret"></span></button>
                   <ul class="dropdown-menu">
@@ -130,6 +132,25 @@
               </div>
             </div>
             <div class="col-md-4">
+
+              {% if invoice.due_date %}
+              <div class="filter_col col-md-12">
+                <div class="form-group">
+                  <label class="acc_field_label" for="id_website" data-name="name">Due Date</label>
+                  <div class="account_field" id="account_website" data-name="name">{{ invoice.due_date }}</div>
+                </div>
+              </div>
+              {% endif %}
+
+              {% if invoice.details %}
+              <div class="filter_col col-md-12">
+                <div class="form-group">
+                  <label class="acc_field_label" for="id_website" data-name="name">Details</label>
+                  <div class="account_field" id="account_website" data-name="name">{{ invoice.details }}</div>
+                </div>
+              </div>
+              {% endif %}
+
               {% if invoice.assigned_to.all %}
               <div class="filter_col col-md-12">
                 <div class="form-group">

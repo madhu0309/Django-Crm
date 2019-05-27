@@ -39,7 +39,10 @@ def send_invoice_email(invoice_id, domain='demo.django-crm.io', protocol='http')
         recipients = [invoice.email]
         context = {}
         context['invoice'] = invoice
-        html_content = render_to_string('invoice_detail_email.html', context)
+        context['url'] = protocol + '://' + domain + \
+            reverse('invoices:invoice_details', args=(invoice.id,))
+        html_content = render_to_string(
+            'invoice_detail_email.html', context=context)
         msg = EmailMessage(subject=subject, body=html_content,
                            to=recipients)
         msg.content_subtype = "html"

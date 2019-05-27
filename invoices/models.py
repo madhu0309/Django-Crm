@@ -48,6 +48,8 @@ class Invoice(models.Model):
     is_email_sent = models.BooleanField(default=False)
     status = models.CharField(choices=INVOICE_STATUS,
                               max_length=15, default="Draft")
+    details = models.TextField(_('Details'), null=True, blank=True)
+    due_date = models.DateField(blank=True, null=True)
 
     class Meta:
         """Meta definition for Invoice."""
@@ -58,3 +60,12 @@ class Invoice(models.Model):
     def __str__(self):
         """Unicode representation of Invoice."""
         return self.invoice_number
+
+    def formatted_total_amount(self):
+        return self.currency + '   ' + str(self.total_amount)
+
+    def formatted_rate(self):
+        return self.rate + '   ' + self.currency
+
+    def formatted_total_quantity(self):
+        return self.currency + ' ' + 'Hours'

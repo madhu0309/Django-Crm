@@ -1,50 +1,16 @@
 {% extends 'root_email_template.html' %}
-{% block heading %}
-
-invoice.invoice_title
-<br>
-invoice.invoice_number
-
-{% endblock heading %}
-{% block content %}
-
-{% if invoice.name %}
-<h2>{{invoice.name}}</h2>
-<br>
-{% endif %}
-
-{% if invoice.email %}
-<h2>{{invoice.email}}</h2>
-{% endif %}
-
-{% endblock content %}
 
 {% block content_body %}
 <h3>
 
-    {% if invoice.quantity %}
-    Quantity : invoice.quantity
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    {% endif %}
-
-    {% if invoice.rate %}
-    Rate : invoice.rate
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    {% endif %}
-
-    {% if invoice.total_amount %}
-    Total Amount : invoice.total_amount &nbsp; invoice.currency
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    {% endif %}
-
-
+    An Invoice has been generated
 
 </h3>
 {% endblock content_body %}
 
 {% block button_link %}
 <div style="margin-bottom:20px">
-    <a href="{% url 'invoices:invoice_details' invoice.id %}"
+    <a href="{{url}}"
         style="display:inline-block;width:170px;background:#38abdd;padding:10px;text-align:center;color:#fff;font-size:1rem;font-weight:600;margin:0px auto;margin-bottom:20px;border-radius:5px;text-decoration:none;display:block">click
         here</a>
 </div>

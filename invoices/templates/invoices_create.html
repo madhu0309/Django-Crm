@@ -117,10 +117,30 @@
                       <span class="error" id="id__assigned_to">{{ form.assigned_to.errors }}</span>
                     </div>
                   </div>
+                  <div class="filter_col col-md-12">
+                    <div class="form-group ">
+                      <label for="exampleInputEmail1">Due Date {% if form.due_date.field.required %}<span
+                          class="error_marker" style="color:red">*</span>{% endif %}</label>
+                      <div id="datepicker1" class='input-group date'>
+                        {{ form.due_date }}
+                        <span class="input-group-addon">
+                          <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                      </div>
+                      <span class="error" id="id__due_date">{{ form.due_date.errors }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
             <div class="col-md-4">
+              <div class="filter_col col-md-12">
+                <div class="form-group ">
+                  <label for="exampleInputEmail1">Details</label>
+                  {{form.details}}
+                  <span class="error" id="id__details">{{ form.details.errors }}</span>
+                </div>
+              </div>
               <div class="filter_col col-md-12">
                 <div class="form-group">
                   <label for="exampleInputEmail1">From Address</label>

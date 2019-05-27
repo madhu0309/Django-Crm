@@ -1,3 +1,7 @@
+import io
+import os
+
+import pdfkit
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sites.shortcuts import get_current_site
@@ -5,6 +9,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
+from django.template.loader import render_to_string
 from django.views.generic import (CreateView, DeleteView, DetailView, FormView,
                                   TemplateView, UpdateView, View)
 
@@ -41,7 +46,7 @@ def invoices_list(request):
         else:
             invoices = Invoice.objects.filter(
                 Q(created_by=request.user) | Q(assigned_to=request.user)).distinct()
-        context['invoices'] = invoices
+        context['invoices'] = invoices.order_by('id')
         context['status'] = status
         context['users'] = users
         return render(request, 'invoices_list.html', context)
@@ -77,7 +82,7 @@ def invoices_list(request):
             invoices = invoices.filter(
                 total_amount=request.POST.get('total_amount'))
 
-        context['invoices'] = invoices.distinct()
+        context['invoices'] = invoices.distinct().order_by('id')
         return render(request, 'invoices_list.html', context)
 
 
@@ -148,7 +153,7 @@ def invoice_details(request, invoice_id):
 def invoice_edit(request, invoice_id):
     invoice_obj = get_object_or_404(Invoice, pk=invoice_id)
 
-    if not (request.user.role == 'ADMIN' or request.user.is_superuser or invoice.created_by == request.user or request.user in invoice.assigned_to.all()):
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or invoice_obj.created_by == request.user or request.user in invoice_obj.assigned_to.all()):
         raise PermissionDenied
 
     if request.method == 'GET':
@@ -209,6 +214,26 @@ def invoice_send_mail(request, invoice_id):
         kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
         send_invoice_email.delay(invoice_id, **kwargs)
         return redirect('invoices:invoices_list')
+
+
+@login_required
+def invoice_download(request, invoice_id):
+    invoice = get_object_or_404(Invoice.objects.select_related(
+        'from_address', 'to_address'), pk=invoice_id)
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or invoice.created_by == request.user or request.user in invoice.assigned_to.all()):
+        raise PermissionDenied
+
+    if request.method == 'GET':
+        context = {}
+        context['invoice'] = invoice
+        html = render_to_string('invoice_download_pdf.html',context=context)
+        pdfkit.from_string(html, 'out.pdf', options={'encoding': "UTF-8"})
+        pdf = open("out.pdf", 'rb')
+        response = HttpResponse(pdf.read(), content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename=Invoice.pdf'
+        pdf.close()
+        os.remove("out.pdf")
+        return response
 
 
 class AddCommentView(LoginRequiredMixin, CreateView):

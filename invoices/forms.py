@@ -31,6 +31,7 @@ class InvoiceForm(forms.ModelForm):
         self.fields['currency'].required = True
         self.fields['email'].required = True
         self.fields['total_amount'].required = True
+        self.fields['due_date'].required = True
 
     def clean_quantity(self):
         quantity = self.cleaned_data.get('quantity')
@@ -54,7 +55,7 @@ class InvoiceForm(forms.ModelForm):
                   'from_address', 'to_address', 'name',
                   'email', 'phone', 'status', 'assigned_to',
                   'quantity', 'rate', 'total_amount',
-                  'currency',
+                  'currency', 'details', 'due_date'
                   )
 
 
