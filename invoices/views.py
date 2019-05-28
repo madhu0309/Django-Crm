@@ -18,7 +18,7 @@ from common.tasks import send_email_user_mentions
 from invoices.forms import (InvoiceAddressForm, InvoiceAttachmentForm,
                             InvoiceCommentForm, InvoiceForm)
 from invoices.models import Invoice
-from invoices.tasks import send_email, send_invoice_email
+from invoices.tasks import send_email, send_invoice_email, send_invoice_email_cancel
 
 
 @login_required
@@ -62,13 +62,14 @@ def invoices_list(request):
             invoices = invoices.filter(
                 Q(created_by=request.user) | Q(assigned_to=request.user)).distinct()
 
-        if request.POST.get('invoice_title', None):
+        if request.POST.get('invoice_title_number', None):
             invoices = invoices.filter(
-                invoice_title=request.POST.get('invoice_title'))
+                Q(invoice_title__icontains=request.POST.get('invoice_title_number')) |
+                Q(invoice_number__icontains=request.POST.get('invoice_title_number')))
 
-        if request.POST.get('invoice_number', None):
+        if request.POST.get('created_by', None):
             invoices = invoices.filter(
-                invoice_number=request.POST.get('invoice_number'))
+                created_by__id=request.POST.get('created_by'))
 
         if request.POST.getlist('assigned_to', None):
             invoices = invoices.filter(
@@ -210,11 +211,36 @@ def invoice_send_mail(request, invoice_id):
         raise PermissionDenied
 
     if request.method == 'GET':
-        Invoice.objects.filter(id=invoice_id).update(is_email_sent=True)
+        Invoice.objects.filter(id=invoice_id).update(
+            is_email_sent=True, status='Sent')
         kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
         send_invoice_email.delay(invoice_id, **kwargs)
         return redirect('invoices:invoices_list')
 
+
+@login_required
+def invoice_change_status_paid(request, invoice_id):
+    invoice = get_object_or_404(Invoice, pk=invoice_id)
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or invoice.created_by == request.user):
+        raise PermissionDenied
+
+    if request.method == 'GET':
+        Invoice.objects.filter(id=invoice_id).update(status='Paid')
+        kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
+        # send_invoice_email.delay(invoice_id, **kwargs)
+        return redirect('invoices:invoices_list')
+
+@login_required
+def invoice_change_status_cancelled(request, invoice_id):
+    invoice = get_object_or_404(Invoice, pk=invoice_id)
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or invoice.created_by == request.user):
+        raise PermissionDenied
+
+    if request.method == 'GET':
+        Invoice.objects.filter(id=invoice_id).update(status='Cancelled')
+        kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
+        send_invoice_email_cancel.delay(invoice_id, **kwargs)
+        return redirect('invoices:invoices_list')
 
 @login_required
 def invoice_download(request, invoice_id):
@@ -226,7 +252,7 @@ def invoice_download(request, invoice_id):
     if request.method == 'GET':
         context = {}
         context['invoice'] = invoice
-        html = render_to_string('invoice_download_pdf.html',context=context)
+        html = render_to_string('invoice_download_pdf.html', context=context)
         pdfkit.from_string(html, 'out.pdf', options={'encoding': "UTF-8"})
         pdf = open("out.pdf", 'rb')
         response = HttpResponse(pdf.read(), content_type='application/pdf')

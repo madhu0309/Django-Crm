@@ -13,7 +13,7 @@ class Invoice(models.Model):
         ('Sent', 'Sent'),
         ('Paid', 'Paid'),
         ('Pending', 'Pending'),
-        ('Cancel', 'Cancel'),
+        ('Cancelled', 'Cancel'),
     )
 
     invoice_title = models.CharField(_('Invoice Title'), max_length=50)
@@ -69,3 +69,27 @@ class Invoice(models.Model):
 
     def formatted_total_quantity(self):
         return self.currency + ' ' + 'Hours'
+
+    def is_draft(self):
+        if self.status == 'Draft':
+            return True
+        else:
+            return False
+
+    def is_sent(self):
+        if self.status == 'Sent' and self.is_email_sent == False:
+            return True
+        else:
+            return False
+
+    def is_resent(self):
+        if self.status == 'Sent' and self.is_email_sent == True:
+            return True
+        else:
+            return False
+
+    def is_paid_or_cancelled(self):
+        if self.status in ['Paid', 'Cancelled']:
+            return True
+        else:
+            return False

@@ -28,16 +28,22 @@
               <div class="row marl">
                 <div class="filter_col col-md-2">
                   <div class="form-group">
-                    <label for="exampleInputEmail1">Invoice Title</label>
-                    <input type="text" class="form-control" placeholder="Invoice Title" name="invoice_title"
-                      value="{{request.POST.invoice_title}}">
+                    <label for="exampleInputEmail1">Invoice Title or Number</label>
+                    <input type="text" class="form-control" placeholder="Invoice Title or Number"
+                      name="invoice_title_number" value="{{request.POST.invoice_title_number}}">
                   </div>
                 </div>
                 <div class="filter_col col-md-2">
                   <div class="form-group">
-                    <label for="exampleInputEmail1">Invoice Number</label>
-                    <input type="text" class="form-control" placeholder="Invoice Number" name="invoice_number"
-                      value="{{request.POST.invoice_number}}">
+                    <label for="exampleInputEmail1">Created By</label>
+                    <select name="created_by" id="" class="assigned_users_ form-control">
+                      <option value="" {% if user.id == created_by %} selected="" {% endif %}>
+                        ------------------</option>
+                      {% for user in users %}
+                      <option value="{{user.id}}" {% if user.id == created_by %} selected="" {% endif %}>
+                        {{user.email}}</option>
+                      {% endfor %}
+                    </select>
                   </div>
                 </div>
                 <div class="filter_col col-md-2">
@@ -116,13 +122,13 @@
                       {% if invoices|length > 0 %}
                       <tr>
                         <th width="5%">ID</th>
-                        <th width="10%">Invoice Title</th>
-                        <th width="8%">Invoice Number</th>
-                        <th width="10%">Email</th>
-                        <th width="10%">Status</th>
-                        <th width="20%">Assigned To</th>
-                        <th width="15%">Created by</th>
-                        <th width="10%">Created On</th>
+                        <th width="5%">Invoice Title</th>
+                        <th width="5%">Invoice Number</th>
+                        <th width="5%">Email</th>
+                        <th width="5%">Status</th>
+                        <th width="10%">Assigned To</th>
+                        <th width="5%">Created by</th>
+                        <th width="5%">Created On</th>
                         <th width="10%">Actions</th>
                       </tr>
                       {% endif %}
@@ -161,25 +167,40 @@
                           {% if invoice.created_by.profile_pic %}
                           {% thumbnail invoice.created_by.profile_pic "40x40" crop="center" as im %}
                           <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"
-                            title="{{ lead.created_by }}">
+                            title="{{ lead.created_by }}" style="border-radius: 50%" />
                           {% endthumbnail %}
                           {% else %}
                           <img src="{% static 'images/user.png' %}" alt="Micro profile pic"
-                            style="width: 40px;height: 40px;" />
+                            style="width: 40px;height: 40px;border-radius: 50%;" />
                           {% endif %}
                         </td>
-                        <td>{{ invoice.created_on }}</td>
+                        <td>{{ invoice.created_on|date:'d-m-Y' }}</td>
                         <td class="actions">
                           <a href="{% url 'invoices:invoice_edit' invoice.id %}" class="btn btn-success edit"><i
                               class="fas fa-pencil-alt"></i></a>
                           {% if request.user == invoice.created_by or request.user.role == "ADMIN" or request.user.is_superuser %}
                           <a href="{% url 'invoices:invoice_delete' invoice.id %}"
                             class="btn btn-danger delete remove_account"><i class="fas fa-trash-alt"></i></a>
-                          {% if invoice.is_email_sent == False %}
-                          <a href="{% url 'invoices:invoice_send_mail' invoice.id %}" title="send mail" class="btn btn-info"><i class="fas fa-paper-plane"></i></a>
+                          {% if invoice.is_draft %}
+                          <a href="{% url 'invoices:invoice_send_mail' invoice.id %}" title="send mail"
+                            class="btn btn-info"><i class="fas fa-paper-plane"></i></a>
                           {% endif %}
-                          {% if invoice.is_email_sent == True %}
-                          <a href="{% url 'invoices:invoice_send_mail' invoice.id %}" title="re send mail" class="btn btn-secondary"><i class="fas fa-paper-plane"></i></a>
+                          {% if invoice.is_sent == True %}
+                          <a href="{% url 'invoices:invoice_send_mail' invoice.id %}" title="re send mail"
+                            class="btn btn-secondary"><i class="fas fa-paper-plane"></i></a>
+                          <a href="{% url 'invoices:invoice_change_status_paid' invoice.id %}" title="Paid"
+                            class="btn btn-info"><i class="fas fa-check-square"></i></a>
+                          <a href="{% url 'invoices:invoice_change_status_cancelled' invoice.id %}" title="Cancel"
+                            class="btn btn-danger " style="background-color: red;"><i class="fas fa-window-close"></i></a>
+                          {% endif %}
+                          {% if invoice.is_resent %}
+                          <a href="{% url 'invoices:invoice_change_status_paid' invoice.id %}" title="Paid"
+                            class="btn btn-info"><i class="fas fa-check-square"></i></a>
+                          <a href="{% url 'invoices:invoice_change_status_cancelled' invoice.id %}" title="Cancel"
+                            class="btn btn-danger " style="background-color: red;"><i class="fas fa-window-close"></i></a>
+                          {% endif %}
+                          {% if invoice.is_paid_or_cancelled == True %}
+                          <!-- <a  title="re send mail" class="btn btn-secondary">no actions</a> -->
                           {% endif %}
                           {% endif %}
                         </td>

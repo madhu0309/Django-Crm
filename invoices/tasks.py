@@ -12,7 +12,7 @@ from invoices.models import Invoice
 def send_email(invoice_id, domain='demo.django-crm.io', protocol='http'):
     invoice = Invoice.objects.filter(id=invoice_id).first()
     if invoice:
-        subject = 'CRM Invoice Comment : {0}'.format(invoice.invoice_title)
+        subject = 'Invoice : {0}'.format(invoice.invoice_title)
         context = {}
         context['invoice_title'] = invoice.invoice_title
         context['invoice_id'] = invoice_id
@@ -43,6 +43,24 @@ def send_invoice_email(invoice_id, domain='demo.django-crm.io', protocol='http')
             reverse('invoices:invoice_details', args=(invoice.id,))
         html_content = render_to_string(
             'invoice_detail_email.html', context=context)
+        msg = EmailMessage(subject=subject, body=html_content,
+                           to=recipients)
+        msg.content_subtype = "html"
+        msg.send()
+
+
+@task
+def send_invoice_email_cancel(invoice_id, domain='demo.django-crm.io', protocol='http'):
+    invoice = Invoice.objects.filter(id=invoice_id).first()
+    if invoice:
+        subject = 'CRM Invoice : {0}'.format(invoice.invoice_title)
+        recipients = [invoice.email]
+        context = {}
+        context['invoice'] = invoice
+        context['url'] = protocol + '://' + domain + \
+            reverse('invoices:invoice_details', args=(invoice.id,))
+        html_content = render_to_string(
+            'invoice_cancelled.html', context=context)
         msg = EmailMessage(subject=subject, body=html_content,
                            to=recipients)
         msg.content_subtype = "html"
