@@ -903,7 +903,9 @@ def google_login(request):
 
 
 def create_lead_from_site(request):
-    if request.get_host() in ['sales.micropyramid.com' , ]:
+    allowed_domains = ['micropyramid.com', 'test.microsite.com:8000', ]
+    # add origin_domain = request.get_host() in the post body
+    if (request.get_host() in ['sales.micropyramid.com', ] and request.POST.get('origin_domain') in allowed_domains):
         if request.method == 'POST':
             if request.POST.get('full_name', None):
                 lead = Lead.objects.create(title=request.POST.get('full_name'), email=request.POST.get(
