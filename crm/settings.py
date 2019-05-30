@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'storages',
     'marketing',
     'tasks',
+    'invoices',
 ]
 
 MIDDLEWARE = [
