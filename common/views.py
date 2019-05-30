@@ -903,11 +903,12 @@ def google_login(request):
 
 
 def create_lead_from_site(request):
-    if request.method == 'POST':
-        if request.POST.get('full_name', None):
-            lead = Lead.objects.create(title=request.POST.get('full_name'), email=request.POST.get(
-                'email'), phone=request.POST.get('phone'), description=request.POST.get('message'),
-                created_from_site=True)
-            return HttpResponse('Lead Created')
+    if request.get_host() in ['sales.micropyramid.com' , ]:
+        if request.method == 'POST':
+            if request.POST.get('full_name', None):
+                lead = Lead.objects.create(title=request.POST.get('full_name'), email=request.POST.get(
+                    'email'), phone=request.POST.get('phone'), description=request.POST.get('message'),
+                    created_from_site=True)
+                return HttpResponse('Lead Created')
     from django.http import HttpResponseBadRequest
-    return HttpResponseBadRequest
+    return HttpResponseBadRequest('Bad Request')
