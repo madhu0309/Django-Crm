@@ -69,7 +69,8 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context = super(HomeView, self).get_context_data(**kwargs)
         accounts = Account.objects.filter(status="open")
         contacts = Contact.objects.all()
-        leads = Lead.objects.exclude(status='converted').exclude(status='closed')
+        leads = Lead.objects.exclude(
+            status='converted').exclude(status='closed')
         opportunities = Opportunity.objects.all()
         if self.request.user.role == "ADMIN" or self.request.user.is_superuser:
             pass
@@ -259,7 +260,7 @@ class CreateUserView(AdminRequiredMixin, CreateView):
         current_site = self.request.get_host()
         protocol = self.request.scheme
         send_email_to_new_user.delay(user.email, self.request.user.email,
-            domain=current_site, protocol=protocol)
+                                     domain=current_site, protocol=protocol)
         # mail_subject = 'Created account in CRM'
         # message = render_to_string('new_user.html', {
         #     'user': user,
@@ -369,7 +370,8 @@ class UserDeleteView(AdminRequiredMixin, DeleteView):
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
         current_site = request.get_host()
-        send_email_user_delete.delay(self.object.email, domain=current_site, protocol=request.scheme)
+        send_email_user_delete.delay(
+            self.object.email, domain=current_site, protocol=request.scheme)
         self.object.delete()
         return redirect("common:users_list")
 
@@ -641,7 +643,8 @@ def change_user_status(request, pk):
         user.is_active = True
     user.save()
     current_site = request.get_host()
-    send_email_user_status.delay(pk, domain=current_site, protocol=request.scheme)
+    send_email_user_status.delay(
+        pk, domain=current_site, protocol=request.scheme)
     return HttpResponseRedirect('/users/list/')
 
 
@@ -897,3 +900,15 @@ def google_login(request):
         + 'http://' + request.META['HTTP_HOST'] + \
         reverse('common:google_login') + "&state=" + next_url
     return HttpResponseRedirect(rty)
+
+
+def create_lead_from_site(request):
+    if request.get_host() in ['sales.micropyramid.com' , ]:
+        if request.method == 'POST':
+            if request.POST.get('full_name', None):
+                lead = Lead.objects.create(title=request.POST.get('full_name'), email=request.POST.get(
+                    'email'), phone=request.POST.get('phone'), description=request.POST.get('message'),
+                    created_from_site=True)
+                return HttpResponse('Lead Created')
+    from django.http import HttpResponseBadRequest
+    return HttpResponseBadRequest('Bad Request')
