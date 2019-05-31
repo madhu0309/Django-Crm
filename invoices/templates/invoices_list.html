@@ -37,10 +37,10 @@
                   <div class="form-group">
                     <label for="exampleInputEmail1">Created By</label>
                     <select name="created_by" id="" class="assigned_users_ form-control">
-                      <option value="" {% if user.id == created_by %} selected="" {% endif %}>
+                      <option value="">
                         ------------------</option>
                       {% for user in users %}
-                      <option value="{{user.id}}" {% if user.id == created_by %} selected="" {% endif %}>
+                      <option value="{{user.id}}" {% if user.id|slugify == request.POST.created_by %} selected="" {% endif %}>
                         {{user.email}}</option>
                       {% endfor %}
                     </select>
@@ -81,7 +81,7 @@
                 <div class="filter_col col-2">
                   <div class="form-group buttons_row">
                     <button class="btn btn-primary save" type="submit">Search</button>
-                    <a href="{% url 'leads:list' %}" class="btn btn-default clear">Clear</a>
+                    <a href="{% url 'invoices:invoices_list' %}" class="btn btn-default clear">Clear</a>
                   </div>
                 </div>
               </div>
