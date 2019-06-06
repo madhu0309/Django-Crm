@@ -10,11 +10,14 @@ from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.views.generic import (CreateView, DeleteView, DetailView, FormView,
                                   TemplateView, UpdateView, View)
 
-from common.models import User, Attachments, Comment
-from events.forms import EventForm, EventCommentForm, EventAttachmentForm
+from common.models import Attachments, Comment, User
+from common.tasks import send_email_user_mentions
+from events.forms import EventAttachmentForm, EventCommentForm, EventForm
 from events.models import Event
+from events.tasks import send_email
 
 
+@login_required
 def events_list(request):
 
     if request.user.role == 'ADMIN' or request.user.is_superuser:
@@ -47,10 +50,8 @@ def events_list(request):
             events = events.filter(
                 Q(created_by=request.user) | Q(assigned_to=request.user)).distinct()
 
-        if request.POST.get('invoice_title_number', None):
-            events = events.filter(
-                Q(invoice_title__icontains=request.POST.get('invoice_title_number')) |
-                Q(invoice_number__icontains=request.POST.get('invoice_title_number')))
+        if request.POST.get('event_name', None):
+            events = events.filter(name__icontains=request.POST.get('event_name'))
 
         if request.POST.get('created_by', None):
             events = events.filter(
@@ -61,12 +62,8 @@ def events_list(request):
                 assigned_to__in=request.POST.getlist('assigned_to'))
             context['assigned_to'] = request.POST.getlist('assigned_to')
 
-        if request.POST.get('status', None):
-            events = events.filter(status=request.POST.get('status'))
-
-        if request.POST.get('total_amount', None):
-            events = events.filter(
-                total_amount=request.POST.get('total_amount'))
+        if request.POST.get('date_of_meeting', None):
+            events = events.filter(date_of_meeting=request.POST.get('date_of_meeting'))
 
         context['events'] = events.distinct().order_by('id')
         return render(request, 'events_list.html', context)
@@ -82,17 +79,17 @@ def event_create(request):
     if request.method == 'POST':
         form = EventForm(request.POST, request_user=request.user)
         if form.is_valid():
-            print(request.POST)
             start_date = form.cleaned_data.get('start_date')
             end_date = form.cleaned_data.get('end_date')
             # recurring_days
-            recurring_days = request.POST.getlist('days')
+            recurring_days = request.POST.getlist('recurring_days')
             if form.cleaned_data.get('event_type') == 'Non-Recurring':
                 event = form.save(commit=False)
                 event.date_of_meeting = start_date
                 event.created_by = request.user
                 event.save()
                 form.save_m2m()
+                send_email.delay(event.id, domain=request.get_host(), protocol=request.scheme)
 
             if form.cleaned_data.get('event_type') == 'Recurring':
                 delta = end_date - start_date
@@ -116,58 +113,8 @@ def event_create(request):
                     )
                     event.contacts.add(*request.POST.getlist('contacts'))
                     event.assigned_to.add(*request.POST.getlist('assigned_to'))
+                    send_email.delay(event.id, domain=request.get_host(), protocol=request.scheme)
 
-        #     recipients = []
-        #     if selected_users:
-        #         for user in selected_users:
-        #             recipients.append(user.user.email)
-
-        #     if recipients:
-        #         message = "Meeting Successfully Created!"
-        #         subject = 'A new Meeting Session Created'
-        #         from_email = settings.DEFAULT_FROM_EMAIL
-        #         text_content = 'Meeting Session Created'
-        #         from_email = settings.DEFAULT_FROM_EMAIL
-        #         context = {
-        #             'user': profile.user,
-        #             'request': request,
-        #             'title': new_title if new_title else '',
-        #             'from_date': start_date if start_date else '',
-        #             'to_date': end_date if end_date else '',
-        #             'description': description if description else '',
-        #             'start_time': start_time,
-        #             'meeting_option': meeting_option,
-        #             'action': 'Created',
-        #         }
-
-        #         if meeting_option == 'day':
-        #             text_content = 'Meeting Session Created - %s' % (meeting_instance.title)
-        #             url = request.scheme + '://' + request.company.subdomain + settings.FRONTEND_URL
-        #             redirect_url = url + '/hcm/meetings/' + str(meeting_instance.id)
-        #             accept_invitation_url = redirect_url + '/accept'
-        #             reject_invitation_url = redirect_url + '/reject'
-        #             meeting_url = redirect_url
-        #             # context['meeting_url'] = meeting_url
-        #             context['accept_invitation_url'] =  accept_invitation_url
-        #             context['reject_invitation_url'] = reject_invitation_url
-        #             # context['url'] = url
-        #         else:
-        #             context['days'] = days
-
-        #         template_name = 'pm_meeting.html'
-
-        #         html_content = get_rendered_html(template_name, context)
-        #         mail_kwargs = {
-        #             "subject": subject, "text_content": text_content,
-        #             "html_content": html_content, "from_email": from_email,
-        #             "recipients": recipients
-        #         }
-        #         send_email.delay(**mail_kwargs)
-        #     data = {"error": False, "message": message}
-        #     return JsonResponse(data, status=status.HTTP_201_CREATED)
-        # else:
-        #     data = {"error": True, "errors": form.errors}
-        #     return JsonResponse(data, status=status.HTTP_400_BAD_REQUEST)
             return JsonResponse({'error': False, 'success_url': reverse('events:events_list')})
         else:
             return JsonResponse({'error': True, 'errors': form.errors, })
@@ -182,8 +129,8 @@ def event_detail_view(request, event_id):
     if request.method == 'GET':
         context = {}
         context['event'] = event
-        # context['attachments'] = invoice.invoice_attachment.all()
-        # context['comments'] = invoice.invoice_comments.all()
+        context['attachments'] = event.events_attachment.all()
+        context['comments'] = event.events_comments.all()
         if request.user.is_superuser or request.user.role == 'ADMIN':
             context['users_mention'] = list(
                 User.objects.all().values('username'))
@@ -199,7 +146,7 @@ def event_detail_view(request, event_id):
 @login_required
 def event_update(request, event_id):
     event_obj = get_object_or_404(Event, pk=event_id)
-    if not (request.user.role == 'ADMIN' or request.user.is_superuser or event.created_by == request.user or request.user in event.assigned_to.all()):
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or event_obj.created_by == request.user or request.user in event_obj.assigned_to.all()):
         raise PermissionDenied
 
     if request.method == 'GET':
@@ -219,7 +166,6 @@ def event_update(request, event_id):
         form = EventForm(request.POST, instance=event_obj,
                          request_user=request.user)
         if form.is_valid():
-            print(request.POST)
             start_date = form.cleaned_data.get('start_date')
             end_date = form.cleaned_data.get('end_date')
             # recurring_days
@@ -231,16 +177,18 @@ def event_update(request, event_id):
                 # event.created_by = request.user
                 event.save()
                 form.save_m2m()
+                send_email.delay(event.id, domain=request.get_host(), protocol=request.scheme)
+
 
             if form.cleaned_data.get('event_type') == 'Recurring':
-                print(request.POST.get('assigned_to'))
                 event = form.save(commit=False)
                 event.save()
                 form.save_m2m()
+                send_email.delay(event.id, domain=request.get_host(), protocol=request.scheme)
+
                 # event.contacts.add(*request.POST.getlist('contacts'))
                 # event.assigned_to.add(*request.POST.getlist('assigned_to'))
 
-            # send mail to assigned users and maybe even to contacts
             return JsonResponse({'error': False, 'success_url': reverse('events:events_list')})
         else:
             return JsonResponse({'error': True, 'errors': form.errors, })
@@ -286,8 +234,8 @@ class AddCommentView(LoginRequiredMixin, CreateView):
         comment.save()
         comment_id = comment.id
         current_site = get_current_site(self.request)
-        # send_email_user_mentions.delay(comment_id, 'invoices', domain=current_site.domain,
-                                    #    protocol=self.request.scheme)
+        send_email_user_mentions.delay(comment_id, 'events', domain=current_site.domain,
+                                       protocol=self.request.scheme)
         return JsonResponse({
             "comment_id": comment.id, "comment": comment.comment,
             "commented_on": comment.commented_on,
@@ -319,8 +267,8 @@ class UpdateCommentView(LoginRequiredMixin, View):
         self.comment_obj.save(update_fields=["comment"])
         comment_id = self.comment_obj.id
         current_site = get_current_site(self.request)
-        # send_email_user_mentions.delay(comment_id, 'invoices', domain=current_site.domain,
-                                    #    protocol=self.request.scheme)
+        send_email_user_mentions.delay(comment_id, 'events', domain=current_site.domain,
+                                       protocol=self.request.scheme)
         return JsonResponse({
             "comment_id": self.comment_obj.id,
             "comment": self.comment_obj.comment,
