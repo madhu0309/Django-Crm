@@ -203,26 +203,43 @@ class ContactListForm(forms.ModelForm):
 class ContactForm(forms.ModelForm):
     contact_list = forms.CharField(max_length=5000)
 
+    def __init__(self, *args, **kwargs):
+        request_user = kwargs.pop('request_user', None)
+        self.obj_instance = kwargs.get('instance', None)
+        super(ContactForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs = {"class": "form-control"}
+
+        self.fields['name'].required = True
+        self.fields['last_name'].required = True
+        self.fields['city'].required = True
+        self.fields['state'].required = True
+        self.fields['email'].required = True
+        self.fields['contact_list'].required = False
+
     class Meta:
         model = Contact
-        fields = ["name", "email", "contact_number"]
+        fields = ["name", "email", "contact_number", "last_name", "city", "state"]
 
-    def __init__(self, *args, **kwargs):
-        super(ContactForm, self).__init__(*args, **kwargs)
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if Contact.objects.filter(email=email).exclude(id=self.instance.id).exists():
+            raise forms.ValidationError('Contact with this Email already exists')
+        return email
 
-    def clean_contact_list(self):
-        contact_list = self.cleaned_data.get("contact_list")
-        if not contact_list or contact_list == '[]' or\
-                json.loads(contact_list) == []:
-            raise forms.ValidationError(
-                "Please choose any of the Contact List")
-        else:
-            for each in json.loads(contact_list):
-                if not ContactList.objects.filter(id=each).first():
-                    raise forms.ValidationError(
-                        "Please choose a valid Contact List")
+    # def clean_contact_list(self):
+    #     contact_list = self.cleaned_data.get("contact_list")
+    #     if not contact_list or contact_list == '[]' or\
+    #             json.loads(contact_list) == []:
+    #         raise forms.ValidationError(
+    #             "Please choose any of the Contact List")
+    #     else:
+    #         for each in json.loads(contact_list):
+    #             if not ContactList.objects.filter(id=each).first():
+    #                 raise forms.ValidationError(
+    #                     "Please choose a valid Contact List")
 
-        return contact_list
+    #     return contact_list
 
 
 class ContactsCSVUploadForm(forms.Form):

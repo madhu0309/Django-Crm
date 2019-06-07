@@ -1,14 +1,17 @@
 import datetime
 import hashlib
+from mimetypes import MimeTypes
+
 import pytz
 import requests
-from mimetypes import MimeTypes
 from celery.task import task
 from django.conf import settings
 from django.core.mail import EmailMessage
-from django.template import Template, Context
+from django.template import Context, Template
+
 from common.utils import convert_to_custom_timezone
-from marketing.models import Contact, FailedContact, ContactList, Campaign, CampaignLog
+from marketing.models import (Campaign, CampaignLog, Contact, ContactList,
+                              FailedContact)
 
 
 @task

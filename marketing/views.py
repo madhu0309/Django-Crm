@@ -217,7 +217,23 @@ def contacts_list_new(request):
 
 @login_required(login_url='/login')
 def edit_contact(request, pk):
-    return render(request, 'marketing/lists/edit_contact.html')
+    contact_obj = get_object_or_404(Contact, pk=pk)
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or contact_obj.created_by == request.user):
+        raise PermissionDenied
+    if request.method == 'GET':
+        form = ContactForm(instance=contact_obj)
+        return render(request, 'marketing/lists/edit_contact.html', {'form': form})
+
+    if request.method == 'POST':
+        form = ContactForm(request.POST, instance=contact_obj)
+        if form.is_valid():
+            contact = form.save(commit=False)
+            contact.save()
+            form.save_m2m()
+            return JsonResponse({'error': False, 'success_url': reverse('marketing:contacts_list')})
+        else:
+            return JsonResponse({'error': True, 'errors': form.errors, })
+
 
 @login_required(login_url='/login')
 def delete_contact(request, pk):
@@ -227,6 +243,7 @@ def delete_contact(request, pk):
     if request.method == 'GET':
         contact_obj.delete()
         return redirect('marketing:contacts_list')
+
 
 @login_required(login_url='/login')
 def contact_list_detail(request, pk):
@@ -240,7 +257,8 @@ def contact_list_detail(request, pk):
 def failed_contact_list_detail(request, pk):
     contact_list = get_object_or_404(ContactList, pk=pk)
     failed_contacts_list = contact_list.failed_contacts.all()
-    data = {'contact_list': contact_list, "failed_contacts_list": failed_contacts_list}
+    data = {'contact_list': contact_list,
+            "failed_contacts_list": failed_contacts_list}
     return render(request, 'marketing/lists/failed_detail.html', data)
 
 
@@ -252,7 +270,8 @@ def failed_contact_list_download_delete(request, pk):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="failed_contacts.csv"'
         writer = csv.writer(response)
-        writer.writerow(["company name", "email", "first name", "last name", "city", "state"])
+        writer.writerow(["company name", "email", "first name",
+                         "last name", "city", "state"])
 
         for contact in failed_contacts_list:
             writer.writerow([
@@ -350,7 +369,8 @@ def campaign_list(request):
             campaigns = campaigns.filter(
                 schedule_date_time__date__lte=request.POST['scheduled_on'])
     per_page = request.GET.get("per_page", 10)  # Show 15 contacts per page
-    paginator = Paginator(campaigns.distinct().order_by('-created_on'), per_page)
+    paginator = Paginator(
+        campaigns.distinct().order_by('-created_on'), per_page)
     page = request.GET.get('page')
     try:
         campaigns = paginator.page(page)
@@ -385,7 +405,8 @@ def campaign_new(request):
         # return JsonResponse(data, status=status.HTTP_200_OK)
         return render(request, 'marketing/campaign/new.html', data)
     else:
-        import pdb; pdb.set_trace()
+        import pdb
+        pdb.set_trace()
         form = SendCampaignForm(request.POST, request.FILES)
         if form.is_valid():
             instance = form.save(commit=False)
@@ -436,8 +457,10 @@ def campaign_new(request):
                 schedule_date_time = request.POST.get('schedule_date_time', '')
                 user_timezone = request.POST.get('timezone', '')
                 if user_timezone and schedule_date_time:
-                    start_time_object = ddatetime.strptime(schedule_date_time, '%Y-%m-%d %H:%M')
-                    schedule_date_time = convert_to_custom_timezone(start_time_object, user_timezone, to_utc=True)
+                    start_time_object = ddatetime.strptime(
+                        schedule_date_time, '%Y-%m-%d %H:%M')
+                    schedule_date_time = convert_to_custom_timezone(
+                        start_time_object, user_timezone, to_utc=True)
                 instance.schedule_date_time = schedule_date_time
                 instance.timezone = user_timezone
                 instance.save()
@@ -500,7 +523,8 @@ def campaign_details(request, pk):
     except EmptyPage:
         contacts = contacts_paginator.page(contacts_paginator.num_pages)
 
-    unsubscribe_contacts_paginator = Paginator(unsubscribe_contacts.order_by('id'), per_page)
+    unsubscribe_contacts_paginator = Paginator(
+        unsubscribe_contacts.order_by('id'), per_page)
     if (tab == "unsubscribe_contacts"):
         page = page
     else:
@@ -511,9 +535,11 @@ def campaign_details(request, pk):
     except PageNotAnInteger:
         unsubscribe_contacts = unsubscribe_contacts_paginator.page(1)
     except EmptyPage:
-        unsubscribe_contacts = unsubscribe_contacts_paginator.page(unsubscribe_contacts_paginator.num_pages)
+        unsubscribe_contacts = unsubscribe_contacts_paginator.page(
+            unsubscribe_contacts_paginator.num_pages)
 
-    bounced_contacts_paginator = Paginator(bounced_contacts.order_by('id'), per_page)
+    bounced_contacts_paginator = Paginator(
+        bounced_contacts.order_by('id'), per_page)
     if (tab == "bounced_contacts"):
         page = page
     else:
@@ -524,7 +550,8 @@ def campaign_details(request, pk):
     except PageNotAnInteger:
         bounced_contacts = bounced_contacts_paginator.page(1)
     except EmptyPage:
-        bounced_contacts = bounced_contacts_paginator.page(bounced_contacts_paginator.num_pages)
+        bounced_contacts = bounced_contacts_paginator.page(
+            bounced_contacts_paginator.num_pages)
 
     sent_contacts_paginator = Paginator(sent_contacts.order_by('id'), per_page)
     if (tab == "sent_contacts"):
@@ -537,7 +564,8 @@ def campaign_details(request, pk):
     except PageNotAnInteger:
         sent_contacts = sent_contacts_paginator.page(1)
     except EmptyPage:
-        sent_contacts = sent_contacts_paginator.page(sent_contacts_paginator.num_pages)
+        sent_contacts = sent_contacts_paginator.page(
+            sent_contacts_paginator.num_pages)
 
     all_contacts_paginator = Paginator(all_contacts.order_by('id'), per_page)
     if (tab == "all_contacts"):
@@ -550,7 +578,8 @@ def campaign_details(request, pk):
     except PageNotAnInteger:
         all_contacts = all_contacts_paginator.page(1)
     except EmptyPage:
-        all_contacts = all_contacts_paginator.page(all_contacts_paginator.num_pages)
+        all_contacts = all_contacts_paginator.page(
+            all_contacts_paginator.num_pages)
 
     read_contacts_paginator = Paginator(read_contacts.order_by('id'), per_page)
     if (tab == "read_contacts"):
@@ -563,7 +592,8 @@ def campaign_details(request, pk):
     except PageNotAnInteger:
         read_contacts = read_contacts_paginator.page(1)
     except EmptyPage:
-        read_contacts = read_contacts_paginator.page(read_contacts_paginator.num_pages)
+        read_contacts = read_contacts_paginator.page(
+            read_contacts_paginator.num_pages)
 
     data = {'contact_lists': contact_lists, "campaign": campaign,
             "contacts": contacts, 'unsubscribe_contacts': unsubscribe_contacts,
@@ -623,7 +653,8 @@ def campaign_open(request, campaign_log_id, email_id):
     campaign_log = CampaignLog.objects.filter(id=campaign_log_id).first()
     contact = Contact.objects.filter(id=email_id).first()
     image_data = settings.STATIC_URL + 'images/'
-    image_data = open(settings.STATIC_ROOT + '/images/company.png', 'rb').read()
+    image_data = open(settings.STATIC_ROOT +
+                      '/images/company.png', 'rb').read()
     if campaign_log and contact:
         campaign_open = CampaignOpen.objects.filter(
             campaign=campaign_log.campaign, contact=contact).first()
@@ -641,5 +672,15 @@ def campaign_open(request, campaign_log_id, email_id):
 
 
 def demo_file_download(request):
-    # TODO
-    return HttpResponse('should download a demo file')
+    sample_data = [
+        'company name,email,first name,last name,city,state\n',
+        'company_name_1,user1@email.com,first_name,last_name,Hyderabad,Telangana\n',
+        'company_name_2,user2@email.com,first_name,last_name,Hyderabad,Telangana\n',
+        'company_name_3,user3@email.com,first_name,last_name,Hyderabad,Telangana\n',
+        'company_name_4,user4@email.com,first_name,last_name,Hyderabad,Telangana\n'
+    ]
+    response = HttpResponse(
+        sample_data, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename={}'.format(
+        'sample_data.csv')
+    return response
