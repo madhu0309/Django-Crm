@@ -1,27 +1,29 @@
 import csv
 import json
-import pytz
+from datetime import datetime as ddatetime
+
 import lxml
 import lxml.html
-from lxml.cssselect import CSSSelector
-from datetime import datetime as ddatetime
+import pytz
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.exceptions import PermissionDenied
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
-from django.http.response import (JsonResponse,
-                                  HttpResponse, HttpResponseRedirect)
-from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse_lazy, reverse
+from django.http.response import (HttpResponse, HttpResponseRedirect,
+                                  JsonResponse)
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
+from lxml.cssselect import CSSSelector
+
 from common import status
 from common.utils import convert_to_custom_timezone
-from marketing.models import (
-    Tag, ContactList, Contact, EmailTemplate, Campaign, CampaignLog, Link, CampaignLinkClick,
-    CampaignOpen
-)
-from marketing.forms import ContactListForm, ContactForm, EmailTemplateForm, SendCampaignForm
-from marketing.tasks import upload_csv_file, run_campaign
-
+from marketing.forms import (ContactForm, ContactListForm, EmailTemplateForm,
+                             SendCampaignForm)
+from marketing.models import (Campaign, CampaignLinkClick, CampaignLog,
+                              CampaignOpen, Contact, ContactList,
+                              EmailTemplate, Link, Tag)
+from marketing.tasks import run_campaign, upload_csv_file
 
 TIMEZONE_CHOICES = [(tz, tz) for tz in pytz.common_timezones]
 
@@ -214,9 +216,17 @@ def contacts_list_new(request):
 
 
 @login_required(login_url='/login')
-def edit_contact(request):
+def edit_contact(request, pk):
     return render(request, 'marketing/lists/edit_contact.html')
 
+@login_required(login_url='/login')
+def delete_contact(request, pk):
+    contact_obj = get_object_or_404(Contact, pk=pk)
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or contact_obj.created_by == request.user):
+        raise PermissionDenied
+    if request.method == 'GET':
+        contact_obj.delete()
+        return redirect('marketing:contacts_list')
 
 @login_required(login_url='/login')
 def contact_list_detail(request, pk):
@@ -321,7 +331,7 @@ def email_template_detail(request, pk):
 @login_required(login_url='/login')
 def email_template_delete(request, pk):
     try:
-        # EmailTemplate.objects.get(id=pk).delete()
+        EmailTemplate.objects.get(id=pk).delete()
         redirect_to = reverse('marketing:email_template_list')
     except ContactList.DoesNotExist:
         redirect_to = reverse('marketing:email_template_list')
@@ -375,6 +385,7 @@ def campaign_new(request):
         # return JsonResponse(data, status=status.HTTP_200_OK)
         return render(request, 'marketing/campaign/new.html', data)
     else:
+        import pdb; pdb.set_trace()
         form = SendCampaignForm(request.POST, request.FILES)
         if form.is_valid():
             instance = form.save(commit=False)
@@ -627,3 +638,8 @@ def campaign_open(request, campaign_log_id, email_id):
         campaign_log.campaign.save()
         campaign_open.save()
     return HttpResponse(image_data, content_type="image/png")
+
+
+def demo_file_download(request):
+    # TODO
+    return HttpResponse('should download a demo file')
