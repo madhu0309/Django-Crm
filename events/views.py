@@ -200,9 +200,8 @@ def event_delete(request, event_id):
     if not (request.user.role == 'ADMIN' or request.user.is_superuser or event.created_by == request.user):
         raise PermissionDenied
 
-    if request.method == 'GET':
-        event.delete()
-        return redirect('events:events_list')
+    event.delete()
+    return redirect('events:events_list')
 
 
 class AddCommentView(LoginRequiredMixin, CreateView):
