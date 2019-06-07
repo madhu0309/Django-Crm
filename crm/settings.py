@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'marketing',
     'tasks',
     'invoices',
+    'events',
 ]
 
 MIDDLEWARE = [

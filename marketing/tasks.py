@@ -159,18 +159,20 @@ def list_all_bounces_unsubscribes():
     bounces = requests.get('https://api.sendgrid.com/api/bounces.get.json?api_user=' +
                            settings.EMAIL_HOST_USER + '&api_key=' + settings.EMAIL_HOST_PASSWORD)
     for each in bounces.json():
-        contact = Contact.objects.filter(email=each['email']).first()
-        if contact:
-            contact.is_bounced = True
-            contact.save()
+        if type(each) == dict:
+            contact = Contact.objects.filter(email=each.get('email')).first()
+            if contact:
+                contact.is_bounced = True
+                contact.save()
 
     bounces = requests.get('https://api.sendgrid.com/api/unsubscribes.get.json?api_user=' +
                            settings.EMAIL_HOST_USER + '&api_key=' + settings.EMAIL_HOST_PASSWORD)
     for each in bounces.json():
-        contact = Contact.objects.filter(email=each['email']).first()
-        if contact:
-            contact.is_unsubscribed = True
-            contact.save()
+        if type(each) == dict:
+            contact = Contact.objects.filter(email=each.get('email')).first()
+            if contact:
+                contact.is_unsubscribed = True
+                contact.save()
 
 
 @task

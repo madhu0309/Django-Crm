@@ -911,6 +911,10 @@ def create_lead_from_site(request):
                 lead = Lead.objects.create(title=request.POST.get('full_name'), email=request.POST.get(
                     'email'), phone=request.POST.get('phone'), description=request.POST.get('message'),
                     created_from_site=True)
+                recipients = User.objects.filter(role='ADMIN').values_list('id', flat=True)
+                lead.assigned_to.add(*recipients)
+                from leads.tasks import send_email_to_assigned_user
+                send_email_to_assigned_user(recipients, lead.id, domain='sales.micropyramid.com')
                 return HttpResponse('Lead Created')
     from django.http import HttpResponseBadRequest
     return HttpResponseBadRequest('Bad Request')
