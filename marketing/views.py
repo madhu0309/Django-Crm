@@ -405,8 +405,7 @@ def campaign_new(request):
         # return JsonResponse(data, status=status.HTTP_200_OK)
         return render(request, 'marketing/campaign/new.html', data)
     else:
-        import pdb
-        pdb.set_trace()
+        import pdb; pdb.set_trace()
         form = SendCampaignForm(request.POST, request.FILES)
         if form.is_valid():
             instance = form.save(commit=False)
@@ -465,7 +464,8 @@ def campaign_new(request):
                 instance.timezone = user_timezone
                 instance.save()
             else:
-                run_campaign.delay(instance.id)
+                run_campaign.delay(
+                    instance.id, domain=request.get_host(), protocol=request.scheme)
 
             return JsonResponse({'error': False, 'data': form.data}, status=status.HTTP_201_CREATED)
         return JsonResponse({'error': True, 'errors': form.errors}, status=status.HTTP_200_OK)
@@ -497,10 +497,10 @@ def campaign_details(request, pk):
     contacts = Contact.objects.filter(contact_list__id__in=contact_list_ids)
 
     all_contacts = contacts
-    bounced_contacts = contacts.filter(is_bounced=True)
+    bounced_contacts = contacts.filter(is_bounced=True).distinct()
     unsubscribe_contacts = contacts.filter(
-        is_unsubscribed=True)
-    read_contacts = campaign.marketing_links.filter(Q(clicks__gt=0))
+        is_unsubscribed=True).distinct()
+    read_contacts = campaign.marketing_links.filter(Q(clicks__gt=0)).distinct()
     # read_contacts =
     sent_contacts = contacts.exclude(
         Q(is_bounced=True) | Q(is_unsubscribed=True))
@@ -652,9 +652,7 @@ def campaign_open(request, campaign_log_id, email_id):
 
     campaign_log = CampaignLog.objects.filter(id=campaign_log_id).first()
     contact = Contact.objects.filter(id=email_id).first()
-    image_data = settings.STATIC_URL + 'images/'
-    image_data = open(settings.STATIC_ROOT +
-                      '/images/company.png', 'rb').read()
+    image_data = open('static/images/company.png', 'rb').read()
     if campaign_log and contact:
         campaign_open = CampaignOpen.objects.filter(
             campaign=campaign_log.campaign, contact=contact).first()
@@ -684,3 +682,20 @@ def demo_file_download(request):
     response['Content-Disposition'] = 'attachment; filename={}'.format(
         'sample_data.csv')
     return response
+
+
+def unsubscribe_from_campaign(request, contact_id):
+    contact_obj = get_object_or_404(Contact, pk=contact_id)
+    contact_obj.is_unsubscribed = True
+    contact_obj.save()
+    return HttpResponseRedirect('/')
+
+
+@login_required
+def contact_detail(request, contact_id):
+    contact_obj = get_object_or_404(Contact, pk=contact_id)
+
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or contact_obj.created_by == request.user):
+        raise PermissionDenied
+    if request.method == 'GET':
+        return render(request, 'contact_detail.html', {'contact_obj': contact_obj})

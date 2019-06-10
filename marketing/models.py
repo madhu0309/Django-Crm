@@ -225,11 +225,27 @@ class Campaign(models.Model):
     @property
     def sent_on_format(self):
         if self.schedule_date_time:
-            c_schedule_date_time = convert_to_custom_timezone(self.schedule_date_time, self.timezone)
+            c_schedule_date_time = convert_to_custom_timezone(
+                self.schedule_date_time, self.timezone)
             return c_schedule_date_time.strftime('%b %d, %Y %I:%M %p')
         else:
-            c_created_on = convert_to_custom_timezone(self.created_on, self.timezone)
+            c_created_on = convert_to_custom_timezone(
+                self.created_on, self.timezone)
             return c_created_on.strftime('%b %d, %Y %I:%M %p')
+
+    @property
+    def get_all_emails_count(self):
+        return self.contact_lists.exclude(contacts__email=None).values_list('contacts__email').count()
+
+    @property
+    def get_all_email_bounces_count(self):
+        return self.contact_lists.filter(contacts__is_bounced=True
+                                         ).exclude(contacts__email=None).values_list('contacts__email').count()
+
+    @property
+    def get_all_emails_unsubscribed_count(self):
+        return self.contact_lists.filter(contacts__is_unsubscribed=True
+                                         ).exclude(contacts__email=None).values_list('contacts__email').count()
 
 
 @receiver(models.signals.pre_delete, sender=Campaign)
@@ -279,4 +295,4 @@ class CampaignOpen(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     user_agent = models.CharField(max_length=2000, blank=True, null=True)
     contact = models.ForeignKey(
-        Contact, blank=True, null=True, on_delete=models.CASCADE)
+        Contact, blank=True, null=True, on_delete=models.CASCADE, related_name='contact_campaign')

@@ -12,7 +12,7 @@
             <div class="card">
               <div class="card-body">
                 <div class="card-title text-center">
-                  Edit Contact
+                 Contact Detail
                 </div>
                 <div class="row marl no-gutters justify-content-center">
                   <div class="col-md-12">
@@ -21,8 +21,8 @@
                         <label for="exampleInputEmail1" class="required">
                           Email{% if form.email.field.required %}<span class="error_marker"
                             style="color:red">*</span>{% endif %}</label>
-                        {{ form.email }}
-                        <span class="error" id="id__email">{{ form.email.errors }}</span>
+                            <br>
+                        {{contact_obj.email}}
                       </div>
                     </div>
                     <div class="filter_col col-md-12">
@@ -30,8 +30,8 @@
                         <label for="exampleInputEmail1" class="required">First
                           Name{% if form.name.field.required %}<span class="error_marker"
                             style="color:red">*</span>{% endif %}</label>
-                        {{ form.name }}
-                        <span class="error" id="id__name">{{ form.name.errors }}</span>
+                            <br>
+                        {{contact_obj.name}}
                       </div>
                     </div>
                     <div class="filter_col col-md-12">
@@ -39,8 +39,8 @@
                         <label for="exampleInputEmail1" class="required">Last
                           Name{% if form.last_name.field.required %}<span class="error_marker"
                             style="color:red">*</span>{% endif %}</label>
-                        {{ form.last_name }}
-                        <span class="error" id="id__last_name">{{ form.last_name.errors }}</span>
+                            <br>
+                        {{contact_obj.last_name}}
                       </div>
                     </div>
                     <div class="filter_col col-md-12">
@@ -48,8 +48,8 @@
                         <label for="exampleInputEmail1" class="required">City
                           {% if form.city.field.required %}<span class="error_marker"
                             style="color:red">*</span>{% endif %}</label>
-                        {{ form.city }}
-                        <span class="error" id="id__city">{{ form.city.errors }}</span>
+                            <br>
+                        {{contact_obj.city}}
                       </div>
                     </div>
                     <div class="filter_col col-md-12">
@@ -57,17 +57,17 @@
                         <label for="exampleInputEmail1" class="required">State
                           {% if form.state.field.required %}<span class="error_marker"
                             style="color:red">*</span>{% endif %}</label>
-                        {{ form.state }}
-                        <span class="error" id="id__state">{{ form.state.errors }}</span>
+                            <br>
+                            {{contact_obj.state}}
                       </div>
                     </div>
                   </div>
-                  <div class="col-md-12">
+                  <!-- <div class="col-md-12">
                     <div class="row marl buttons_row text-center form_btn_row">
                       <button class="btn btn-default save" type="submit">Update</button>
                       <a href="{% url 'marketing:contacts_list' %}" class="btn btn-default save">Cancel</a>
                     </div>
-                  </div>
+                  </div> -->
                 </div>
               </div>
             </div>

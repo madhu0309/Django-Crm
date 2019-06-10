@@ -4,7 +4,7 @@ from .views import (
     email_template_list, email_template_new, email_template_edit, email_template_delete,
     email_template_detail, campaign_list, campaign_new, campaign_edit, campaign_details, campaign_delete,
     edit_contact_list, delete_contact_list, failed_contact_list_detail, failed_contact_list_download_delete,
-    campaign_link_click, campaign_open, demo_file_download, delete_contact
+    campaign_link_click, campaign_open, demo_file_download, delete_contact, unsubscribe_from_campaign, contact_detail
 )
 
 app_name = 'marketing'
@@ -39,4 +39,6 @@ urlpatterns = [
     path('cm/link/<int:link_id>/e/<int:email_id>/', campaign_link_click, name='campaign_link_click'),
     path('cm/track-email/<int:campaign_log_id>/contact/<int:email_id>/', campaign_open, name='campaign_open'),
     path('demo-file-download-for-contacts-list/', demo_file_download, name='demo_file_download'),
+    path('unsubscribe-from-campaign/<int:contact_id>/', unsubscribe_from_campaign, name="unsubscribe_from_campaign"),
+    path('contact-detail/<int:contact_id>/', contact_detail, name="contact_detail")
 ]

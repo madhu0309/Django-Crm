@@ -32,7 +32,7 @@
                   {% for contact in contacts %}
                   <tr style="text-align:center;">
                     <td scope="row">{{forloop.counter}}</td>
-                    <td>{{contact.name}}</td>
+                    <td> <a href="{% url 'marketing:contact_detail' contact.id %}">{{contact.name}}</a> </td>
                     <td>{{contact.email}}</td>
                     <!-- <td class="text-center">{{contact.is_active}}</td> -->
                     <td class="text-center">
@@ -44,8 +44,8 @@
                     <td class="actions">
                       <a href="{% url 'marketing:edit_contact' contact.id %}" data-toggle="tooltip" data-placement="bottom" title=""
                         class="green box"><i class="far fa-edit"></i></a>
-                      <a href="#" class="sky_blue box"><i class="far fa-copy"></i></a>
-                      <a href="#" class="purple box"><i class="fas fa-upload"></i></a>
+                      <!-- <a href="#" class="sky_blue box"><i class="far fa-copy"></i></a>
+                      <a href="#" class="purple box"><i class="fas fa-upload"></i></a> -->
                       <a href="{% url 'marketing:delete_contact' contact.id %}" class="red box remove_account"><i class="far fa-trash-alt"></i></a>
                     </td>
                   </tr>
