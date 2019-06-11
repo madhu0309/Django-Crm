@@ -196,6 +196,9 @@ class Campaign(models.Model):
     attachment = models.FileField(
         max_length=1000, upload_to=get_campaign_attachment_path, blank=True, null=True)
 
+    class Meta:
+        ordering = ('created_on', )
+
     @property
     def no_of_unsubscribers(self):
         unsubscribers = self.campaign_contacts.filter(
@@ -290,9 +293,18 @@ class CampaignLinkClick(models.Model):
 
 
 class CampaignOpen(models.Model):
-    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='campaign_open')
     ip_address = models.GenericIPAddressField()
     created_on = models.DateTimeField(auto_now_add=True)
     user_agent = models.CharField(max_length=2000, blank=True, null=True)
     contact = models.ForeignKey(
-        Contact, blank=True, null=True, on_delete=models.CASCADE, related_name='contact_campaign')
+        Contact, blank=True, null=True, on_delete=models.CASCADE, related_name='contact_campaign_open')
+
+
+class CampaignCompleted(models.Model):
+    """ This Model Is Used To Check If The Scheduled Later Emails Have Been Sent
+        related name : campaign_is_completed
+    """
+    campaign = models.OneToOneField(
+        Campaign, on_delete=models.CASCADE, related_name='campaign_is_completed')
+    is_completed = models.BooleanField(default=False)

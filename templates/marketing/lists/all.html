@@ -7,7 +7,7 @@
   <div class="row marl">
     <div class="col-md-12">
       <div class="heading text-right">
-        <span class="float-left">All Contacts - 22</span>
+        <span class="float-left">All Contacts - {{contacts|length }}</span>
         <a href="{% url 'marketing:contact_list_new' %}" class="secondary_btn">Add New Contact List</a>
       </div>
     </div>
@@ -29,6 +29,11 @@
                   </tr>
                 </thead>
                 <tbody>
+                  {% if per_page %}
+                  {% paginate per_page contacts %}
+                  {% else%}
+                  {% paginate 10 contacts %}
+                  {% endif %}
                   {% for contact in contacts %}
                   <tr style="text-align:center;">
                     <td scope="row">{{forloop.counter}}</td>
@@ -42,11 +47,12 @@
                       <span class="badge box sky_blue">{{contact.is_bounced}}</span>
                     </td>
                     <td class="actions">
-                      <a href="{% url 'marketing:edit_contact' contact.id %}" data-toggle="tooltip" data-placement="bottom" title=""
-                        class="green box"><i class="far fa-edit"></i></a>
+                      <a href="{% url 'marketing:edit_contact' contact.id %}" data-toggle="tooltip"
+                        data-placement="bottom" title="" class="green box"><i class="far fa-edit"></i></a>
                       <!-- <a href="#" class="sky_blue box"><i class="far fa-copy"></i></a>
                       <a href="#" class="purple box"><i class="fas fa-upload"></i></a> -->
-                      <a href="{% url 'marketing:delete_contact' contact.id %}" class="red box remove_account"><i class="far fa-trash-alt"></i></a>
+                      <a href="{% url 'marketing:delete_contact' contact.id %}" class="red box remove_account"><i
+                          class="far fa-trash-alt"></i></a>
                     </td>
                   </tr>
                   {% endfor %}
@@ -240,6 +246,9 @@
         </div>
       </div>
     </div>
+  </div>
+  <div class="marl row text-center mt-5">
+    {% show_pages %}
   </div>
 </div>
 {% endblock %}

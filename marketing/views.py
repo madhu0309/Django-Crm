@@ -22,7 +22,7 @@ from marketing.forms import (ContactForm, ContactListForm, EmailTemplateForm,
                              SendCampaignForm)
 from marketing.models import (Campaign, CampaignLinkClick, CampaignLog,
                               CampaignOpen, Contact, ContactList,
-                              EmailTemplate, Link, Tag)
+                              EmailTemplate, Link, Tag, FailedContact)
 from marketing.tasks import run_campaign, upload_csv_file
 
 TIMEZONE_CHOICES = [(tz, tz) for tz in pytz.common_timezones]
@@ -368,16 +368,16 @@ def campaign_list(request):
         if request.POST['scheduled_on']:
             campaigns = campaigns.filter(
                 schedule_date_time__date__lte=request.POST['scheduled_on'])
-    per_page = request.GET.get("per_page", 10)  # Show 15 contacts per page
-    paginator = Paginator(
-        campaigns.distinct().order_by('-created_on'), per_page)
-    page = request.GET.get('page')
-    try:
-        campaigns = paginator.page(page)
-    except PageNotAnInteger:
-        campaigns = paginator.page(1)
-    except EmptyPage:
-        campaigns = paginator.page(paginator.num_pages)
+    # per_page = request.GET.get("per_page", 10)  # Show 15 contacts per page
+    # paginator = Paginator(
+    #     campaigns.distinct().order_by('-created_on'), per_page)
+    # page = request.GET.get('page')
+    # try:
+    #     campaigns = paginator.page(page)
+    # except PageNotAnInteger:
+    #     campaigns = paginator.page(1)
+    # except EmptyPage:
+    #     campaigns = paginator.page(paginator.num_pages)
     data = {'campaigns_list': campaigns}
     return render(request, 'marketing/campaign/index.html', data)
 
@@ -405,7 +405,6 @@ def campaign_new(request):
         # return JsonResponse(data, status=status.HTTP_200_OK)
         return render(request, 'marketing/campaign/new.html', data)
     else:
-        import pdb; pdb.set_trace()
         form = SendCampaignForm(request.POST, request.FILES)
         if form.is_valid():
             instance = form.save(commit=False)
@@ -500,8 +499,9 @@ def campaign_details(request, pk):
     bounced_contacts = contacts.filter(is_bounced=True).distinct()
     unsubscribe_contacts = contacts.filter(
         is_unsubscribed=True).distinct()
-    read_contacts = campaign.marketing_links.filter(Q(clicks__gt=0)).distinct()
-    # read_contacts =
+    # read_contacts = campaign.marketing_links.filter(Q(clicks__gt=0)).distinct()
+    contact_ids = CampaignOpen.objects.filter(campaign=campaign).values_list('contact_id', flat=True)
+    read_contacts = Contact.objects.filter(id__in=contact_ids)
     sent_contacts = contacts.exclude(
         Q(is_bounced=True) | Q(is_unsubscribed=True))
     if request.POST:
@@ -699,3 +699,78 @@ def contact_detail(request, contact_id):
         raise PermissionDenied
     if request.method == 'GET':
         return render(request, 'contact_detail.html', {'contact_obj': contact_obj})
+
+
+@login_required(login_url='/login')
+def edit_failed_contact(request, pk):
+    contact_obj = get_object_or_404(FailedContact, pk=pk)
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or contact_obj.created_by == request.user):
+        raise PermissionDenied
+    if request.method == 'GET':
+        form = ContactForm(instance=contact_obj)
+        return render(request, 'marketing/lists/edit_contact.html', {'form': form})
+
+    if request.method == 'POST':
+        form = ContactForm(request.POST, instance=contact_obj)
+        if form.is_valid():
+            contact = form.save(commit=False)
+            contact.save()
+            form.save_m2m()
+            return JsonResponse({'error': False, 'success_url': reverse('marketing:contacts_list')})
+        else:
+            return JsonResponse({'error': True, 'errors': form.errors, })
+
+
+@login_required(login_url='/login')
+def delete_failed_contact(request, pk):
+    contact_obj = get_object_or_404(FailedContact, pk=pk)
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or contact_obj.created_by == request.user):
+        raise PermissionDenied
+    if request.method == 'GET':
+        contact_obj.delete()
+        return redirect('marketing:contacts_list')
+
+
+@login_required
+def download_contacts_for_campaign(request, compaign_id):
+    campaign_obj = get_object_or_404(Campaign, pk=compaign_id)
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or campaign_obj.created_by == request.user):
+        raise PermissionDenied
+    if request.method == 'GET':
+        if request.GET.get('is_bounced') == 'true':
+            contact_ids = campaign_obj.contact_lists.filter(contacts__is_bounced=True).values_list(
+                'contacts__id', flat=True)
+            contacts = Contact.objects.filter(id__in=contact_ids).values(
+                'company_name', 'email', 'name', 'last_name', 'city', 'state')
+
+        if request.GET.get('is_unsubscribed') == 'true':
+            contact_ids = campaign_obj.contact_lists.filter(contacts__is_unsubscribed=True).values_list(
+                'contacts__id', flat=True)
+            contacts = Contact.objects.filter(id__in=contact_ids).values(
+                'company_name', 'email', 'name', 'last_name', 'city', 'state')
+
+        if request.GET.get('is_opened') == 'true':
+            contact_ids = CampaignOpen.objects.filter(campaign=campaign_obj).values_list('contact_id', flat=True)
+            contacts = Contact.objects.filter(id__in=contact_ids).values(
+                'company_name', 'email', 'name', 'last_name', 'city', 'state')
+
+        data = [
+            'company name,email,first name,last name,city,state\n',
+        ]
+        for contact in contacts:
+            data.append((', '.join(contact.values()) + '\n'))
+        response = HttpResponse(
+            data, content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename={}'.format(
+            'data_downloads.csv')
+        return response
+
+
+@login_required
+def create_campaign_from_template(request, template_id):
+    email_template_obj = get_object_or_404(EmailTemplate, pk=template_id)
+    if request.method == 'GET':
+        url_location = reverse('marketing:campaign_new')
+        url_query_params = '?email_template={}'.format(template_id)
+        url = url_location + url_query_params
+        return HttpResponseRedirect(url)

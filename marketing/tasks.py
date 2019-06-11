@@ -12,7 +12,7 @@ from django.template import Context, Template
 
 from common.utils import convert_to_custom_timezone
 from marketing.models import (Campaign, CampaignLog, Contact, ContactList,
-                              FailedContact)
+                              FailedContact, CampaignCompleted)
 
 
 @task
@@ -161,10 +161,6 @@ def run_campaign(campaign, domain='demo.django-crm.io', protocol='https'):
                 from_email = str(campaign.from_name) + "<" + \
                     str(campaign.from_email) + '>'
                 to_email = [each_contact.email]
-                print(html)
-                print(mail_html)
-                print(from_email)
-                print(to_email)
                 send_campaign_mail(
                     subject, mail_html, from_email, to_email, [], [reply_to_email], attachments)
     except Exception as e:
@@ -206,17 +202,23 @@ def send_scheduled_campaigns():
     from datetime import datetime
     campaigns = Campaign.objects.filter(schedule_date_time__isnull=False)
     for each in campaigns:
-        schedule_date_time = each.schedule_date_time
+        completed = CampaignCompleted.objects.filter(
+            is_completed=True).values_list('campaign_id', flat=True)
 
-        sent_time = datetime.now().strftime('%Y-%m-%d %H:%M')
-        sent_time = datetime.strptime(sent_time, '%Y-%m-%d %H:%M')
-        local_tz = pytz.timezone(settings.TIME_ZONE)
-        sent_time = local_tz.localize(sent_time)
-        sent_time = convert_to_custom_timezone(
-            sent_time, each.timezone, to_utc=True)
+        if each.id not in completed:
+            schedule_date_time = each.schedule_date_time
 
-        if (
-            str(each.schedule_date_time.date()) == str(sent_time.date()) and
-            str(schedule_date_time.hour) == str(sent_time.hour)
-        ):
-            run_campaign(each)
+            sent_time = datetime.now().strftime('%Y-%m-%d %H:%M')
+            sent_time = datetime.strptime(sent_time, '%Y-%m-%d %H:%M')
+            local_tz = pytz.timezone(settings.TIME_ZONE)
+            sent_time = local_tz.localize(sent_time)
+            sent_time = convert_to_custom_timezone(
+                sent_time, each.timezone, to_utc=True)
+
+            if (
+                str(each.schedule_date_time.date()) == str(sent_time.date()) and
+                str(schedule_date_time.hour) == str(sent_time.hour)
+            ):
+                run_campaign.delay(each.id)
+                CampaignCompleted.objects.create(
+                    campaign=each, is_completed=True)

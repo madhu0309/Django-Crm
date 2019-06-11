@@ -32,8 +32,8 @@
                     <div class="col-md-3">
                       <div class="form-group">
                         <label>Select Template</label>
-                        <select class="form-control js-example-basic-single email-template-select"
-                          name="email_template">
+                        <select class="form-control js-example-basic-single email-template-select" name="email_template"
+                          id="select_template">
                           <option value="">Select a template</option>
                           {% for email_template in email_templates %}
                           <option value="{{email_template.id}}" htmlcode="{{email_template.html}}"
@@ -165,11 +165,11 @@
                             </div>
                           </div>
                           <div class="col-md-12">
-                            <div class="form-group">
+                            <!-- <div class="form-group">
                               <label>Plain Text</label>
                               <textarea class="form-control" rows="3" name="plain_html"></textarea>
                               <span id="id_plain_html"></span>
-                            </div>
+                            </div> -->
                             <div class="form-group">
                               <label>Html Code</label>
                               <span id="id_html"></span>
@@ -275,6 +275,14 @@
   src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/js/tempusdominus-bootstrap-4.min.js"></script>
 <script>
 
+  $.urlParam = function (name) {
+    var results = new RegExp('[\?&]' + name + '=([^&#]*)')
+      .exec(window.location.search);
+
+    return (results !== null) ? results[1] || 0 : false;
+  }
+
+
   // $('[name="schedule_date_time"]').datetimepicker({format: 'yyyy-mm-dd hh:ii'});
   $(function () {
     $.fn.datetimepicker.Constructor.Default = $.extend({}, $.fn.datetimepicker.Constructor.Default, {
@@ -341,6 +349,24 @@
       html_content.val("");
     }
   })
+
+  selectedEmail = $.urlParam('email_template')
+  if (selectedEmail) {
+    $('#select_template option[value="' + selectedEmail + '"]').attr('selected', 'true')
+    var optionSelected = $('#select_template option[value="' + selectedEmail + '"]');
+    var valueSelected = selectedEmail;
+    var subject = $('[name="subject"]');
+    var html_code = $("#editor-container");
+    var html_content = $('#html_content');
+    if ($(optionSelected).val()) {
+      subject.val($(optionSelected).attr("subject"));
+      quill.root.innerHTML = $(optionSelected).attr("htmlcode");
+    } else {
+      subject.val("");
+      quill.root.innerHTML = "";
+      html_content.val("");
+    }
+  }
 
   $('[name="schedule_later"]').on('change', function (e) {
     if ($(this).is(":checked")) {

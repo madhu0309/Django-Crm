@@ -2,55 +2,64 @@
 {% load staticfiles %}
 {% load paginate %}
 {% block content %}
-{{ block.super }} 
+{{ block.super }}
 <div class="marketing_pages">
-	<div class="row marl">
-	  <div class="col-md-12">
-	    <div class="table_container_row no_mar_top">
-	      <div class="card">
-	        <div class="card-body">
-	          <div class="card-title text-right">
-	            <span class="float-left">Contact List - {{ contact_lists|length }}</span>
-	            <a href="/m/cl/list/new/" class="primary_btn">Add New Contact</a>
-	          </div>
-	          <div class="table-responsive table-bordered ">
-	            <table class="table">
-	              <thead>
-	                <tr>
-	                  <th width="5%">ID</th>
-	                  <th width="20%">Name</th>
-	                  <th width="20%">Created by</th>
-	                  <th width="15%">Last Actvity</th>
-	                  <th width="15%" class="text-center">Tags</th>
-	                  <th width="10%">Actions</th>
-	                </tr>
-	              </thead>
-	              <tbody>
-	              	{% for contact_list in contact_lists %}
-		                <tr style="text-align:center;">
-		                  <td scope="row">{{ forloop.counter }}</td>
-		                  <td><a href="{% url 'marketing:contact_list_detail' contact_list.id %}">{{ contact_list.name }}</td>
-		                  <td>{{ contact_list.created_by }}</td>
-		                  <td>
-		                    {{ contact_list.updated_on }}
-		                  </td>
-		                  <td class="text-center">
-		                  	{% for tag in contact_list.tags.all %}
-		                    	<span class="badge badge-success">{{tag.name}}</span>
-	                    	{% empty %}
-	                    		<span class="text-center">No Tags!</span>
-		                  	{% endfor %}
-		                  </td>
-		                  <td class="actions">
-		                    <a href="{% url 'marketing:edit_contact_list' contact_list.id %}" class="btn btn-success edit"><i class="fas fa-edit"></i></a>
-		                    <!-- <a href="/contacts/1/edit/" class="btn btn-info duplicate"><i class="fas fa-copy"></i></a> -->
-		                    <a href="{% url 'marketing:delete_contact_list' contact_list.id %}" class="btn btn-danger delete remove_account"><i class="fas fa-trash"></i></a>
-		                  </td>
-		                </tr>
-	                {% empty %}
-	                	<tr style="text-align:center;"><td colspan="6">No records found!</td></tr>
-	                {% endfor %}
-	                <!--
+  <div class="row marl">
+    <div class="col-md-12">
+      <div class="table_container_row no_mar_top">
+        <div class="card">
+          <div class="card-body">
+            <div class="card-title text-right">
+              <span class="float-left">Contact List - {{ contact_lists|length }}</span>
+              <a href="/m/cl/list/new/" class="primary_btn">Add New Contact</a>
+            </div>
+            <div class="table-responsive table-bordered ">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th width="5%">ID</th>
+                    <th width="20%">Name</th>
+                    <th width="20%">Created by</th>
+                    <th width="15%">Last Actvity</th>
+                    <th width="15%" class="text-center">Tags</th>
+                    <th width="10%">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if per_page %}
+                  {% paginate per_page contact_lists %}
+                  {% else%}
+                  {% paginate 10 contact_lists %}
+                  {% endif %}
+                  {% for contact_list in contact_lists %}
+                  <tr style="text-align:center;">
+                    <td scope="row">{{ forloop.counter }}</td>
+                    <td><a href="{% url 'marketing:contact_list_detail' contact_list.id %}">{{ contact_list.name }}</td>
+                    <td>{{ contact_list.created_by }}</td>
+                    <td>
+                      {{ contact_list.updated_on }}
+                    </td>
+                    <td class="text-center">
+                      {% for tag in contact_list.tags.all %}
+                      <span class="badge badge-success">{{tag.name}}</span>
+                      {% empty %}
+                      <span class="text-center">No Tags!</span>
+                      {% endfor %}
+                    </td>
+                    <td class="actions">
+                      <a href="{% url 'marketing:edit_contact_list' contact_list.id %}" class="btn btn-success edit"><i
+                          class="fas fa-edit"></i></a>
+                      <!-- <a href="/contacts/1/edit/" class="btn btn-info duplicate"><i class="fas fa-copy"></i></a> -->
+                      <a href="{% url 'marketing:delete_contact_list' contact_list.id %}"
+                        class="btn btn-danger delete remove_account"><i class="fas fa-trash"></i></a>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr style="text-align:center;">
+                    <td colspan="6">No records found!</td>
+                  </tr>
+                  {% endfor %}
+                  <!--
 		                <tr style="text-align:center;">
 		                  <td scope="row">12</td>
 		                  <td>Micropyramid</td>
@@ -148,13 +157,16 @@
 		                  </td>
 		                </tr>
 	               	-->
-	              </tbody>
-	            </table>
-	          </div>
-	        </div>
-	      </div>
-	    </div>
-	  </div>  
-	</div>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="marl row text-center mt-5">
+        {% show_pages %}
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

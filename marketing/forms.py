@@ -1,4 +1,5 @@
 import csv
+import datetime
 import re
 import json
 import openpyxl
@@ -108,7 +109,8 @@ def xls_doc_validate(document):
     validated_rows = []
     invalid_rows = []
     for sheet_name in sheets:
-        validated_rows, invalid_rows = get_validated_rows(wb, sheet_name, validated_rows, invalid_rows)
+        validated_rows, invalid_rows = get_validated_rows(
+            wb, sheet_name, validated_rows, invalid_rows)
     return {"error": False, "validated_rows": validated_rows, "invalid_rows": invalid_rows}
 
 
@@ -118,11 +120,11 @@ def import_document_validator(document):
         document.seek(0, 0)
         return csv_doc_validate(document)
     except Exception as e:
-        print (e)
+        print(e)
         try:
             return xls_doc_validate(document)
         except Exception as e:
-            print (e)
+            print(e)
             return {"error": True, "message": "Not a valid CSV/XLS file"}
 
 
@@ -219,12 +221,14 @@ class ContactForm(forms.ModelForm):
 
     class Meta:
         model = Contact
-        fields = ["name", "email", "contact_number", "last_name", "city", "state"]
+        fields = ["name", "email", "contact_number",
+                  "last_name", "city", "state"]
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if Contact.objects.filter(email=email).exclude(id=self.instance.id).exists():
-            raise forms.ValidationError('Contact with this Email already exists')
+            raise forms.ValidationError(
+                'Contact with this Email already exists')
         return email
 
     # def clean_contact_list(self):
@@ -304,6 +308,15 @@ class SendCampaignForm(forms.ModelForm):
             self.fields['schedule_date_time'].required = True
         if not self.data.get('reply_to_crm'):
             self.fields['reply_to_email'].required = True
+
+    def clean_schedule_date_time(self):
+        schedule_date_time = self.cleaned_data.get('schedule_date_time')
+        if self.cleaned_data.get('schedule_later') == 'true':
+            schedule_date_time = datetime.datetime.strptime(schedule_date_time, '%Y-%m-%d %H:%M')
+            if schedule_date_time < datetime.datetime.now():
+                raise forms.ValidationError(
+                'Schedule Date Time should be greater than current time')
+        return schedule_date_time
 
     def clean_contact_list(self):
         contact_list = self.cleaned_data.get("contact_list")

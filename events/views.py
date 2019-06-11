@@ -156,7 +156,6 @@ def event_update(request, event_id):
             instance=event_obj, request_user=request.user)
         selected_recurring_days = Event.objects.filter(
             name=event_obj.name).values_list('date_of_meeting', flat=True)
-        # import pdb; pdb.set_trace()
         selected_recurring_days = [day.strftime(
             '%A') for day in selected_recurring_days]
         context['selected_recurring_days'] = selected_recurring_days
