@@ -18,6 +18,7 @@ from lxml.cssselect import CSSSelector
 
 from common import status
 from common.utils import convert_to_custom_timezone
+from common.models import User
 from marketing.forms import (ContactForm, ContactListForm, EmailTemplateForm,
                              SendCampaignForm)
 from marketing.models import (Campaign, CampaignLinkClick, CampaignLog,
@@ -39,7 +40,24 @@ def get_exact_match(query, m2m_field, ids):
 
 @login_required(login_url='/login')
 def dashboard(request):
-    return render(request, 'marketing/dashboard.html')
+    if request.user.role == 'ADMIN' or request.user.is_superuser:
+        email_templates = EmailTemplate.objects.all()
+        contacts = Contact.objects.all()
+        campaign = Campaign.objects.all()
+        contacts_list = ContactList.objects.all()
+    else:
+        email_templates = EmailTemplate.objects.filter(created_by=request.user)
+        contacts = Contact.objects.filter(created_by=request.user)
+        campaign = Campaign.objects.filter(created_by=request.user)
+        contacts_list = ContactList.objects.filter(created_by=request.user)
+
+    context = {
+        'email_templates': email_templates,
+        'contacts': contacts,
+        'campaigns': campaign,
+        'contacts_list': contacts_list
+    }
+    return render(request, 'marketing/dashboard.html', context)
 
 
 @login_required(login_url='/login')
@@ -47,43 +65,59 @@ def contact_lists(request):
     tags = Tag.objects.all()
     if (request.user.role == "ADMIN"):
         queryset = ContactList.objects.all()
+        users = User.objects.all()
     else:
         queryset = ContactList.objects.filter(created_by=request.user)
+        users = User.objects.none()
+    if request.GET.get('tag'):
+        queryset = queryset.filter(tags__id__in=request.GET.get('tag'))
     if request.method == 'POST':
-        post_tags = request.POST.get('tags')
-        if request.POST.get('search'):
+        post_tags = request.POST.getlist('tag')
+
+        if request.POST.get('contact_list_name'):
             queryset = queryset.filter(
-                Q(name__icontains=request.POST['search']) |
-                Q(created_by__email__icontains=request.POST[
-                    'search'])).distinct()
+                name__icontains=request.POST.get('contact_list_name'))
 
-        if post_tags:
+        if request.POST.get('created_by'):
+            queryset = queryset.filter(
+                created_by=request.POST.get('created_by'))
 
-            filtered_list = json.loads(request.POST['tags'])
+        if request.POST.get('tag'):
+            queryset = queryset.filter(tags__id__in=post_tags)
+            request_tags = request.POST.getlist('tag')
 
-            if len(filtered_list) > 1:
-                queryset = get_exact_match(queryset, 'tags', filtered_list)
-            else:
-                queryset = queryset.filter(tags__id__in=filtered_list)
-
-    per_page = request.GET.get("per_page", 10)
-    paginator = Paginator(queryset, per_page)
-    page = request.GET.get('page', 1)
-    try:
-        contact_lists = paginator.page(page)
-    except PageNotAnInteger:
-        contact_lists = paginator.page(1)
-    except EmptyPage:
-        contact_lists = paginator.page(paginator.num_pages)
-    data = {'contact_lists': contact_lists, 'tags': tags}
+    data = {'contact_lists': queryset, 'tags': tags, 'users': users,
+            'request_tags': request.POST.getlist('tag'), }
     return render(request, 'marketing/lists/index.html', data)
 
 
 @login_required(login_url='/login')
 def contacts_list(request):
+    if (request.user.role == "ADMIN"):
+        contacts = Contact.objects.all()
+        users = User.objects.all()
+    else:
+        contacts = Contact.objects.filter(created_by=request.user)
+        users = User.objects.none()
     contacts = Contact.objects.all()
-    data = {"contacts": contacts}
-    return render(request, 'marketing/lists/all.html', data)
+    if request.method == 'GET':
+        context = {'contacts': contacts, 'users': users}
+        return render(request, 'marketing/lists/all.html', context)
+
+    if request.method == 'POST':
+        data = request.POST
+        if data.get('contact_name'):
+            contacts = contacts.filter(
+                name__icontains=data.get('contact_name'))
+
+        if data.get('contact_email'):
+            contacts = contacts.filter(email=data.get('contact_email'))
+
+        if data.get('created_by'):
+            contacts = contacts.filter(created_by=data.get('created_by'))
+
+        context = {'contacts': contacts, 'users': User.objects.all()}
+        return render(request, 'marketing/lists/all.html', context)
 
 
 @login_required(login_url='/login')
@@ -286,25 +320,21 @@ def failed_contact_list_download_delete(request, pk):
 def email_template_list(request):
     if (request.user.is_admin or request.user.is_superuser):
         queryset = EmailTemplate.objects.all()
+        users = User.objects.all()
     else:
         queryset = EmailTemplate.objects.filter(
             created_by=request.user)
+        users = User.objects.none()
     if request.method == 'POST':
-        queryset = queryset.filter(
-            Q(title__icontains=request.POST['search']) |
-            Q(subject__icontains=request.POST['search']) |
-            Q(created_by__email__icontains=request.POST['search']))
+        if request.POST.get('template_name'):
+            queryset = queryset.filter(
+                title__icontains=request.POST.get('template_name'))
 
-    per_page = request.GET.get("per_page", 10)
-    paginator = Paginator(queryset.distinct(), per_page)
-    page = request.GET.get('page')
-    try:
-        email_templates = paginator.page(page)
-    except PageNotAnInteger:
-        email_templates = paginator.page(1)
-    except EmptyPage:
-        email_templates = paginator.page(paginator.num_pages)
-    data = {'email_templates': email_templates}
+        if request.POST.get('created_by'):
+            queryset = queryset.filter(
+                created_by=request.POST.get('created_by'))
+
+    data = {'email_templates': queryset, 'users': users}
     return render(request, 'marketing/email_template/index.html', data)
 
 
@@ -359,26 +389,22 @@ def email_template_delete(request, pk):
 
 @login_required(login_url='/login')
 def campaign_list(request):
-    campaigns = Campaign.objects.all()
+    if (request.user.role == "ADMIN"):
+        queryset = Campaign.objects.all()
+        users = User.objects.all()
+    else:
+        queryset = Campaign.objects.all().filter(created_by=request.user)
+        users = User.objects.none()
     if request.method == 'POST':
-        campaigns = campaigns.filter(
-            Q(title__icontains=request.POST['search']) |
-            Q(created_by__email__icontains=request.POST['search'])
-        )
-        if request.POST['scheduled_on']:
-            campaigns = campaigns.filter(
-                schedule_date_time__date__lte=request.POST['scheduled_on'])
-    # per_page = request.GET.get("per_page", 10)  # Show 15 contacts per page
-    # paginator = Paginator(
-    #     campaigns.distinct().order_by('-created_on'), per_page)
-    # page = request.GET.get('page')
-    # try:
-    #     campaigns = paginator.page(page)
-    # except PageNotAnInteger:
-    #     campaigns = paginator.page(1)
-    # except EmptyPage:
-    #     campaigns = paginator.page(paginator.num_pages)
-    data = {'campaigns_list': campaigns}
+        if request.POST.get('campaign_name'):
+            queryset = queryset.filter(
+                title__icontains=request.POST.get('campaign_name'))
+
+        if request.POST.get('created_by'):
+            queryset = queryset.filter(
+                created_by=request.POST.get('created_by'))
+
+    data = {'campaigns_list': queryset, 'users': users}
     return render(request, 'marketing/campaign/index.html', data)
 
 
@@ -500,7 +526,8 @@ def campaign_details(request, pk):
     unsubscribe_contacts = contacts.filter(
         is_unsubscribed=True).distinct()
     # read_contacts = campaign.marketing_links.filter(Q(clicks__gt=0)).distinct()
-    contact_ids = CampaignOpen.objects.filter(campaign=campaign).values_list('contact_id', flat=True)
+    contact_ids = CampaignOpen.objects.filter(
+        campaign=campaign).values_list('contact_id', flat=True)
     read_contacts = Contact.objects.filter(id__in=contact_ids)
     sent_contacts = contacts.exclude(
         Q(is_bounced=True) | Q(is_unsubscribed=True))
@@ -750,7 +777,8 @@ def download_contacts_for_campaign(request, compaign_id):
                 'company_name', 'email', 'name', 'last_name', 'city', 'state')
 
         if request.GET.get('is_opened') == 'true':
-            contact_ids = CampaignOpen.objects.filter(campaign=campaign_obj).values_list('contact_id', flat=True)
+            contact_ids = CampaignOpen.objects.filter(
+                campaign=campaign_obj).values_list('contact_id', flat=True)
             contacts = Contact.objects.filter(id__in=contact_ids).values(
                 'company_name', 'email', 'name', 'last_name', 'city', 'state')
 

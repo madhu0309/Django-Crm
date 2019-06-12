@@ -35,6 +35,9 @@ class EmailTemplate(models.Model):
     subject = models.CharField(max_length=5000)
     html = models.TextField()
 
+    class Meta:
+        ordering = ['id', ]
+
     @property
     def created_by_user(self):
         return self.created_by if self.created_by else None
@@ -51,6 +54,9 @@ class ContactList(models.Model):
     # is_public = models.BooleanField(default=False)
     visible_to = models.ManyToManyField(
         User, related_name="contact_lists_visible_to")
+
+    class Meta:
+        ordering = ('id',)
 
     @property
     def created_by_user(self):
@@ -125,6 +131,9 @@ class Contact(models.Model):
 
     def __str__(self):
         return self.email
+
+    class Meta:
+        ordering = ['id', ]
 
 
 class FailedContact(models.Model):
@@ -293,7 +302,8 @@ class CampaignLinkClick(models.Model):
 
 
 class CampaignOpen(models.Model):
-    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='campaign_open')
+    campaign = models.ForeignKey(
+        Campaign, on_delete=models.CASCADE, related_name='campaign_open')
     ip_address = models.GenericIPAddressField()
     created_on = models.DateTimeField(auto_now_add=True)
     user_agent = models.CharField(max_length=2000, blank=True, null=True)
