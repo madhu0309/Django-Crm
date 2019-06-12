@@ -64,17 +64,17 @@
                     <table class="table">
                       <thead>
                         <tr>
-                          <th width="45%">Name</th>
-                          <th width="50%">Assigned To</th>
+                          <th width="40%">Name</th>
+                          <!-- <th width="30%">Assigned To</th> -->
                           <th width="50%">Tags</th>
                         </tr>
                       </thead>
                       <tbody>
                         {% for contact in contacts_list|slice:"10" %}
                         <tr>
-                          <td><a href="{% url 'accounts:view_account' contact.id %}">{{contact.name}}</a>
+                          <td><a href="{% url 'marketing:contact_list_detail' contact.id %}">{{contact.name}}</a>
                           </td>
-                          <td>
+                          <!-- <td>
                             {% with users=contact.visible_to.all %}
                             {% for user in users|slice:'3'  %}
                             <span class="text-left" id="list_opp_users_">{{user}}<span>
@@ -87,7 +87,7 @@
                                   </span></span>
                                 {% endif %}
                                 {% endwith %}
-                          </td>
+                          </td> -->
                           <td style="display: block;">
                             {% for tag in contact.tags.all|slice:'3' %}
                             <span class="text-left color{{forloop.counter}} tag_class_cl" id="list_tag"
@@ -95,8 +95,8 @@
                             {% empty %}
                             <span class="text-left">No Tags</span>
                             {% endfor %}
-                            {% if account.tags.all|length > 3 %}
-                            <span class="text-left" id="list_tag">{{account.tags.all|length|subtract:'3'}}<span> more
+                            {% if contact.tags.all|length > 3 %}
+                            <span class="text-left" id="list_tag">{{contact.tags.all|length|subtract:'3'}}<span> more
                               </span></span>
                             {% endif %}
                           </td>
@@ -130,7 +130,7 @@
                       <tbody>
                         {% for campaign in campaigns|slice:"10" %}
                         <tr>
-                          <td><a href="{% url 'opportunity:opp_view' campaign.id %}">{{campaign.title}}</a>
+                          <td><a href="{% url 'marketing:campaign_details' campaign.id %}">{{campaign.title}}</a>
                           </td>
                           <td>{{campaign.created_by}}</td>
                           <td>

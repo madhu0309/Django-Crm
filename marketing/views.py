@@ -67,7 +67,7 @@ def contact_lists(request):
         queryset = ContactList.objects.all()
         users = User.objects.all()
     else:
-        queryset = ContactList.objects.filter(created_by=request.user)
+        queryset = ContactList.objects.filter(Q(created_by=request.user) | Q(visible_to=request.user))
         users = User.objects.none()
     if request.GET.get('tag'):
         queryset = queryset.filter(tags__id__in=request.GET.get('tag'))
