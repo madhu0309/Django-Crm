@@ -200,13 +200,14 @@ class Campaign(models.Model):
     opens = models.IntegerField(default='0', blank=True)
     opens_unique = models.IntegerField(default='0', blank=True)
     bounced = models.IntegerField(default='0')
+    tags = models.ManyToManyField(Tag)
     status = models.CharField(
         default="Preparing", choices=STATUS_CHOICES, max_length=20)
     attachment = models.FileField(
         max_length=1000, upload_to=get_campaign_attachment_path, blank=True, null=True)
 
     class Meta:
-        ordering = ('created_on', )
+        ordering = ('-created_on', )
 
     @property
     def no_of_unsubscribers(self):
