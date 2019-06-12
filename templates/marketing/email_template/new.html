@@ -27,7 +27,7 @@
 	                      	<label for="">Subject</label>
 	                        <input type="text" class="form-control" name="subject" value="{% if email_template %}{{ email_template.subject }}{% endif %}" placeholder="Enter Template Subject">
 	                      </div>
-	                      <span id="id_title"></span>
+	                      <span id="id_subject"></span>
 	                    </div>
 	                    <div class="col-md-12">
 	                      <div class="form-group">
@@ -65,7 +65,7 @@
 		    toolbar: [
 		      [{ header: [1, 2, false] }],
 		      ['bold', 'italic', 'underline'],
-		      ['image', 'code-block']
+		      ['code-block']
 		    ]
 		  },
 		  placeholder: 'Compose an epic...',
