@@ -160,29 +160,6 @@ class ContactListForm(forms.ModelForm):
                 self.invalid_rows = data.get("invalid_rows", [])
         return document
 
-    def clean_tags(self):
-        tags_data = self.data['tags'].split(",") if self.data['tags'] else []
-        if len(tags_data) > 0:
-            instance_tags = []
-            if self.instance and self.instance.id is not None:
-                instance_tags = list(
-                    set(self.instance.tags.all().values_list(
-                        'name', flat=True)))
-            for each in tags_data:
-                tags = Tag.objects.filter(name__iexact=each)
-                if instance_tags:
-                    tags = tags.exclude(name__in=instance_tags)
-                if tags:
-                    raise forms.ValidationError(
-                        str(each) + ' Tag aleady existed with this name')
-                if bool(re.search(r"[~\!_.@#\$%\^&\*\(\)\+{}\":;'/\[\]]",
-                                  each)):
-                    raise forms.ValidationError(
-                        "Tags Should not contain special \
-                        charcters except hyphens")
-            return self.data['tags']
-        raise forms.ValidationError("Enter Any tags")
-
     def clean_visible_to(self):
         visible_to_data = json.loads(self.data['visible_to'])
         if len(visible_to_data) > 0:
@@ -341,26 +318,3 @@ class SendCampaignForm(forms.ModelForm):
                         'The contact list "{}" does not have any contacts in it .'.format(contacts_list_obj.name))
 
         return contact_list
-
-    def clean_tags(self):
-        tags_data = self.data['tags'].split(",") if self.data['tags'] else []
-        if len(tags_data) > 0:
-            instance_tags = []
-            if self.instance and self.instance.id is not None:
-                instance_tags = list(
-                    set(self.instance.tags.all().values_list(
-                        'name', flat=True)))
-            for each in tags_data:
-                tags = Tag.objects.filter(name__iexact=each)
-                if instance_tags:
-                    tags = tags.exclude(name__in=instance_tags)
-                if tags:
-                    raise forms.ValidationError(
-                        str(each) + ' Tag aleady existed with this name')
-                if bool(re.search(r"[~\!_.@#\$%\^&\*\(\)\+{}\":;'/\[\]]",
-                                  each)):
-                    raise forms.ValidationError(
-                        "Tags Should not contain special \
-                        charcters except hyphens")
-            return self.data['tags']
-        raise forms.ValidationError("Enter Any tags")

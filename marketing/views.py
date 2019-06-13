@@ -219,11 +219,12 @@ def view_contact_list(request, pk):
 
 @login_required(login_url='/login')
 def delete_contact_list(request, pk):
-    try:
-        ContactList.objects.get(pk=pk).delete()
-        redirect_to = reverse('marketing:contact_lists')
-    except ContactList.DoesNotExist:
-        redirect_to = reverse('marketing:contact_lists')
+    contact_list_obj = get_object_or_404(ContactList, pk=pk)
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or contact_list_obj.created_by == request.user):
+        raise PermissionDenied
+
+    contact_list_obj.delete()
+    redirect_to = reverse('marketing:contact_lists')
     return HttpResponseRedirect(redirect_to)
 
 
