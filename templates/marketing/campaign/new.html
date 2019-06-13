@@ -24,9 +24,9 @@
                   <div class="row marl">
                     <div class="col-md-12">
                       <div class="form-group">
-                        <label>Title</label>
+                        <label>Title</label><span class="error_marker" style="color:red"> *</span>
                         <input type="text" name="title" class="form-control" placeholder="Title of this campaign">
-                        <small class="form-text text-muted">Set a title for this campaign?</small>
+                        <!-- <small class="form-text text-muted">Set a title for this campaign?</small> -->
                         <span id="id_title"></span>
                       </div>
                     </div>
@@ -50,7 +50,7 @@
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label>Subject</label>
+                        <label>Subject</label><span class="error_marker" style="color:red"> *</span>
                         <input type="text" name="subject" class="form-control" placeholder="Subject of this Campaign">
                         <!-- <small class="form-text text-muted">Set a title for this campaign?</small> -->
                         <span id="id_subject"></span>
@@ -58,14 +58,14 @@
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label>From Name</label>
+                        <label>From Name</label><span class="error_marker" style="color:red"> *</span>
                         <input type="text" class="form-control" placeholder="John Doe" name="from_name">
                         <span id="id_from_name"></span>
                       </div>
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label>From Email</label>
+                        <label>From Email</label><span class="error_marker" style="color:red"> *</span>
                         <input type="email" class="form-control" placeholder="support@mp.com" name="from_email">
                         <span id="id_from_email"></span>
                       </div>
@@ -74,7 +74,7 @@
                       <div class="row">
                         <div class="col-md-3">
                           <div class="form-group">
-                            <label>Select Contact List</label>
+                            <label>Select Contact List</label><span class="error_marker" style="color:red"> *</span>
                             <select class="contact-lsit-select js-example-basic-multiple" name="contact_list"
                               multiple="multiple">
                               {% for contact_list in contact_lists %}
@@ -88,7 +88,7 @@
                             <span id="id_reply_to_crm"></span>
                           </div>
                           <div class="form-group reply_to_email">
-                            <label>Reply to email</label>
+                            <label>Reply to email</label><span class="error_marker" style="color:red"> *</span>
                             <input type="email" class="form-control" placeholder="replyto@mp.com" name="reply_to_email">
                             <span id="id_reply_to_email"></span>
                           </div>
@@ -164,7 +164,7 @@
                             </div>
                             <div class="col-md-4 timezone-div" style="display: none;">
                               <div class="form-group">
-                                <label for="">Schedule Date Time</label>
+                                <label for="">Schedule Date Time</label><span class="error_marker" style="color:red"> *</span>
                                 <div class="input-group date" id="datetimepicker1" data-target-input="nearest">
                                   <input type="text" class="form-control datetimepicker-input"
                                     data-target="#datetimepicker1" name="schedule_date_time" />
@@ -185,7 +185,7 @@
                               <span id="id_plain_html"></span>
                             </div> -->
                             <div class="form-group">
-                              <label>Html Code</label>
+                              <label>Html Code</label><span class="error_marker" style="color:red"> *</span>
                               <span id="id_html"></span>
                               <div id="editor-container">
                               </div>
