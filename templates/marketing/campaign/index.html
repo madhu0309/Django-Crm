@@ -7,7 +7,7 @@
 {% endblock extralinks %}
 
 {{ block.super }}
-<div class="marketing_pages">
+<div class="main_container ml-5 mr-5">
   <div class="row marl">
     <div class="filter_row list_filter_row row marl col-md-12 mb-2">
       <div class="">
@@ -141,6 +141,14 @@
       $(".list_filter_row").toggle();
     });
     $('#id_tag').select2();
+
+    $(".remove_account").click(function (e) {
+      e.preventDefault()
+      url = $(this).attr('href')
+      if (!confirm('Are you sure you want to delete?'))
+        return;
+      window.location = $(this).attr('href')
+    })
 
     $("a[rel='page']").click(function (e) {
       e.preventDefault();

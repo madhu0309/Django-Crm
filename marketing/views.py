@@ -63,12 +63,13 @@ def dashboard(request):
 @login_required(login_url='/login')
 def contact_lists(request):
     tags = Tag.objects.all()
+    users = User.objects.all()
     if (request.user.role == "ADMIN"):
         queryset = ContactList.objects.all()
-        users = User.objects.all()
     else:
-        queryset = ContactList.objects.filter(Q(created_by=request.user) | Q(visible_to=request.user))
-        users = User.objects.none()
+        queryset = ContactList.objects.filter(
+            Q(created_by=request.user) | Q(visible_to=request.user))
+        # users = User.objects.none()
     if request.GET.get('tag'):
         queryset = queryset.filter(tags__id__in=request.GET.get('tag'))
     if request.method == 'POST':
@@ -93,12 +94,12 @@ def contact_lists(request):
 
 @login_required(login_url='/login')
 def contacts_list(request):
+    users = User.objects.all()
     if (request.user.role == "ADMIN"):
         contacts = Contact.objects.all()
-        users = User.objects.all()
     else:
         contacts = Contact.objects.filter(created_by=request.user)
-        users = User.objects.none()
+        # users = User.objects.none()
     contacts = Contact.objects.all()
     if request.method == 'GET':
         context = {'contacts': contacts, 'users': users}
@@ -218,11 +219,12 @@ def view_contact_list(request, pk):
 
 @login_required(login_url='/login')
 def delete_contact_list(request, pk):
-    try:
-        # ContactList.objects.get(pk=pk).delete()
-        redirect_to = reverse('marketing:contact_lists')
-    except ContactList.DoesNotExist:
-        redirect_to = reverse('marketing:contact_lists')
+    contact_list_obj = get_object_or_404(ContactList, pk=pk)
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or contact_list_obj.created_by == request.user):
+        raise PermissionDenied
+
+    contact_list_obj.delete()
+    redirect_to = reverse('marketing:contact_lists')
     return HttpResponseRedirect(redirect_to)
 
 
@@ -274,9 +276,8 @@ def delete_contact(request, pk):
     contact_obj = get_object_or_404(Contact, pk=pk)
     if not (request.user.role == 'ADMIN' or request.user.is_superuser or contact_obj.created_by == request.user):
         raise PermissionDenied
-    if request.method == 'GET':
-        contact_obj.delete()
-        return redirect('marketing:contacts_list')
+    contact_obj.delete()
+    return redirect('marketing:contacts_list')
 
 
 @login_required(login_url='/login')
@@ -318,13 +319,13 @@ def failed_contact_list_download_delete(request, pk):
 
 @login_required(login_url='/login')
 def email_template_list(request):
+    users = User.objects.all()
     if (request.user.is_admin or request.user.is_superuser):
         queryset = EmailTemplate.objects.all()
-        users = User.objects.all()
     else:
         queryset = EmailTemplate.objects.filter(
             created_by=request.user)
-        users = User.objects.none()
+        # users = User.objects.none()
     if request.method == 'POST':
         if request.POST.get('template_name'):
             queryset = queryset.filter(
@@ -389,12 +390,14 @@ def email_template_delete(request, pk):
 
 @login_required(login_url='/login')
 def campaign_list(request):
+    users = User.objects.all()
     if (request.user.role == "ADMIN"):
         queryset = Campaign.objects.all()
-        users = User.objects.all()
     else:
         queryset = Campaign.objects.all().filter(created_by=request.user)
-        users = User.objects.none()
+        # users = User.objects.none()
+    if request.GET.get('tag'):
+        queryset = queryset.filter(tags=request.GET.get('tag'))
     if request.method == 'POST':
         if request.POST.get('campaign_name'):
             queryset = queryset.filter(
@@ -431,7 +434,8 @@ def campaign_new(request):
         # return JsonResponse(data, status=status.HTTP_200_OK)
         return render(request, 'marketing/campaign/new.html', data)
     else:
-        form = SendCampaignForm(request.POST, request.FILES)
+        form = SendCampaignForm(request.POST, request.FILES,
+                                contacts_list=request.POST.getlist('contact_list'))
         if form.is_valid():
             instance = form.save(commit=False)
             instance.created_by = request.user
@@ -449,6 +453,12 @@ def campaign_new(request):
             # contacts = Contact.objects.filter(contact_list__in=json.loads(request.POST['contact_list'])).distinct()
             # for each_contact in contacts:
             #     instance.contacts.add(each_contact)
+            tags = request.POST['tags'].split(
+                ',') if request.POST['tags'] else []
+            for each in tags:
+                tag, _ = Tag.objects.get_or_create(
+                    name=each, created_by=request.user)
+                instance.tags.add(tag)
 
             camp = instance
 
