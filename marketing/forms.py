@@ -158,6 +158,8 @@ class ContactListForm(forms.ModelForm):
             else:
                 self.validated_rows = data.get("validated_rows", [])
                 self.invalid_rows = data.get("invalid_rows", [])
+                if self.invalid_rows:
+                    raise forms.ValidationError('Uploaded file is not valid')
         return document
 
     def clean_visible_to(self):
