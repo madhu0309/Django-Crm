@@ -17,7 +17,7 @@
 									<div class="row marl">
 										<div class="col-md-12">
 											<div class="form-group">
-												<label for="">Title</label>
+												<label for="">Title</label><span class="error_marker" style="color:red"> *</span>
 												<input type="text" class="form-control" name="title"
 													value="{% if email_template %}{{ email_template.title }}{% endif %}"
 													placeholder="Enter Template Title">
@@ -26,7 +26,7 @@
 										</div>
 										<div class="col-md-12">
 											<div class="form-group">
-												<label for="">Subject</label>
+												<label for="">Subject</label><span class="error_marker" style="color:red"> *</span>
 												<input type="text" class="form-control" name="subject"
 													value="{% if email_template %}{{ email_template.subject }}{% endif %}"
 													placeholder="Enter Template Subject">
@@ -35,7 +35,7 @@
 										</div>
 										<div class="col-md-12">
 											<div class="form-group">
-												<label>HTML Code</label>
+												<label>HTML Code</label><span class="error_marker" style="color:red"> *</span>
 												<div id="editor-container">
 													{% if email_template %}{{ email_template.html|safe }}{% endif %}
 												</div>
@@ -68,7 +68,8 @@
 </div>
 {% endblock %}
 {% block js_block %}
-<script src="https://malsup.github.com/jquery.form.js"></script>
+<script src="{% static 'js/ajaxForm.js' %}"></script>
+<!-- <script src="https://malsup.github.com/jquery.form.js"></script> -->
 <script>
 	var quill = new Quill('#editor-container', {
 		modules: {
