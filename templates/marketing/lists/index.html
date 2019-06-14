@@ -111,7 +111,7 @@
                     </td>
                     <td class="text-center">
                       {% for tag in contact_list.tags.all %}
-                      <span class="badge badge-success">{{tag.name}}</span>
+                      <span class="text-left color{{forloop.counter}} tag_class_camp" id="list_tag">{{tag.name}}</span>
                       {% empty %}
                       <span class="text-center">No Tags!</span>
                       {% endfor %}

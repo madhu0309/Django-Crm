@@ -5,7 +5,7 @@ app_name = 'invoices'
 
 
 urlpatterns = [
-    path('list/', invoices_list, name='invoices_list'),
+    path('', invoices_list, name='invoices_list'),
     path('create/', invoices_create, name='invoices_create'),
     path('detail/<int:invoice_id>/', invoice_details, name='invoice_details'),
     path('edit/<int:invoice_id>/', invoice_edit, name='invoice_edit'),

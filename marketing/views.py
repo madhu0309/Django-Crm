@@ -71,7 +71,7 @@ def contact_lists(request):
             Q(created_by=request.user) | Q(visible_to=request.user))
         # users = User.objects.none()
     if request.GET.get('tag'):
-        queryset = queryset.filter(tags__id__in=request.GET.get('tag'))
+        queryset = queryset.filter(tags=request.GET.get('tag'))
     if request.method == 'POST':
         post_tags = request.POST.getlist('tag')
 
@@ -283,7 +283,16 @@ def delete_contact(request, pk):
 @login_required(login_url='/login')
 def contact_list_detail(request, pk):
     contact_list = get_object_or_404(ContactList, pk=pk)
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or contact_list.created_by == request.user):
+        raise PermissionDenied
     contacts_list = contact_list.contacts.all()
+    if request.POST:
+        if request.POST.get('name'):
+            contacts_list = contacts_list.filter(name__icontains=request.POST.get('name'))
+        if request.POST.get('email'):
+            contacts_list = contacts_list.filter(email=request.POST.get('email'))
+        if request.POST.get('company_name'):
+            contacts_list = contacts_list.filter(company_name=request.POST.get('company_name'))
     data = {'contact_list': contact_list, "contacts_list": contacts_list}
     return render(request, 'marketing/lists/detail.html', data)
 
