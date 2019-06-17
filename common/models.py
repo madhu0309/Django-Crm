@@ -122,7 +122,7 @@ class Comment(models.Model):
         on_delete=models.CASCADE)
     lead = models.ForeignKey('leads.Lead',
                              blank=True, null=True,
-                             related_name="leads",
+                             related_name="leads_comments",
                              on_delete=models.CASCADE)
     opportunity = models.ForeignKey(
         'opportunity.Opportunity', blank=True,
