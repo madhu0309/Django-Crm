@@ -51,7 +51,7 @@ urlpatterns = [
          name='password_reset_complete'),
 
     # Document
-    path('documents/list/', DocumentListView.as_view(), name='doc_list'),
+    path('documents/', DocumentListView.as_view(), name='doc_list'),
     path('documents/create/', document_create, name='create_doc'),
     path('documents/<int:pk>/edit/', document_update, name="edit_doc"),
     path('documents/<int:pk>/view/',

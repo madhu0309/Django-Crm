@@ -91,7 +91,7 @@
                     <td scope="row">
                       <!-- <span class="badge badge-primary">Primary</span> -->
                       <a href="{% url 'marketing:campaign_details' campaign.id %}">{{ campaign.title }} </a></td>
-                    <td>{{campaign.get_all_emails_count}}</td>
+                    <td class="text-center">{{campaign.get_all_emails_count}}</td>
                     <td>
                       {{ campaign.sent_on_format }}
                     </td>
@@ -168,6 +168,14 @@
       e.preventDefault();
       $('#leads_filter').attr("action", $(this).attr("href"));
       $('#leads_filter').submit();
+    });
+
+    $(".tag_class_camp").click(function (e) {
+      e.preventDefault()
+      // $(".tag_class_opp").css('cursor', 'pointer')
+      url = "{% url 'marketing:campaign_list' %}"
+      url = url + "?tag=" + $(this).attr('data-link')
+      window.location.href = url;
     });
   })
 </script>
