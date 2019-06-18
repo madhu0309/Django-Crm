@@ -61,7 +61,7 @@
               <span class="filter_toggle">
                 <a href="#" class="primary_btn"><i class="fas fa-filter"></i></a>
               </span>
-              <a href="{% url 'marketing:contact_list_new' %}" class="primary_btn">Add New Contact</a>
+              <a href="{% url 'marketing:contact_list_new' %}" class="primary_btn">Add New Contact List</a>
             </div>
             <div class="table-responsive table-bordered ">
               <table class="table">
@@ -97,7 +97,7 @@
                       <a href="{% url 'marketing:edit_contact' contact.id %}" class="btn btn-success edit"><i
                           class="fas fa-edit"></i></a>
                       <!-- <a href="/contacts/1/edit/" class="btn btn-info duplicate"><i class="fas fa-copy"></i></a> -->
-                      <a href="{% url 'marketing:delete_contact' contact.id %}"
+                      <a href="{% url 'marketing:delete_contact' contact.id %}?from_contact={{contact_list.id}}"
                         class="btn btn-danger delete remove_account"><i class="fas fa-trash"></i></a>
                     </td>
                   </tr>
