@@ -756,8 +756,8 @@ def unsubscribe_from_campaign(request, contact_id, campaign_id):
     campaign_obj = get_object_or_404(Campaign, pk=campaign_id)
     ContactUnsubscribedCampaign.objects.create(
         campaigns=campaign_obj, contacts=contact_obj, is_unsubscribed=True)
-    # contact_obj.is_unsubscribed = True
-    # contact_obj.save()
+    contact_obj.is_unsubscribed = True
+    contact_obj.save()
     return HttpResponseRedirect('/')
 
 

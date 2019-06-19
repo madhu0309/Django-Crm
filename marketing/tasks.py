@@ -131,8 +131,7 @@ def run_campaign(campaign, domain='demo.django-crm.io', protocol='https'):
                     from_email = campaign.created_by.email
                 reply_to_email = str(from_email) + ' <' + \
                     str(message_id + '@' + domain_name + '') + '>'
-            # if not (each_contact.is_bounced or each_contact.is_unsubscribed):
-            if not (each_contact.is_bounced):
+            if not (each_contact.is_bounced or each_contact.is_unsubscribed):
                 # domain_url = settings.URL_FOR_LINKS
                 domain_url = protocol + '://' + domain
                 img_src_url = domain_url + reverse('marketing:campaign_open', kwargs={
