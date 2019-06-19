@@ -10,6 +10,12 @@
 {% endblock %}
 {% block content %}
 {{ block.super }}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-3">
+    <li class="breadcrumb-item"><a href="{% url 'marketing:email_template_list' %}">Email Template</a></li>
+    <li class="breadcrumb-item active">{{email_template.title}}</li>
+  </ol>
+</nav>
 <div class="main_container ml-5 mr-5">
   <div class="row marl">
     <div class="col-md-12">

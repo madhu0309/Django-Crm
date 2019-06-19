@@ -3,6 +3,12 @@
 {% load paginate %}
 {% block content %}
 {{ block.super }}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-5">
+    <li class="breadcrumb-item"><a href="{% url 'marketing:contact_lists' %}">Contact List</a></li>
+    <li class="breadcrumb-item active">{{contact_list.name}}</li>
+  </ol>
+</nav>
 <div class="main_container ml-5 mr-5">
   <div class="row marl">
     <div class="filter_row list_filter_row row marl col-md-12 mb-2">

@@ -97,7 +97,7 @@
                   {% for contact in contacts %}
                   <tr style="text-align:center;">
                     <td scope="row">{{ forloop.counter }}</td>
-                    <td><a href="#">{{ contact.name }}</td>
+                    <td><a href="{% url 'marketing:contact_detail' contact.id %}">{{ contact.name }}</td>
                     <td class="text-center">{{ contact.email }}</td>
                     <td>{{ contact.created_by }}</td>
                     <td>{{ contact.created_on }}</td>
