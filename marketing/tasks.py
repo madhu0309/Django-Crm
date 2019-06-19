@@ -34,9 +34,6 @@ def campaign_click(request):
 def upload_csv_file(data, invalid_data, user, contact_lists):
     for each in data:
         contact = Contact.objects.filter(email=each['email']).first()
-        for contact_list in contact_lists:
-            contact.contact_list.add(
-                ContactList.objects.get(id=int(contact_list)))
         if not contact:
             contact = Contact.objects.create(
                 email=each['email'], created_by_id=user,

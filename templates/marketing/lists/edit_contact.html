@@ -59,6 +59,7 @@
                             style="color:red">*</span>{% endif %}</label>
                         {{ form.state }}
                         <span class="error" id="id__state">{{ form.state.errors }}</span>
+                        <input type="hidden" name="from_url" value="{{request.GET.from_contact}}">
                       </div>
                     </div>
                   </div>
