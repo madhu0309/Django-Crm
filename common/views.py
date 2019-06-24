@@ -39,6 +39,7 @@ import botocore
 
 from common.utils import ROLES
 from common.tasks import send_email_user_status, send_email_user_delete, send_email_to_new_user
+from teams.models import Teams
 
 
 def handler404(request, exception):
@@ -257,6 +258,10 @@ class CreateUserView(AdminRequiredMixin, CreateView):
             user.set_password(form.cleaned_data.get("password"))
         user.save()
 
+        if self.request.POST.getlist('teams'):
+            for team in self.request.POST.getlist('teams'):
+                Teams.objects.filter(id=team).first().users.add(user)
+
         current_site = self.request.get_host()
         protocol = self.request.scheme
         send_email_to_new_user.delay(user.email, self.request.user.email,
@@ -286,6 +291,7 @@ class CreateUserView(AdminRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(CreateUserView, self).get_context_data(**kwargs)
         context["user_form"] = context["form"]
+        context["teams"] = Teams.objects.all()
         if "errors" in kwargs:
             context["errors"] = kwargs["errors"]
         return context
@@ -334,6 +340,17 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
         if user.role == "USER":
             user.is_superuser = False
         user.save()
+
+        if self.request.POST.getlist('teams'):
+            user_teams = user.user_teams.all()
+            # this is for removing the user from previous team
+            for user_team in user_teams:
+                user_team.users.remove(user)
+            # this is for assigning the user to new team
+            for team in self.request.POST.getlist('teams'):
+                team_obj = Teams.objects.filter(id=team).first()
+                team_obj.users.add(user)
+
         if (self.request.user.role == "ADMIN" and
                 self.request.user.is_superuser):
             if self.request.is_ajax():
@@ -359,6 +376,7 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
         user_profile_name = user_profile_name[-1]
         context["user_profile_name"] = user_profile_name
         context["user_form"] = context["form"]
+        context["teams"] = Teams.objects.all()
         if "errors" in kwargs:
             context["errors"] = kwargs["errors"]
         return context
