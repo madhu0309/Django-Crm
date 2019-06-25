@@ -251,6 +251,9 @@ class Document(models.Model):
         choices=DOCUMENT_STATUS_CHOICE, max_length=64, default='active')
     shared_to = models.ManyToManyField(User, related_name='document_shared_to')
 
+    class Meta:
+        ordering = ('-created_on',)
+
     def file_type(self):
         name_ext_list = self.document_file.url.split(".")
         if (len(name_ext_list) > 1):
@@ -293,6 +296,9 @@ class APISettings(models.Model):
         User, related_name='settings_created_by',
         on_delete=models.SET_NULL, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('-created_on',)
 
     def __str__(self):
         return self.title

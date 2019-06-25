@@ -105,12 +105,12 @@ class UserForm(forms.ModelForm):
                     'Password must be at least 4 characters long!')
         return password
 
-    # def clean_has_sales_access(self):
-    #     sales = self.cleaned_data.get('has_sales_access', False)
-    #     marketing = self.data.get('has_marketing_access', False)
-    #     if not sales and not marketing:
-    #         raise forms.ValidationError('Select atleast one option')
-    #     return sales
+    def clean_has_sales_access(self):
+        sales = self.cleaned_data.get('has_sales_access', False)
+        marketing = self.data.get('has_marketing_access', False)
+        if not sales and not marketing:
+            raise forms.ValidationError('Select atleast one option')
+        return sales
 
 
     def clean_email(self):
