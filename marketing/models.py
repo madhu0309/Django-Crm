@@ -56,7 +56,7 @@ class ContactList(models.Model):
         User, related_name="contact_lists_visible_to")
 
     class Meta:
-        ordering = ('id',)
+        ordering = ('-created_on',)
 
     @property
     def created_by_user(self):

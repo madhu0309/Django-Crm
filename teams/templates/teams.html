@@ -140,14 +140,18 @@
                           {% endwith %}
                         </td>
                         <td>
+                          {% if team.created_by %}
                           {% if team.created_by.profile_pic %}
                           {% thumbnail team.created_by.profile_pic "40x40" crop="center" as im %}
                           <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"
-                            title="{{ lead.created_by }}" style="border-radius: 50%" />
+                          title="{{ team.created_by }}" style="border-radius: 50%" />
                           {% endthumbnail %}
                           {% else %}
-                          <img src="{% static 'images/user.png' %}" alt="Micro profile pic"
-                            style="width: 40px;height: 40px;border-radius: 50%;" />
+                          <img src="{% static 'images/user.png' %}"
+                          style="width: 40px;height: 40px;border-radius: 50%;" title="{{ team.created_by }}" />
+                          {% endif %}
+                          {% else %}
+                          None
                           {% endif %}
                         </td>
                         <td>{{ team.created_on|date:'d-m-Y' }}</td>

@@ -53,11 +53,39 @@ def dashboard(request):
         campaign = Campaign.objects.filter(created_by=request.user)
         contacts_list = ContactList.objects.filter(created_by=request.user)
 
+    # y_axis = range of number or sum of bounced, unsubscribed and bounces
+    # y_axis is generated from magnitude of all x axes
+    # x_axis_bounces = [
+    #     campaign_obj.get_all_email_bounces_count for campaign_obj in campaign[:10]]
+    # x_axis_unsubscribed = [
+    #     campaign_obj.get_all_emails_unsubscribed_count for campaign_obj in campaign[:10]]
+    # x_axis_subscribed = [
+    #     campaign_obj.get_all_emails_subscribed_count for campaign_obj in campaign[:10]]
+    # y_axis = [i for i in range(0, max([sum(x_axis_bounces), sum(
+    #     x_axis_subscribed), sum(x_axis_unsubscribed)]))]
+    x_axis_titles = [
+        campaign_obj.title for campaign_obj in campaign[:10]]
+    y_axis_bounces = [
+        campaign_obj.get_all_email_bounces_count for campaign_obj in campaign[:10]]
+    y_axis_unsubscribed = [
+        campaign_obj.get_all_emails_unsubscribed_count for campaign_obj in campaign[:10]]
+    y_axis_subscribed = [
+        campaign_obj.get_all_emails_subscribed_count for campaign_obj in campaign[:10]]
+
+    # print(x_axis_subscribed)
+    # print(x_axis_unsubscribed)
+    # print(x_axis_bounces)
+    # print(y_axis)
+
     context = {
         'email_templates': email_templates,
         'contacts': contacts,
         'campaigns': campaign,
-        'contacts_list': contacts_list
+        'contacts_list': contacts_list,
+        'y_axis_subscribed': y_axis_subscribed,
+        'y_axis_unsubscribed': y_axis_unsubscribed,
+        'y_axis_bounces': y_axis_bounces,
+        'x_axis_titles': x_axis_titles,
     }
     return render(request, 'marketing/dashboard.html', context)
 
@@ -279,12 +307,26 @@ def edit_contact(request, pk):
     if request.method == 'POST':
         form = ContactForm(request.POST, instance=contact_obj)
         if form.is_valid():
-            contact = form.save(commit=False)
-            contact.save()
-            form.save_m2m()
+            if form.has_changed():
+                if contact_obj.contact_list.count() > 1:
+                    contact_list_obj = ContactList.objects.filter(
+                        id=request.POST.get('from_url')).first()
+                    if contact_list_obj:
+                        contact_obj.contact_list.remove(contact_list_obj)
+                    updated_contact = ContactForm(request.POST)
+                    updated_contact_obj = updated_contact.save()
+                    updated_contact_obj.contact_list.add(contact_list_obj)
+                else:
+                    contact = form.save(commit=False)
+                    contact.save()
+                    form.save_m2m()
+            else:
+                contact = form.save(commit=False)
+                contact.save()
+                form.save_m2m()
             if request.POST.get('from_url'):
                 return JsonResponse({'error': False,
-                    'success_url': reverse('marketing:contact_list_detail', args=(request.POST.get('from_url'),))})
+                                     'success_url': reverse('marketing:contact_list_detail', args=(request.POST.get('from_url'),))})
             return JsonResponse({'error': False, 'success_url': reverse('marketing:contacts_list')})
         else:
             return JsonResponse({'error': True, 'errors': form.errors, })

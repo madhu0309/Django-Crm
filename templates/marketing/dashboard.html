@@ -53,6 +53,17 @@
           </div>
           <!-- count_blocks_row ends here -->
           <div class="open_sections row">
+
+            <div class="col-md-12">
+              <div class="" id="graph">
+                <!-- <a href="{% url 'marketing:contacts_list' %}">
+                  <div class="title">Contacts</div>
+                  <div class="count">{{contacts|length}}</div>
+                </a> -->
+              </div>
+            </div>
+
+
             <div class="col-md-6 table_container_row">
               <div class="card">
                 <div class="card-body">
@@ -70,7 +81,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        {% for contact in contacts_list|slice:"10" %}
+                        {% for contact in contacts_list|slice:"5" %}
                         <tr>
                           <td><a href="{% url 'marketing:contact_list_detail' contact.id %}">{{contact.name}}</a>
                           </td>
@@ -130,7 +141,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        {% for campaign in campaigns|slice:"10" %}
+                        {% for campaign in campaigns|slice:"5" %}
                         <tr>
                           <td><a href="{% url 'marketing:campaign_details' campaign.id %}">{{campaign.title}}</a>
                           </td>
@@ -155,7 +166,8 @@
                             <div>
                               <div>
                                 <span class="text-left" id="list_opp_users_">
-                                  <a href="{% url 'marketing:contact_list_detail' contact.id %}">{{contact.name}}</a><span>
+                                  <a
+                                    href="{% url 'marketing:contact_list_detail' contact.id %}">{{contact.name}}</a><span>
                               </div>
                               {% empty %}
                               <span class="text-left">None</span>
@@ -192,6 +204,7 @@
 
 {% endblock %}
 {% block js_block %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script type="text/javascript">
 
   $(document).ready(function () {
@@ -209,6 +222,58 @@
       url = url + "?tag=" + $(this).attr('data-link')
       window.location.href = url;
     });
+
+    var trace1 = {
+      // x: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      // y: [20, 14, 25, 16, 18, 22, 19, 15, 12, 16, 14, 17],
+      x:{{x_axis_titles|safe}},
+      y:{{y_axis_unsubscribed}},
+      type: 'bar',
+      name: 'Unsubscribed',
+      marker: {
+        color: 'rgb(49,130,189)',
+        opacity: 0.7
+      }
+    };
+
+    var trace2 = {
+      // x: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      // y: [19, 14, 22, 14, 16, 19, 15, 14, 10, 12, 12, 16],
+      x:{{x_axis_titles|safe}},
+      y:{{y_axis_bounces}},
+      type: 'bar',
+      name: 'Bounces',
+      marker: {
+        color: 'rgb(204,204,204)',
+        opacity: 0.5
+      }
+    };
+
+    var trace3 = {
+      // x: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      // y: [19, 14, 22, 14, 16, 19, 15, 14, 10, 12, 12, 16],
+      x:{{x_axis_titles|safe}},
+      y:{{y_axis_subscribed}},
+      type: 'bar',
+      name: 'Subscribed',
+      marker: {
+        color: '#ffff33',
+        opacity: 0.5
+      }
+    };
+
+    var data = [trace1, trace2, trace3];
+
+    var layout = {
+      title: 'Insights',
+      xaxis: {
+        tickangle: -90
+      },
+      barmode: 'group'
+    };
+
+    Plotly.newPlot('graph', data, layout, { showSendToCloud: true });
+
   });
 
 </script>
