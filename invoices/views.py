@@ -152,7 +152,7 @@ def invoice_details(request, invoice_id):
         else:
             context['users_mention'] = list(
                 invoice.assigned_to.all().values('username'))
-        return render(request, 'invoices_detail.html', context)
+        return render(request, 'invoices_detail_1.html', context)
 
 
 @login_required

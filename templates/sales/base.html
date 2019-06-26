@@ -2,6 +2,7 @@
 
 {% block main_menu %}
 <ul class="navbar-nav mr-auto">
+  {% if request.user.is_superuser or request.user.role == 'ADMIN' or request.user.has_sales_access %}
   <li class="nav-item"><a class="nav-link" id="dashboard" href="{% url 'common:home' %}">Dashboard</a></li>
   <li class="nav-item"><a class="nav-link" id="accounts" href="{% url 'accounts:list' %}">Accounts</a></li>
   <li class="nav-item"><a class="nav-link" id="contacts" href="{% url 'contacts:list' %}">Contacts</a></li>
@@ -13,6 +14,7 @@
   <li class="nav-item"><a class="nav-link" id="tasks" href="{% url 'tasks:tasks_list' %}">Tasks</a></li>
   <li class="nav-item"><a class="nav-link" id="invoices" href="{% url 'invoices:invoices_list' %}">Invoices</a></li>
   <li class="nav-item"><a class="nav-link" id="events" href="{% url 'events:events_list' %}">Events</a></li>
+  {% endif %}
 
   {% if request.user.role == 'ADMIN' or request.user.is_superuser %}
   <li class="nav-item"><a class="nav-link" id="teams" href="{% url 'teams:teams_list' %}">Teams</a></li>

@@ -53,11 +53,28 @@ def dashboard(request):
         campaign = Campaign.objects.filter(created_by=request.user)
         contacts_list = ContactList.objects.filter(created_by=request.user)
 
+    x_axis_titles = [
+        campaign_obj.title for campaign_obj in campaign[:5]]
+    y_axis_bounces = [
+        campaign_obj.get_all_email_bounces_count for campaign_obj in campaign[:5]]
+    y_axis_unsubscribed = [
+        campaign_obj.get_all_emails_unsubscribed_count for campaign_obj in campaign[:5]]
+    y_axis_subscribed = [
+        campaign_obj.get_all_emails_subscribed_count for campaign_obj in campaign[:5]]
+    y_axis_opened = [
+        campaign_obj.get_all_emails_contacts_opened for campaign_obj in campaign[:5]]
+
+
     context = {
         'email_templates': email_templates,
         'contacts': contacts,
         'campaigns': campaign,
-        'contacts_list': contacts_list
+        'contacts_list': contacts_list,
+        'y_axis_subscribed': y_axis_subscribed,
+        'y_axis_unsubscribed': y_axis_unsubscribed,
+        'y_axis_bounces': y_axis_bounces,
+        'y_axis_opened': y_axis_opened,
+        'x_axis_titles': x_axis_titles,
     }
     return render(request, 'marketing/dashboard.html', context)
 
@@ -279,12 +296,26 @@ def edit_contact(request, pk):
     if request.method == 'POST':
         form = ContactForm(request.POST, instance=contact_obj)
         if form.is_valid():
-            contact = form.save(commit=False)
-            contact.save()
-            form.save_m2m()
+            if form.has_changed():
+                if contact_obj.contact_list.count() > 1:
+                    contact_list_obj = ContactList.objects.filter(
+                        id=request.POST.get('from_url')).first()
+                    if contact_list_obj:
+                        contact_obj.contact_list.remove(contact_list_obj)
+                    updated_contact = ContactForm(request.POST)
+                    updated_contact_obj = updated_contact.save()
+                    updated_contact_obj.contact_list.add(contact_list_obj)
+                else:
+                    contact = form.save(commit=False)
+                    contact.save()
+                    form.save_m2m()
+            else:
+                contact = form.save(commit=False)
+                contact.save()
+                form.save_m2m()
             if request.POST.get('from_url'):
                 return JsonResponse({'error': False,
-                    'success_url': reverse('marketing:contact_list_detail', args=(request.POST.get('from_url'),))})
+                                     'success_url': reverse('marketing:contact_list_detail', args=(request.POST.get('from_url'),))})
             return JsonResponse({'error': False, 'success_url': reverse('marketing:contacts_list')})
         else:
             return JsonResponse({'error': True, 'errors': form.errors, })
@@ -582,12 +613,12 @@ def campaign_details(request, pk):
 
     all_contacts = contacts
     bounced_contacts = contacts.filter(is_bounced=True).distinct()
-    # unsubscribe_contacts = contacts.filter(
-    #     is_unsubscribed=True).distinct()
-    unsubscribe_contacts_ids = ContactUnsubscribedCampaign.objects.filter(
-        campaigns=campaign, is_unsubscribed=True).values_list('contacts_id', flat=True)
-    unsubscribe_contacts = Contact.objects.filter(
-        id__in=unsubscribe_contacts_ids)
+    unsubscribe_contacts = contacts.filter(
+        is_unsubscribed=True).distinct()
+    # unsubscribe_contacts_ids = ContactUnsubscribedCampaign.objects.filter(
+    #     campaigns=campaign, is_unsubscribed=True).values_list('contacts_id', flat=True)
+    # unsubscribe_contacts = Contact.objects.filter(
+    #     id__in=unsubscribe_contacts_ids)
     # read_contacts = campaign.marketing_links.filter(Q(clicks__gt=0)).distinct()
     contact_ids = CampaignOpen.objects.filter(
         campaign=campaign).values_list('contact_id', flat=True)
@@ -845,11 +876,11 @@ def download_contacts_for_campaign(request, compaign_id):
 
         if request.GET.get('is_unsubscribed') == 'true':
 
-            unsubscribe_contacts_ids = ContactUnsubscribedCampaign.objects.filter(
-                campaigns=campaign_obj, is_unsubscribed=True).values_list('contacts_id', flat=True)
-            # contact_ids = campaign_obj.contact_lists.filter(contacts__is_unsubscribed=True).values_list(
-            #     'contacts__id', flat=True)
-            contacts = Contact.objects.filter(id__in=unsubscribe_contacts_ids).values(
+            # unsubscribe_contacts_ids = ContactUnsubscribedCampaign.objects.filter(
+            #     campaigns=campaign_obj, is_unsubscribed=True).values_list('contacts_id', flat=True)
+            contact_ids = campaign_obj.contact_lists.filter(contacts__is_unsubscribed=True).values_list(
+                'contacts__id', flat=True)
+            contacts = Contact.objects.filter(id__in=contact_ids).values(
                 'company_name', 'email', 'name', 'last_name', 'city', 'state')
 
         if request.GET.get('is_opened') == 'true':
