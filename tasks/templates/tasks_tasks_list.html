@@ -116,7 +116,7 @@
                 {% if task.due_date < today and task.status != 'completed' %}
                 <tr id="task_{{task.id}}" class="text-center due-date">
                   <td scope="row">{{ forloop.counter }}</td>
-                  <td>{% if task.title %}<a href="{% url 'tasks:task_detail' task.id %}">{{ task.title }}</a>{% endif %}
+                  <td>{% if task.title %}<a href="{% url 'tasks:task_detail' task.id %}"  style="color:red;">{{ task.title }}</a>{% endif %}
                   </td>
                   <td>
                     {% if document.created_by.profile_pic %}
