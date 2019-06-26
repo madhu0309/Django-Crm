@@ -25,6 +25,7 @@ from marketing.models import (Campaign, CampaignLinkClick, CampaignLog,
                               CampaignOpen, Contact, ContactList,
                               EmailTemplate, Link, Tag, FailedContact, ContactUnsubscribedCampaign)
 from marketing.tasks import run_campaign, upload_csv_file
+from common.access_decorators_mixins import marketing_access_required, MarketingAccessRequiredMixin
 
 TIMEZONE_CHOICES = [(tz, tz) for tz in pytz.common_timezones]
 
@@ -39,6 +40,7 @@ def get_exact_match(query, m2m_field, ids):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def dashboard(request):
     if request.user.role == 'ADMIN' or request.user.is_superuser:
         email_templates = EmailTemplate.objects.all()
@@ -61,6 +63,7 @@ def dashboard(request):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def contact_lists(request):
     tags = Tag.objects.all()
     if (request.user.role == "ADMIN"):
@@ -94,6 +97,7 @@ def contact_lists(request):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def contacts_list(request):
     if (request.user.role == "ADMIN"):
         contacts = Contact.objects.all()
@@ -126,6 +130,7 @@ def contacts_list(request):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def contact_list_new(request):
     data = {}
     if request.method == "POST":
@@ -158,6 +163,7 @@ def contact_list_new(request):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def edit_contact_list(request, pk):
     user = request.user
     try:
@@ -198,6 +204,7 @@ def edit_contact_list(request, pk):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def view_contact_list(request, pk):
     contact_list = get_object_or_404(ContactList, pk=pk)
     contacts = Contact.objects.filter(contact_list__in=[contact_list])
@@ -222,6 +229,7 @@ def view_contact_list(request, pk):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def delete_contact_list(request, pk):
     contact_list_obj = get_object_or_404(ContactList, pk=pk)
     if not (request.user.role == 'ADMIN' or request.user.is_superuser or contact_list_obj.created_by == request.user):
@@ -233,6 +241,7 @@ def delete_contact_list(request, pk):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def contacts_list_new(request):
     if request.POST:
         form = ContactForm(request.POST)
@@ -256,6 +265,7 @@ def contacts_list_new(request):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def edit_contact(request, pk):
     url_redirect_to = None
     contact_obj = get_object_or_404(Contact, pk=pk)
@@ -281,6 +291,7 @@ def edit_contact(request, pk):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def delete_contact(request, pk):
     contact_obj = get_object_or_404(Contact, pk=pk)
     if not (request.user.role == 'ADMIN' or request.user.is_superuser or contact_obj.created_by == request.user or
@@ -293,6 +304,7 @@ def delete_contact(request, pk):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def contact_list_detail(request, pk):
     contact_list = get_object_or_404(ContactList, pk=pk)
     if not (request.user.role == 'ADMIN' or request.user.is_superuser or contact_list.created_by == request.user):
@@ -313,6 +325,7 @@ def contact_list_detail(request, pk):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def failed_contact_list_detail(request, pk):
     contact_list = get_object_or_404(ContactList, pk=pk)
     failed_contacts_list = contact_list.failed_contacts.all()
@@ -322,6 +335,7 @@ def failed_contact_list_detail(request, pk):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def failed_contact_list_download_delete(request, pk):
     contact_list = get_object_or_404(ContactList, pk=pk)
     failed_contacts_list = contact_list.failed_contacts.all()
@@ -342,6 +356,7 @@ def failed_contact_list_download_delete(request, pk):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def email_template_list(request):
     # users = User.objects.all()
     if (request.user.is_admin or request.user.is_superuser):
@@ -365,6 +380,7 @@ def email_template_list(request):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def email_template_new(request):
     if request.POST:
         form = EmailTemplateForm(request.POST)
@@ -380,6 +396,7 @@ def email_template_new(request):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def email_template_edit(request, pk):
     email_template = get_object_or_404(EmailTemplate, pk=pk)
 
@@ -397,6 +414,7 @@ def email_template_edit(request, pk):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def email_template_detail(request, pk):
     queryset = get_object_or_404(EmailTemplate, id=pk)
     data = {'email_template': queryset}
@@ -404,6 +422,7 @@ def email_template_detail(request, pk):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def email_template_delete(request, pk):
     try:
         EmailTemplate.objects.get(id=pk).delete()
@@ -414,6 +433,7 @@ def email_template_delete(request, pk):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def campaign_list(request):
     # users = User.objects.all()
     if (request.user.role == "ADMIN"):
@@ -438,6 +458,7 @@ def campaign_list(request):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def campaign_new(request):
     if request.method == 'GET':
         if request.user.is_admin or request.user.is_superuser:
@@ -533,11 +554,13 @@ def campaign_new(request):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def campaign_edit(request):
     return render(request, 'marketing/campaign/edit.html')
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def campaign_details(request, pk):
     try:
         campaign = Campaign.objects.get(pk=pk)
@@ -671,6 +694,7 @@ def campaign_details(request, pk):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def campaign_delete(request, pk):
     try:
         campaign = Campaign.objects.get(id=pk)
@@ -762,6 +786,7 @@ def unsubscribe_from_campaign(request, contact_id, campaign_id):
 
 
 @login_required
+@marketing_access_required
 def contact_detail(request, contact_id):
     contact_obj = get_object_or_404(Contact, pk=contact_id)
     if not (request.user.role == 'ADMIN' or request.user.is_superuser or contact_obj.created_by == request.user or
@@ -774,6 +799,7 @@ def contact_detail(request, contact_id):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def edit_failed_contact(request, pk):
     contact_obj = get_object_or_404(FailedContact, pk=pk)
     if not (request.user.role == 'ADMIN' or request.user.is_superuser or contact_obj.created_by == request.user):
@@ -794,6 +820,7 @@ def edit_failed_contact(request, pk):
 
 
 @login_required(login_url='/login')
+@marketing_access_required
 def delete_failed_contact(request, pk):
     contact_obj = get_object_or_404(FailedContact, pk=pk)
     if not (request.user.role == 'ADMIN' or request.user.is_superuser or contact_obj.created_by == request.user):
@@ -804,6 +831,7 @@ def delete_failed_contact(request, pk):
 
 
 @login_required
+@marketing_access_required
 def download_contacts_for_campaign(request, compaign_id):
     campaign_obj = get_object_or_404(Campaign, pk=compaign_id)
     if not (request.user.role == 'ADMIN' or request.user.is_superuser or campaign_obj.created_by == request.user):
@@ -843,6 +871,7 @@ def download_contacts_for_campaign(request, compaign_id):
 
 
 @login_required
+@marketing_access_required
 def create_campaign_from_template(request, template_id):
     email_template_obj = get_object_or_404(EmailTemplate, pk=template_id)
     if request.method == 'GET':

@@ -24,6 +24,7 @@ from common.forms import (
     APISettingsForm
 )
 from django.contrib.auth.views import PasswordResetView
+from django.contrib.auth.decorators import login_required
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse_lazy, reverse
 from django.conf import settings
@@ -40,6 +41,8 @@ import botocore
 from common.utils import ROLES
 from common.tasks import send_email_user_status, send_email_user_delete, send_email_to_new_user
 from teams.models import Teams
+from common.access_decorators_mixins import (
+    sales_access_required, marketing_access_required, SalesAccessRequiredMixin, MarketingAccessRequiredMixin)
 
 
 def handler404(request, exception):
@@ -63,7 +66,7 @@ class AdminRequiredMixin(AccessMixin):
             request, *args, **kwargs)
 
 
-class HomeView(LoginRequiredMixin, TemplateView):
+class HomeView(SalesAccessRequiredMixin, LoginRequiredMixin, TemplateView):
     template_name = "sales/index.html"
 
     def get_context_data(self, **kwargs):
@@ -400,6 +403,8 @@ class PasswordResetView(PasswordResetView):
     email_template_name = 'registration/password_reset_email.html'
 
 
+@login_required
+@sales_access_required
 def document_create(request):
     template_name = "doc_create.html"
     users = []
@@ -431,7 +436,7 @@ def document_create(request):
     return render(request, template_name, context)
 
 
-class DocumentListView(LoginRequiredMixin, TemplateView):
+class DocumentListView(SalesAccessRequiredMixin,LoginRequiredMixin, TemplateView):
     model = Document
     context_object_name = "documents"
     template_name = "doc_list.html"
@@ -504,7 +509,8 @@ class DocumentDeleteView(LoginRequiredMixin, DeleteView):
         self.object.delete()
         return redirect("common:doc_list")
 
-
+@login_required
+@sales_access_required
 def document_update(request, pk):
     template_name = "doc_create.html"
     users = []
@@ -544,7 +550,7 @@ def document_update(request, pk):
     return render(request, template_name, context)
 
 
-class DocumentDetailView(LoginRequiredMixin, DetailView):
+class DocumentDetailView(SalesAccessRequiredMixin, LoginRequiredMixin, DetailView):
     model = Document
     template_name = "doc_detail.html"
 
@@ -929,10 +935,12 @@ def create_lead_from_site(request):
                 lead = Lead.objects.create(title=request.POST.get('full_name'), email=request.POST.get(
                     'email'), phone=request.POST.get('phone'), description=request.POST.get('message'),
                     created_from_site=True)
-                recipients = User.objects.filter(role='ADMIN').values_list('id', flat=True)
+                recipients = User.objects.filter(
+                    role='ADMIN').values_list('id', flat=True)
                 lead.assigned_to.add(*recipients)
                 from leads.tasks import send_email_to_assigned_user
-                send_email_to_assigned_user(recipients, lead.id, domain='sales.micropyramid.com')
+                send_email_to_assigned_user(
+                    recipients, lead.id, domain='sales.micropyramid.com')
                 return HttpResponse('Lead Created')
     from django.http import HttpResponseBadRequest
     return HttpResponseBadRequest('Bad Request')

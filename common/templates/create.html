@@ -106,6 +106,7 @@
               <span class="error" id="id_profile_pic">{{ errors.profile_pic }}</span>
 
             </div>
+            {% if request.user.is_superuser or request.user.role == 'ADMIN' %}
             <div class="filter_col col-md-6">
               <div class="form-group">
                 <label for="exampleInputEmail1">Permissions {% if user_form.profile_pic.field.required %}<span
@@ -119,7 +120,7 @@
                   </label>
                   <label class="btn "> Marketing
                     <input type="checkbox" name="has_marketing_access" id="" autocomplete="off"
-                    {% if user_obj.has_marketing_access %} checked {% endif %}>
+                      {% if user_obj.has_marketing_access %} checked {% endif %}>
                   </label>
                 </div>
                 <span class="error_ajax" id="id_has_sales_access" style="color: red;"></span>
@@ -143,6 +144,7 @@
               </div>
               <span class="error_ajax" id="id_password" style="color:red">{{ errors.teams }}</span>
             </div>
+            {% endif %}
           </div>
         </div>
         <p style="color:red" id="forbiden_error"></p>
