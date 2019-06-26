@@ -53,29 +53,17 @@ def dashboard(request):
         campaign = Campaign.objects.filter(created_by=request.user)
         contacts_list = ContactList.objects.filter(created_by=request.user)
 
-    # y_axis = range of number or sum of bounced, unsubscribed and bounces
-    # y_axis is generated from magnitude of all x axes
-    # x_axis_bounces = [
-    #     campaign_obj.get_all_email_bounces_count for campaign_obj in campaign[:10]]
-    # x_axis_unsubscribed = [
-    #     campaign_obj.get_all_emails_unsubscribed_count for campaign_obj in campaign[:10]]
-    # x_axis_subscribed = [
-    #     campaign_obj.get_all_emails_subscribed_count for campaign_obj in campaign[:10]]
-    # y_axis = [i for i in range(0, max([sum(x_axis_bounces), sum(
-    #     x_axis_subscribed), sum(x_axis_unsubscribed)]))]
     x_axis_titles = [
-        campaign_obj.title for campaign_obj in campaign[:10]]
+        campaign_obj.title for campaign_obj in campaign[:5]]
     y_axis_bounces = [
-        campaign_obj.get_all_email_bounces_count for campaign_obj in campaign[:10]]
+        campaign_obj.get_all_email_bounces_count for campaign_obj in campaign[:5]]
     y_axis_unsubscribed = [
-        campaign_obj.get_all_emails_unsubscribed_count for campaign_obj in campaign[:10]]
+        campaign_obj.get_all_emails_unsubscribed_count for campaign_obj in campaign[:5]]
     y_axis_subscribed = [
-        campaign_obj.get_all_emails_subscribed_count for campaign_obj in campaign[:10]]
+        campaign_obj.get_all_emails_subscribed_count for campaign_obj in campaign[:5]]
+    y_axis_opened = [
+        campaign_obj.get_all_emails_contacts_opened for campaign_obj in campaign[:5]]
 
-    # print(x_axis_subscribed)
-    # print(x_axis_unsubscribed)
-    # print(x_axis_bounces)
-    # print(y_axis)
 
     context = {
         'email_templates': email_templates,
@@ -85,6 +73,7 @@ def dashboard(request):
         'y_axis_subscribed': y_axis_subscribed,
         'y_axis_unsubscribed': y_axis_unsubscribed,
         'y_axis_bounces': y_axis_bounces,
+        'y_axis_opened': y_axis_opened,
         'x_axis_titles': x_axis_titles,
     }
     return render(request, 'marketing/dashboard.html', context)
@@ -624,12 +613,12 @@ def campaign_details(request, pk):
 
     all_contacts = contacts
     bounced_contacts = contacts.filter(is_bounced=True).distinct()
-    # unsubscribe_contacts = contacts.filter(
-    #     is_unsubscribed=True).distinct()
-    unsubscribe_contacts_ids = ContactUnsubscribedCampaign.objects.filter(
-        campaigns=campaign, is_unsubscribed=True).values_list('contacts_id', flat=True)
-    unsubscribe_contacts = Contact.objects.filter(
-        id__in=unsubscribe_contacts_ids)
+    unsubscribe_contacts = contacts.filter(
+        is_unsubscribed=True).distinct()
+    # unsubscribe_contacts_ids = ContactUnsubscribedCampaign.objects.filter(
+    #     campaigns=campaign, is_unsubscribed=True).values_list('contacts_id', flat=True)
+    # unsubscribe_contacts = Contact.objects.filter(
+    #     id__in=unsubscribe_contacts_ids)
     # read_contacts = campaign.marketing_links.filter(Q(clicks__gt=0)).distinct()
     contact_ids = CampaignOpen.objects.filter(
         campaign=campaign).values_list('contact_id', flat=True)
@@ -887,11 +876,11 @@ def download_contacts_for_campaign(request, compaign_id):
 
         if request.GET.get('is_unsubscribed') == 'true':
 
-            unsubscribe_contacts_ids = ContactUnsubscribedCampaign.objects.filter(
-                campaigns=campaign_obj, is_unsubscribed=True).values_list('contacts_id', flat=True)
-            # contact_ids = campaign_obj.contact_lists.filter(contacts__is_unsubscribed=True).values_list(
-            #     'contacts__id', flat=True)
-            contacts = Contact.objects.filter(id__in=unsubscribe_contacts_ids).values(
+            # unsubscribe_contacts_ids = ContactUnsubscribedCampaign.objects.filter(
+            #     campaigns=campaign_obj, is_unsubscribed=True).values_list('contacts_id', flat=True)
+            contact_ids = campaign_obj.contact_lists.filter(contacts__is_unsubscribed=True).values_list(
+                'contacts__id', flat=True)
+            contacts = Contact.objects.filter(id__in=contact_ids).values(
                 'company_name', 'email', 'name', 'last_name', 'city', 'state')
 
         if request.GET.get('is_opened') == 'true':

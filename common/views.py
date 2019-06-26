@@ -890,7 +890,8 @@ def google_login(request):
                 email=email,
                 first_name=first_name,
                 last_name=last_name,
-                role="USER"
+                role="USER",
+                has_sales_access=True
             )
 
         google, _ = Google.objects.get_or_create(user=user)

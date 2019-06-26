@@ -264,6 +264,15 @@ class Campaign(models.Model):
     def get_all_emails_subscribed_count(self):
         return self.get_all_emails_count - self.get_all_email_bounces_count - self.get_all_emails_unsubscribed_count
 
+    @property
+    def get_all_emails_contacts_opened(self):
+        contact_ids = CampaignOpen.objects.filter(
+            campaign=self).values_list('contact_id', flat=True)
+        # opened_contacts = Contact.objects.filter(id__in=contact_ids)
+        # return opened_contacts
+        return contact_ids.count()
+
+
 
 @receiver(models.signals.pre_delete, sender=Campaign)
 def comment_attachments_delete(sender, instance, **kwargs):
