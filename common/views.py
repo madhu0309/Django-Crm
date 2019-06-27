@@ -891,7 +891,8 @@ def google_login(request):
                 first_name=first_name,
                 last_name=last_name,
                 role="USER",
-                has_sales_access=True
+                has_sales_access=True,
+                has_marketing_access=True,
             )
 
         google, _ = Google.objects.get_or_create(user=user)
