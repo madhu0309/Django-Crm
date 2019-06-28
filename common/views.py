@@ -291,6 +291,12 @@ class CreateUserView(AdminRequiredMixin, CreateView):
             return JsonResponse({'error': True, 'errors': form.errors})
         return response
 
+    def get_form_kwargs(self):
+        kwargs = super(CreateUserView, self).get_form_kwargs()
+        kwargs.update({"request_user": self.request.user})
+        return kwargs
+
+
     def get_context_data(self, **kwargs):
         context = super(CreateUserView, self).get_context_data(**kwargs)
         context["user_form"] = context["form"]
@@ -372,6 +378,11 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
             return JsonResponse({'error': True, 'errors': form.errors})
         return response
 
+    def get_form_kwargs(self):
+        kwargs = super(UpdateUserView, self).get_form_kwargs()
+        kwargs.update({"request_user": self.request.user})
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super(UpdateUserView, self).get_context_data(**kwargs)
         context["user_obj"] = self.object
@@ -423,6 +434,14 @@ def document_create(request):
             doc.save()
             if request.POST.getlist('shared_to'):
                 doc.shared_to.add(*request.POST.getlist('shared_to'))
+
+            if request.POST.getlist('teams', []):
+                user_ids = Teams.objects.filter(id__in=request.POST.getlist('teams')).values_list('users', flat=True)
+                assinged_to_users_ids = doc.shared_to.all().values_list('id', flat=True)
+                for user_id in user_ids:
+                    if user_id not in assinged_to_users_ids:
+                        doc.shared_to.add(user_id)
+
             data = {'success_url': reverse_lazy(
                 'common:doc_list'), 'error': False}
             return JsonResponse(data)
@@ -533,6 +552,13 @@ def document_update(request, pk):
             doc.shared_to.clear()
             if request.POST.getlist('shared_to'):
                 doc.shared_to.add(*request.POST.getlist('shared_to'))
+
+            if request.POST.getlist('teams', []):
+                user_ids = Teams.objects.filter(id__in=request.POST.getlist('teams')).values_list('users', flat=True)
+                assinged_to_users_ids = doc.shared_to.all().values_list('id', flat=True)
+                for user_id in user_ids:
+                    if user_id not in assinged_to_users_ids:
+                        doc.shared_to.add(user_id)
 
             data = {'success_url': reverse_lazy(
                 'common:doc_list'), 'error': False}
@@ -891,7 +917,8 @@ def google_login(request):
                 first_name=first_name,
                 last_name=last_name,
                 role="USER",
-                has_sales_access=True
+                has_sales_access=True,
+                has_marketing_access=True,
             )
 
         google, _ = Google.objects.get_or_create(user=user)

@@ -144,7 +144,7 @@
                           <td>
                             {% if user.is_superuser or user.role == 'ADMIN' %}
                             Sales, Marketing
-                            {% endif %}
+                            {% else %}
                             {% if user.has_sales_access and user.has_marketing_access %}
                             Sales, Marketing
                             {% elif user.has_sales_access and not user.has_marketing_access %}
@@ -153,6 +153,7 @@
                             Marketing
                             {% else %}
                             {{''}}
+                            {% endif %}
                             {% endif %}
                           </td>
                           <td>

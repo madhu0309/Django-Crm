@@ -109,8 +109,7 @@
             {% if request.user.is_superuser or request.user.role == 'ADMIN' %}
             <div class="filter_col col-md-6">
               <div class="form-group">
-                <label for="exampleInputEmail1">Permissions {% if user_form.profile_pic.field.required %}<span
-                    class="error">*</span>{% endif %}</label>
+                <label for="exampleInputEmail1">Permissions <span class="error">*</span></label>
                 <br>
                 <!-- {{user_form.sales}} -->
                 <div class="btn-group">
