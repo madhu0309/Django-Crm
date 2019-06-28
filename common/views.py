@@ -291,6 +291,12 @@ class CreateUserView(AdminRequiredMixin, CreateView):
             return JsonResponse({'error': True, 'errors': form.errors})
         return response
 
+    def get_form_kwargs(self):
+        kwargs = super(CreateUserView, self).get_form_kwargs()
+        kwargs.update({"request_user": self.request.user})
+        return kwargs
+
+
     def get_context_data(self, **kwargs):
         context = super(CreateUserView, self).get_context_data(**kwargs)
         context["user_form"] = context["form"]
@@ -371,6 +377,11 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
         if self.request.is_ajax():
             return JsonResponse({'error': True, 'errors': form.errors})
         return response
+
+    def get_form_kwargs(self):
+        kwargs = super(UpdateUserView, self).get_form_kwargs()
+        kwargs.update({"request_user": self.request.user})
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(UpdateUserView, self).get_context_data(**kwargs)
