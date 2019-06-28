@@ -121,8 +121,15 @@ class UserForm(forms.ModelForm):
             #     marketing = self.data.get('has_marketing_access', False)
             #     if not sales and not marketing:
             #         raise forms.ValidationError('Select atleast one option.')
+        if self.request_user.role == 'USER':
+            sales = self.instance.has_sales_access
         return sales
 
+    def clean_has_marketing_access(self):
+        marketing = self.cleaned_data.get('has_marketing_access', False)
+        if self.request_user.role == 'USER':
+            marketing = self.instance.has_marketing_access
+        return marketing
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
@@ -209,6 +216,8 @@ class PasswordResetEmailForm(PasswordResetForm):
 
 
 class DocumentForm(forms.ModelForm):
+    teams_queryset = []
+    teams = forms.MultipleChoiceField(choices=teams_queryset)
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.get('instance', None)
@@ -225,6 +234,8 @@ class DocumentForm(forms.ModelForm):
         if users:
             self.fields['shared_to'].queryset = users
         self.fields['shared_to'].required = False
+        self.fields["teams"].choices = [(team.get('id'), team.get('name')) for team in Teams.objects.all().values('id', 'name')]
+        self.fields["teams"].required = False
 
     class Meta:
         model = Document

@@ -434,6 +434,14 @@ def document_create(request):
             doc.save()
             if request.POST.getlist('shared_to'):
                 doc.shared_to.add(*request.POST.getlist('shared_to'))
+
+            if request.POST.getlist('teams', []):
+                user_ids = Teams.objects.filter(id__in=request.POST.getlist('teams')).values_list('users', flat=True)
+                assinged_to_users_ids = doc.shared_to.all().values_list('id', flat=True)
+                for user_id in user_ids:
+                    if user_id not in assinged_to_users_ids:
+                        doc.shared_to.add(user_id)
+
             data = {'success_url': reverse_lazy(
                 'common:doc_list'), 'error': False}
             return JsonResponse(data)
@@ -544,6 +552,13 @@ def document_update(request, pk):
             doc.shared_to.clear()
             if request.POST.getlist('shared_to'):
                 doc.shared_to.add(*request.POST.getlist('shared_to'))
+
+            if request.POST.getlist('teams', []):
+                user_ids = Teams.objects.filter(id__in=request.POST.getlist('teams')).values_list('users', flat=True)
+                assinged_to_users_ids = doc.shared_to.all().values_list('id', flat=True)
+                for user_id in user_ids:
+                    if user_id not in assinged_to_users_ids:
+                        doc.shared_to.add(user_id)
 
             data = {'success_url': reverse_lazy(
                 'common:doc_list'), 'error': False}
