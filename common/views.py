@@ -163,7 +163,12 @@ class LoginView(TemplateView):
 
                     if user is not None:
                         login(request, user)
-                        return HttpResponseRedirect('/')
+                        if user.has_sales_access:
+                            return HttpResponseRedirect('/')
+                        elif user.has_marketing_access:
+                            return redirect('marketing:dashboard')
+                        else:
+                            return HttpResponseRedirect('/')
                     return render(request, "login.html", {
                         "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
                         "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
