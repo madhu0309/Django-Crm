@@ -115,11 +115,15 @@
                 <div class="btn-group">
                   <label class="btn "> Sales
                     <input type="checkbox" name="has_sales_access" id="has_sales_access_" autocomplete="off"
-                      {% if user_obj.has_sales_access %} checked {% endif %}>
+                      {% if user_obj.has_sales_access %} checked {% endif %}
+                      {% if user_obj.is_superuser or user_obj.role == 'ADMIN' %} disabled="disabled" readonly="readonly"
+                      checked="checked" {% endif %}>
                   </label>
                   <label class="btn "> Marketing
                     <input type="checkbox" name="has_marketing_access" id="has_marketing_access_" autocomplete="off"
-                      {% if user_obj.has_marketing_access %} checked {% endif %}>
+                      {% if user_obj.has_marketing_access %} checked {% endif %}
+                      {% if user_obj.is_superuser or user_obj.role == 'ADMIN' %} disabled="disabled" readonly="readonly"
+                      checked="checked" {% endif %}>
                   </label>
                 </div>
                 <span class="error_ajax" id="id_has_sales_access" style="color: red;"></span>
@@ -163,10 +167,22 @@
 <script type="text/javascript">
   $("#id_teams").select2();
 
-  $("#user_role").change(function(){
-    if($(this).val() == 'ADMIN'){
-      $("#has_marketing_access_").attr('checked','true')
-      $("#has_sales_access_").attr('checked','true')
+  $("#user_role").change(function () {
+    if ($(this).val() == 'ADMIN') {
+      $("#has_marketing_access_").attr('checked', 'true')
+      $("#has_sales_access_").attr('checked', 'true')
+      $("#has_marketing_access_").attr('readonly', 'true')
+      $("#has_marketing_access_").attr('disabled', 'true')
+      $("#has_sales_access_").attr('readonly', 'true')
+      $("#has_sales_access_").attr('disabled', 'true')
+    }
+    else {
+      $("#has_marketing_access_").removeAttr('checked')
+      $("#has_sales_access_").removeAttr('checked')
+      $("#has_marketing_access_").removeAttr('readonly')
+      $("#has_sales_access_").removeAttr('readonly')
+      $("#has_marketing_access_").removeAttr('disabled')
+      $("#has_sales_access_").removeAttr('disabled')
     }
   })
 

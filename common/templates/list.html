@@ -58,7 +58,7 @@
                   <div class="form-group">
                     <label for="exampleInputEmail1">Email</label>
                     <input type="text" class="form-control" placeholder="email" name="email" {% if request.POST %}
-                      value="{{request.POST.email}}" {%endif%}/>
+                      value="{{request.POST.email}}" {%endif%} minlength="2"/>
                   </div>
                 </div>
                 <input type="hidden" name="tab_status" id="tab_status">

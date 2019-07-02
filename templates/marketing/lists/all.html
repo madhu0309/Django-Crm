@@ -44,7 +44,7 @@
                     <div class="form-group">
                       <label for="exampleInputEmail1">Email</label>
                       <input type="text" class="form-control" placeholder="Contact Email" name="contact_email"
-                        value="{{request.POST.contact_email}}">
+                        value="{{request.POST.contact_email}}" minlength="2">
                     </div>
                   </div>
                   <input type="hidden" name="tab_status" id="tab_status">

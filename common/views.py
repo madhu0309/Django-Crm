@@ -232,7 +232,7 @@ class UsersListView(AdminRequiredMixin, TemplateView):
                     username__icontains=request_post.get('username'))
             if request_post.get('email'):
                 queryset = queryset.filter(
-                    email=request_post.get('email'))
+                    email__icontains=request_post.get('email'))
             if request_post.get('role'):
                 queryset = queryset.filter(
                     role=request_post.get('role'))

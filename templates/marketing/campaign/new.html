@@ -202,9 +202,9 @@
                                 unsubscribe tags, you can style them with inline CSS.</span> -->
                               <input type="hidden" name="html" id="html_content">
                             </div>
-                            <!-- <div class="col-md-12 no-padding">
-                              <div class="row help_container">
-                                <div class="col-md-6">
+                            <div class="col-md-12 no-padding">
+                              <!-- <div class="row help_container"> -->
+                              <!-- <div class="col-md-6">
                                   <div class="heading">Essential tags (HTML only)</div>
                                   <p class="desc">The following tags can only be used on the HTML version</p>
                                   <ul>
@@ -237,43 +237,47 @@
                                       </code>
                                     </li>
                                   </ul>
-                                </div>
-                                <div class="col-md-6">
-                                  <div class="heading">Personalization tags</div>
-                                  <p class="desc">The following tags can be used on both Plain text or HTML version</p>
-                                  <ul>
-                                    <li>
-                                      <strong>Name: </strong>
-                                      <code>[Name,fallback=]</code>
-                                    </li>
-                                    <li>
-                                      <strong>Email: </strong>
-                                      <code>[Email]</code>
-                                    </li>
-                                    <li>
+                                </div> -->
+                              <div class="col-md-12">
+                                <div class="heading">Personalization tags</div>
+                                <p class="desc">The following tags can be used on both Plain text or HTML. Add these tags to customize the email template, these tags will be replaced with the associated contact details while the mails are sent.</p>
+                                <ul>
+                                  <li>
+                                    <strong>First Name: </strong>
+                                    <code>{% templatetag openvariable %} first_name {% templatetag closevariable %}</code>
+                                  </li>
+                                  <li>
+                                    <strong>Last Name: </strong>
+                                    <code>{% templatetag openvariable %} last_name {% templatetag closevariable %}</code>
+                                  </li>
+                                  <li>
+                                    <strong>Full Name: </strong>
+                                    <code>{% templatetag openvariable %} name {% templatetag closevariable %}</code>
+                                  </li>
+                                  <li>
+                                    <strong>Email: </strong>
+                                    <code>{% templatetag openvariable %} email {% templatetag closevariable %}</code>
+                                  </li>
+                                  <li>
+                                    <strong>Company: </strong>
+                                    <code>{% templatetag openvariable %} company_name {% templatetag closevariable %}</code>
+                                  </li>
+                                  <li>
+                                    <strong>City: </strong>
+                                    <code>{% templatetag openvariable %} city {% templatetag closevariable %}</code>
+                                  </li>
+                                  <li>
+                                    <strong>State: </strong>
+                                    <code>{% templatetag openvariable %} state {% templatetag closevariable %}</code>
+                                  </li>
+                                  <!-- <li>
                                       <strong>Two digit day of the month (eg. 01 to 31):</strong>
                                       <code>[currentdaynumber]</code>
-                                    </li>
-                                  </ul>
-                                  <div class="heading">Essential tags</div>
-                                  <p class="desc">The following tags can only be used on the HTML version</p>
-                                  <ul>
-                                    <li>
-                                      <strong>Name: </strong>
-                                      <code>[Name,fallback=]</code>
-                                    </li>
-                                    <li>
-                                      <strong>Email: </strong>
-                                      <code>[Email]</code>
-                                    </li>
-                                    <li>
-                                      <strong>Two digit day of the month (eg. 01 to 31):</strong>
-                                      <code>[currentdaynumber]</code>
-                                    </li>
-                                  </ul>
-                                </div>
+                                    </li> -->
+                                </ul>
                               </div>
-                            </div> -->
+                              <!-- </div> -->
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -351,7 +355,7 @@
         [{ header: [1, 2, false] }],
         ['bold', 'italic', 'underline'],
         // ['image', 'code-block']
-        ['code-block']
+        ['code-block', 'link']
       ]
     },
     placeholder: 'Compose an epic...',
@@ -359,6 +363,7 @@
   });
 
   quill.on('text-change', function () {
+    $('.ql-syntax').css({ "background-color": "#23241f", "color": "#f8f8f2", "overflow": "visible", "border-radius": "3px", "white-space": "pre-wrap", "margin-bottom": "5px", "margin-top": "5px", "padding": "5px 10px" })
     var justHtml = quill.root.innerHTML;
     $('#html_content').val(justHtml);
   });
