@@ -163,7 +163,12 @@ class LoginView(TemplateView):
 
                     if user is not None:
                         login(request, user)
-                        return HttpResponseRedirect('/')
+                        if user.has_sales_access:
+                            return HttpResponseRedirect('/')
+                        elif user.has_marketing_access:
+                            return redirect('marketing:dashboard')
+                        else:
+                            return HttpResponseRedirect('/')
                     return render(request, "login.html", {
                         "ENABLE_GOOGLE_LOGIN": settings.ENABLE_GOOGLE_LOGIN,
                         "GP_CLIENT_SECRET": settings.GP_CLIENT_SECRET,
@@ -227,7 +232,7 @@ class UsersListView(AdminRequiredMixin, TemplateView):
                     username__icontains=request_post.get('username'))
             if request_post.get('email'):
                 queryset = queryset.filter(
-                    email=request_post.get('email'))
+                    email__icontains=request_post.get('email'))
             if request_post.get('role'):
                 queryset = queryset.filter(
                     role=request_post.get('role'))

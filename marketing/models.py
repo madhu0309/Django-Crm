@@ -305,7 +305,7 @@ class CampaignLog(models.Model):
 
 
 class CampaignLinkClick(models.Model):
-    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name="campaign_link_click")
     link = models.ForeignKey(
         Link, blank=True, null=True, on_delete=models.CASCADE)
     ip_address = models.GenericIPAddressField()
