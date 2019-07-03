@@ -303,16 +303,21 @@ def edit_contact(request, pk):
                     if contact_list_obj:
                         contact_obj.contact_list.remove(contact_list_obj)
                     updated_contact = ContactForm(request.POST)
-                    updated_contact_obj = updated_contact.save()
-                    updated_contact_obj.contact_list.add(contact_list_obj)
+                    if updated_contact.is_valid():
+                        updated_contact_obj = updated_contact.save()
+                        updated_contact_obj.created_by = request.user
+                        updated_contact_obj.save()
+                        updated_contact_obj.contact_list.add(contact_list_obj)
                 else:
                     contact = form.save(commit=False)
-                    contact.save()
-                    form.save_m2m()
+                    if form.is_valid():
+                        contact.save()
+                        form.save_m2m()
             else:
                 contact = form.save(commit=False)
-                contact.save()
-                form.save_m2m()
+                if form.is_valid():
+                    contact.save()
+                    form.save_m2m()
             if request.POST.get('from_url'):
                 return JsonResponse({'error': False,
                                      'success_url': reverse('marketing:contact_list_detail', args=(request.POST.get('from_url'),))})
@@ -347,7 +352,7 @@ def contact_list_detail(request, pk):
                 name__icontains=request.POST.get('name'))
         if request.POST.get('email'):
             contacts_list = contacts_list.filter(
-                email=request.POST.get('email'))
+                email__icontains=request.POST.get('email'))
         if request.POST.get('company_name'):
             contacts_list = contacts_list.filter(
                 company_name=request.POST.get('company_name'))

@@ -171,10 +171,12 @@
                                   {% with contacts=contact.contact_list.all %}
                                   <td>
                                     {% for contact in contacts %}
+                                    {% if contact in campaign.contact_lists.all %}
                                     <div>
                                       <a href="{% url 'marketing:contact_list_detail' contact.id %}"
-                                        class="anchor">{{contact.name}} </a>
+                                      class="anchor">{{contact.name}} </a>
                                     </div>
+                                    {% endif %}
                                     {% endfor %}
                                   </td>
                                   {% endwith %}
@@ -229,10 +231,12 @@
                                   {% with contacts=contact.contact_list.all %}
                                   <td>
                                     {% for contact in contacts %}
+                                    {% if contact in campaign.contact_lists.all %}
                                     <div>
                                       <a href="{% url 'marketing:contact_list_detail' contact.id %}"
                                         class="anchor">{{contact.name}}</a>
                                     </div>
+                                    {% endif %}
                                     {% endfor %}
                                   </td>
                                   {% endwith %}
@@ -288,10 +292,12 @@
                                   {% with contacts=contact.contact_list.all %}
                                   <td>
                                     {% for contact in contacts %}
+                                    {% if contact in campaign.contact_lists.all %}
                                     <div>
                                       <a href="{% url 'marketing:contact_list_detail' contact.id %}"
                                         class="anchor">{{contact.name}}</a>
                                     </div>
+                                    {% endif %}
                                     {% endfor %}
                                   </td>
                                   {% endwith %}

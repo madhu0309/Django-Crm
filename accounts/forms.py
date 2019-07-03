@@ -63,6 +63,10 @@ class AccountForm(forms.ModelForm):
             self.fields['billing_postcode'].required = True
             self.fields['billing_country'].required = True
 
+        # lead is not mandatory while editing
+        if self.instance.id:
+            self.fields['lead'].required = False
+
     class Meta:
         model = Account
         fields = ('name', 'phone', 'email', 'website', 'industry',
