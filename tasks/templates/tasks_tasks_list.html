@@ -165,6 +165,8 @@
                   </td>
                   <td class="actions">
                     {% if request.user == task.created_by or request.user.role == 'ADMIN' %}
+                    <a href="{% url 'tasks:task_detail' task.id %}" class="btn btn-info edit"><i
+                      class="fas fa-eye"></i></a>
                     <a href="{% url 'tasks:task_edit' task.id %}" class="btn btn-success edit"><i
                         class="fas fa-pencil-alt"></i></a>
                     <a href="{% url 'tasks:task_delete' task.id %}" class="btn btn-danger delete remove_document"><i
@@ -225,6 +227,8 @@
                   </td>
                   <td class="actions">
                     {% if request.user == task.created_by or request.user.role == 'ADMIN' %}
+                    <a href="{% url 'tasks:task_detail' task.id %}" class="btn btn-info edit"><i
+                      class="fas fa-eye"></i></a>
                     <a href="{% url 'tasks:task_edit' task.id %}" class="btn btn-success edit"><i
                         class="fas fa-pencil-alt"></i></a>
                     <a href="{% url 'tasks:task_delete' task.id %}" class="btn btn-danger delete remove_document"><i
@@ -284,6 +288,8 @@
                   </td>
                   <td class="actions">
                     {% if request.user == task.created_by or request.user.role == 'ADMIN' %}
+                    <a href="{% url 'tasks:task_detail' task.id %}" class="btn btn-info edit"><i
+                      class="fas fa-eye"></i></a>
                     <a href="{% url 'tasks:task_edit' task.id %}" class="btn btn-success edit"><i
                         class="fas fa-pencil-alt"></i></a>
                     <a href="{% url 'tasks:task_delete' task.id %}" class="btn btn-danger delete remove_document"><i
