@@ -102,7 +102,7 @@
                     <td class="text-center">{{ contact.email }}</td>
                     <td class="text-center">{{ contact.company_name }}</td>
                     <td>{{ contact.created_by }}</td>
-                    <td>{{ contact.created_on }}</td>
+                    <td title="{{contact.created_on}}">{{ contact.created_on_arrow }}</td>
                     <td>
                       {% for contact_list in contact.contact_list.all %}
                       <span> <a
