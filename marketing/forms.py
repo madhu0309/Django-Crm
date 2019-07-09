@@ -149,6 +149,12 @@ class ContactListForm(forms.ModelForm):
                 "accept": ".csv,.xls,.xlsx,.xlsm,.xlsb,.xml",
             })
 
+    def clean_name(self):
+        name = self.cleaned_data.get('name')
+        if ContactList.objects.filter(name__iexact=name).exclude(id=self.instance.id).exists():
+            raise forms.ValidationError('Contact List with this Name already exists.')
+        return name
+
     def clean_contacts_file(self):
         document = self.cleaned_data.get("contacts_file")
         if document:
@@ -193,11 +199,11 @@ class ContactForm(forms.ModelForm):
             field.widget.attrs = {"class": "form-control"}
 
         self.fields['name'].required = True
-        self.fields['last_name'].required = True
-        self.fields['city'].required = True
-        self.fields['state'].required = True
         self.fields['email'].required = True
-        self.fields['company_name'].required = True
+        self.fields['last_name'].required = False
+        self.fields['city'].required = False
+        self.fields['state'].required = False
+        self.fields['company_name'].required = False
         self.fields['contact_list'].required = False
 
     class Meta:
