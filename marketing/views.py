@@ -355,6 +355,7 @@ def contact_list_detail(request, pk):
         raise PermissionDenied
     contacts_list = contact_list.contacts.filter(is_bounced=False)
     bounced_contacts_list = contact_list.contacts.filter(is_bounced=True)
+    bounced_contacts_list_count = contact_list.contacts.filter(is_bounced=True).count()
     if request.POST:
         if request.POST.get('name'):
             contacts_list = contacts_list.filter(
@@ -365,8 +366,29 @@ def contact_list_detail(request, pk):
         if request.POST.get('company_name'):
             contacts_list = contacts_list.filter(
                 company_name=request.POST.get('company_name'))
+
+        if request.POST.get('name'):
+            bounced_contacts_list = bounced_contacts_list.filter(
+                name__icontains=request.POST.get('name'))
+        if request.POST.get('email'):
+            bounced_contacts_list = bounced_contacts_list.filter(
+                email__icontains=request.POST.get('email'))
+        if request.POST.get('company_name'):
+            bounced_contacts_list = bounced_contacts_list.filter(
+                company_name=request.POST.get('company_name'))
+
+    page = request.GET.get('bounced_contacts_page', 1)
+    paginator = Paginator(bounced_contacts_list, 10)
+    try:
+        bounced_contacts_list = paginator.page(page)
+    except:
+        bounced_contacts_list = paginator.page(paginator.num_pages)
+
     data = {'contact_list': contact_list, "contacts_list": contacts_list,
-        "bounced_contacts_list":bounced_contacts_list}
+        "bounced_contacts_list":bounced_contacts_list,
+        'bounced_contacts_list_count': bounced_contacts_list_count,
+        # these two are added for digg pagintor
+        'paginator':paginator,'page_obj': bounced_contacts_list,}
     return render(request, 'marketing/lists/detail.html', data)
 
 

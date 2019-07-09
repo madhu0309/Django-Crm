@@ -1,6 +1,7 @@
 {% extends 'marketing/base.html' %}
 {% load staticfiles %}
 {% load paginate %}
+{% load digg_paginator %}
 {% block content %}
 {{ block.super }}
 <nav aria-label="breadcrumb">
@@ -76,7 +77,7 @@
             </li>
             <li class="nav-item">
               <a class="nav-link" id="close-tab" data-toggle="tab" href="#close" role="tab" aria-controls="close"
-                aria-selected="false">Bounced ({{bounced_contacts_list|length}})</a>
+                aria-selected="false">Bounced ({{bounced_contacts_list_count}})</a>
             </li>
           </ul>
           <div class="tab-content" id="myTabContent">
@@ -96,13 +97,13 @@
                     <table class="table">
                       <thead>
                         <tr>
+                          <th width="1%">
+                            <input type="checkbox" name="check_all" id="check_all">
+                          </th>
                           <th width="5%">ID</th>
                           <th width="20%">Name</th>
                           <th width="20%">Email</th>
                           <th width="10%">Actions</th>
-                          <th width="1%">
-                            <input type="checkbox" name="check_all" id="check_all">
-                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -122,6 +123,10 @@
                         {% endif %}
                         {% for contact in contacts_list %}
                         <tr style="text-align:center;">
+                          <td>
+                            <input type="checkbox" class="check_delete" name="{{contact.name}}" id="{{contact.id}}"
+                              value="{{contact.id}}">
+                          </td>
                           <td scope="row">{{ forloop.counter }}</td>
                           <td>{{ contact.name }}</td>
                           <td> <a href="{% url 'marketing:contact_detail' contact.id %}">{{ contact.email }}</a> </td>
@@ -136,22 +141,15 @@
                               data-other-contacts-lists='{{contact.contact_list.all|length}}'><i
                                 class="fas fa-trash"></i></a>
                           </td>
-                          <td>
-                            <input type="checkbox" class="check_delete" name="{{contact.name}}" id="{{contact.id}}"
-                              value="{{contact.id}}">
-                          </td>
                         </tr>
                         {% empty %}
                         <tr style="text-align:center;">
-                          <td colspan="6">No records found!</td>
+                          <td colspan="6">There are no records</td>
                         </tr>
                         {% endfor %}
                       </tbody>
                     </table>
                   </div>
-                  {% ifequal contacts_list|length 0 %}
-                  <h6 class="text-center">No Contacts Records Found</h6>
-                  {% endifequal %}
                 </div>
                 <div class="text-center row marl mt-3">
                   {% show_pages %}
@@ -162,8 +160,7 @@
               <div class="card">
                 <div class="card-body">
                   <div class="panel-heading-list card-title text-right">
-                    <span class="total_count float-left">Bounced Contacts - {% if show_pageitems %}
-                      {% show_pageitems %}{% else %}{{bounced_contacts_list|length}}{% endif %}</span>
+                    <span class="total_count float-left">Bounced Contacts - {{bounced_contacts_list_count}}</span>
                     <span class="filter_toggle ">
                       <a href="#" class="primary_btn"><i class="fas fa-filter"></i></a>
                     </span>
@@ -174,13 +171,13 @@
                     <table class="table">
                       <thead>
                         <tr>
+                          <th width="1%">
+                            <input type="checkbox" name="check_all" id="check_all_bounced">
+                          </th>
                           <th width="5%">ID</th>
                           <th width="20%">Name</th>
                           <th width="20%">Email</th>
                           <th width="10%">Actions</th>
-                          <th width="1%">
-                            <input type="checkbox" name="check_all" id="check_all_bounced">
-                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -200,6 +197,10 @@
                         {% endif %}
                         {% for contact in bounced_contacts_list %}
                         <tr style="text-align:center;">
+                          <td>
+                            <input type="checkbox" class="check_delete_bounced" name="{{contact.name}}"
+                              id="{{contact.id}}" value="{{contact.id}}">
+                          </td>
                           <td scope="row">{{ forloop.counter }}</td>
                           <td>{{ contact.name }}</td>
                           <td> <a href="{% url 'marketing:contact_detail' contact.id %}">{{ contact.email }}</a> </td>
@@ -214,25 +215,23 @@
                               data-other-contacts-lists='{{contact.contact_list.all|length}}'><i
                                 class="fas fa-trash"></i></a>
                           </td>
-                          <td>
-                            <input type="checkbox" class="check_delete_bounced" name="{{contact.name}}" id="{{contact.id}}"
-                              value="{{contact.id}}">
-                          </td>
                         </tr>
                         {% empty %}
                         <tr style="text-align:center;">
-                          <td colspan="6">No records found!</td>
+                          <td colspan="6">There are no records</td>
                         </tr>
                         {% endfor %}
                       </tbody>
                     </table>
                   </div>
-                  {% ifequal bounced_contacts_list|length 0 %}
-                  <h6 class="text-center">No Closed Acccount Records Found</h6>
-                  {% endifequal %}
                 </div>
                 <div class="text-center row marl mt-3">
+                  <ul class="pagination">
+                    {% digg_paginator %}
+                  </ul>
+                  {% comment %}
                   {% show_pages %}
+                  {% endcomment %}
                 </div>
               </div>
             </div>
@@ -286,6 +285,12 @@
 
     $('#delete_all').click(function (e) {
       e.preventDefault()
+      if (!confirm('Are you sure you want to delete the selected contacts ?')){
+        $('#check_all').prop('checked',false)
+        $('.check_delete').prop('checked', false)
+        $('#delete_all').hide()
+        return;
+      }
       $('#delete_all').attr('disabled', 'disabled')
       var selected = [];
       $('.check_delete:checked').each(function () {
@@ -338,6 +343,12 @@
 
     $('#delete_all_bounced').click(function (e) {
       e.preventDefault()
+      if (!confirm('Are you sure you want to delete the selected contacts ?')){
+        $('#check_all_bounced').prop('checked',false)
+        $('.check_delete_bounced').prop('checked', false)
+        $('#delete_all_bounced').hide()
+        return;
+      }
       $('#delete_all_bounced').attr('disabled', 'disabled')
       var selected = [];
       $('.check_delete_bounced:checked').each(function () {
@@ -407,6 +418,16 @@
       $('#leads_filter').attr("action", $(this).attr("href"));
       $('#leads_filter').submit();
     });
+
+    var queryParams = (window.location.search).replace('?', '').split('&').map(param => param.split('=')).reduce((values, [key, value]) => { values[key] = value; return values; }, {})
+
+    if (!queryParams.hasOwnProperty('page') && queryParams.hasOwnProperty('bounced_contacts_page')) {
+      //active the tab
+      // $('#open-tab').removeClass('active')
+      // $('#close-tab').addClass('active')
+      $('#close-tab').trigger('click')
+    }
+
   })
 </script>
 {% endblock js_block %}
