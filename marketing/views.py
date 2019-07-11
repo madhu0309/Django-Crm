@@ -1000,3 +1000,28 @@ def delete_multiple_contacts(request):
     else:
         message = "You don't have permission to delete {}".format(', '.join(cannot_be_deleted))
         return JsonResponse({'error': True, 'message' : message })
+
+
+@login_required
+@marketing_access_required
+def download_failed_contacts(request, contact_list_id):
+
+    contact_list_obj = get_object_or_404(ContactList, pk=contact_list_id)
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or contact_list_obj.created_by == request.user):
+        raise PermissionDenied
+
+    failed_contacts = contact_list_obj.failed_contacts.values('company_name', 'email', 'name', 'last_name', 'city', 'state')
+    if failed_contacts:
+        data = [
+            'company name,email,first name,last name,city,state\n',
+        ]
+        for contact in failed_contacts:
+            data.append((', '.join(contact.values()) + '\n'))
+        response = HttpResponse(
+            data, content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename={}'.format(
+            'failed_contacts.csv')
+        return response
+
+    else:
+        return HttpResponse('No Data')
