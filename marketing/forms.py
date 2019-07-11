@@ -145,9 +145,10 @@ class ContactListForm(forms.ModelForm):
         self.fields['contacts_file'].widget.attrs.update({
             "accept": ".csv,.xls,.xlsx,.xlsm,.xlsb,.xml",
         })
-        self.fields['contacts_file'].required = True
-        # if self.instance is None:
-        #     self.fields['contacts_file'].required = True
+        if self.instance.id is None:
+            self.fields['contacts_file'].required = True
+        else:
+            self.fields['contacts_file'].required = False
         if self.data.get('contacts_file'):
             self.fields['contacts_file'].widget.attrs.update({
                 "accept": ".csv,.xls,.xlsx,.xlsm,.xlsb,.xml",
