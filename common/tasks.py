@@ -39,7 +39,7 @@ def send_email_user_mentions(comment_id, called_from, domain='demo.django-crm.io
         for comment_text in comment_text_list:
             if comment_text.startswith('@'):
                 if comment_text.strip('@').strip(',') not in recipients:
-                    if User.objects.filter(username=comment_text.strip('@').strip(',')).exists():
+                    if User.objects.filter(username=comment_text.strip('@').strip(','), is_active=True).exists():
                         email = User.objects.filter(
                             username=comment_text.strip('@').strip(',')).first().email
                         recipients.append(email)

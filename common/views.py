@@ -946,7 +946,12 @@ def google_login(request):
 
         if request.GET.get('state') != '1235dfghjkf123':
             return HttpResponseRedirect(request.GET.get('state'))
-        return HttpResponseRedirect(reverse("common:home"))
+        if user.has_sales_access:
+            return HttpResponseRedirect('/')
+        elif user.has_marketing_access:
+            return redirect('marketing:dashboard')
+        else:
+            return HttpResponseRedirect('/')
     if request.GET.get('next'):
         next_url = request.GET.get('next')
     else:

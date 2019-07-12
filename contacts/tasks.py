@@ -13,7 +13,7 @@ def send_email_to_assigned_user(recipients, contact_id, domain='demo.django-crm.
     contact = Contact.objects.get(id=contact_id)
     for user in recipients:
         recipients_list = []
-        user = User.objects.filter(id=user).first()
+        user = User.objects.filter(id=user, is_active=True).first()
         if user:
             recipients_list.append(user.email)
             context = {}

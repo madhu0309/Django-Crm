@@ -15,7 +15,7 @@ def send_email_to_assigned_user(recipients, opportunity_id, domain='demo.django-
     opportunity = Opportunity.objects.get(id=opportunity_id)
     for user in recipients:
         recipients_list = []
-        user = User.objects.filter(id=user).first()
+        user = User.objects.filter(id=user, is_active=True).first()
         if user:
             recipients_list.append(user.email)
             context = {}

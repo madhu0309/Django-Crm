@@ -21,7 +21,7 @@ def send_email(task_id, domain='demo.django-crm.io', protocol='http'):
         context['task_created_by'] = task.created_by
         context["url"] = protocol + '://' + domain + \
                 reverse('tasks:task_detail', args=(task.id,))
-        recipients = task.assigned_to.all()
+        recipients = task.assigned_to.filter(is_active=True)
         if recipients.count() > 0:
             for recipient in recipients:
                 context['user'] = recipient.email

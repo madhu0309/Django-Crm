@@ -20,7 +20,7 @@ def send_email(event_id, domain='demo.django-crm.io', protocol='http'):
     context['event_date_of_meeting'] = event.date_of_meeting
     context["url"] = protocol + '://' + domain + \
         reverse('events:detail_view', args=(event.id,))
-    recipients = event.assigned_to.all()
+    recipients = event.assigned_to.filter(is_active=True)
     if recipients.count() > 0:
         for recipient in recipients:
             context['user'] = recipient.email

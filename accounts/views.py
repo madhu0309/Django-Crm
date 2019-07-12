@@ -32,7 +32,8 @@ class AccountsListView(SalesAccessRequiredMixin, LoginRequiredMixin, TemplateVie
     def get_queryset(self):
         queryset = self.model.objects.all()
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
-            queryset = queryset.filter(created_by=self.request.user.id)
+            queryset = queryset.filter(
+                Q(created_by=self.request.user) | Q(assigned_to=self.request.user)).distinct()
 
         if self.request.GET.get('tag', None):
             queryset = queryset.filter(tags__in = self.request.GET.getlist('tag'))
