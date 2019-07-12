@@ -463,7 +463,7 @@ def document_create(request):
 class DocumentListView(SalesAccessRequiredMixin,LoginRequiredMixin, TemplateView):
     model = Document
     context_object_name = "documents"
-    template_name = "doc_list.html"
+    template_name = "doc_list_1.html"
 
     def get_queryset(self):
         queryset = self.model.objects.all()

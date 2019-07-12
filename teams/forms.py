@@ -11,9 +11,15 @@ class TeamForm(forms.ModelForm):
             field.widget.attrs = {"class": "form-control"}
 
         self.fields['name'].required = True
-        self.fields['description'].required = True
-        self.fields['users'].required = False
+        self.fields['description'].required = False
+        self.fields['users'].required = True
 
     class Meta:
         model = Teams
         fields = ('name', 'description', 'users',)
+
+    def clean_name(self):
+        name = self.cleaned_data.get('name')
+        if Teams.objects.filter(name__iexact=name).exclude(id=self.instance.id).exists():
+            raise forms.ValidationError('Team with this name already exists.')
+        return name

@@ -267,3 +267,5 @@ except ImportError:
 GP_CLIENT_ID = os.getenv('GP_CLIENT_ID', False)
 GP_CLIENT_SECRET = os.getenv('GP_CLIENT_SECRET', False)
 ENABLE_GOOGLE_LOGIN = os.getenv('ENABLE_GOOGLE_LOGIN', False)
+
+MARKETING_REPLY_EMAIL = 'djangocrm@micropyramid.com'

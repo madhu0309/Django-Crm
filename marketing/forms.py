@@ -19,7 +19,7 @@ def csv_doc_validate(document):
     invalid_row = []
     # this stores all the failed csv contacts
     failed_contacts_csv = []
-    reader = csv.reader((document.read().decode("utf-8")).splitlines())
+    reader = csv.reader((document.read().decode("iso-8859-1")).splitlines())
     # csv_headers = ["first name", "last name", "email"]
     csv_headers = ["first name", "email"]
     # required_headers = ["first name", "last name", "email"]
@@ -354,3 +354,9 @@ class SendCampaignForm(forms.ModelForm):
         if count != 0:
             raise forms.ValidationError('Brackets do not match, Enter valid tags.')
         return html
+
+    def clean_title(self):
+        title = self.cleaned_data.get('title')
+        if Campaign.objects.filter(title__iexact=title).exclude(id=self.instance.id).exists():
+            raise forms.ValidationError('Campaign with this title already exists.')
+        return title
