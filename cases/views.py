@@ -445,6 +445,7 @@ class AddCommentView(LoginRequiredMixin, CreateView):
         return JsonResponse({
             "comment_id": comment.id, "comment": comment.comment,
             "commented_on": comment.commented_on,
+            "commented_on_arrow": comment.commented_on_arrow,
             "commented_by": comment.commented_by.email
         })
 
@@ -547,6 +548,7 @@ class AddAttachmentView(LoginRequiredMixin, CreateView):
             reverse('common:download_attachment',
                     kwargs={'pk': attachment.id}),
             "created_on": attachment.created_on,
+            "created_on_arrow": attachment.created_on_arrow,
             "created_by": attachment.created_by.email,
             "message": "attachment Created",
             "attachment_display": attachment.get_file_type_display(),

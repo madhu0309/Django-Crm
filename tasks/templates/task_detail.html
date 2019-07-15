@@ -113,7 +113,8 @@
             </div>
             <div class="col-md-12">
               <div class="created_information">
-                Created by <b>{{ task.created_by }}</b>
+                Created by <b>{{ task.created_by }}</b> on <b
+                  title="{{ task.created_on }}">{{ task.created_on_arrow }}</b>
               </div>
             </div>
             <div class="col-md-12" style="padding:0;">
@@ -163,7 +164,7 @@
                           </div>
                           <div class="stream-container">
                             <pre class="float-left">Uploaded by :{{ attachment.created_by }}</pre>
-                            <pre class="float-right date">{{ attachment.created_on|date:'m/d/Y,  h:i A' }}</pre>
+                            <pre class="float-right date" title="{{ attachment.created_on|date:'m/d/Y,  h:i A' }}">{{ attachment.created_on_arrow }}</pre>
                           </div>
                         </li>
                         {% endfor %}
@@ -216,7 +217,7 @@
                           </div>
                           <div class="stream-container">
                             <pre class="float-left">{{ comment.commented_by }}</pre>
-                            <pre class="float-right date">{{ comment.commented_on|date:'m/d/Y,  h:i:s A' }}</pre>
+                            <pre class="float-right date" title="{{ comment.commented_on|date:'m/d/Y,  h:i:s A' }}">{{ comment.commented_on_arrow }}</pre>
                           </div>
                         </li>
                         {% endfor %}
@@ -303,7 +304,8 @@
             "<li><a class='action' onclick='edit_comment(" + data.comment_id + ")'>Edit</a></li>" +
             "<li><a class='action' onclick='remove_comment(" + data.comment_id + ")''>Remove</a></li></ul></div></div>" +
             "<div class='stream-post-container' id='comment_name" + data.comment_id + "'><pre>" + data.comment + "</pre></div>" +
-            "<div class='stream-container'><pre class='float-left'>" + data.commented_by + "</pre><pre class='float-right'>" + d.toLocaleString('en-US', { hour12: true }) + "</pre></div>"
+            "<div class='stream-container'><pre class='float-left'>" + data.commented_by + "</pre><pre class='float-right' title='" + d.toLocaleString('en-US', { hour12: true }) + "'>" + data.commented_on_arrow + "</pre></div>" +
+            "<div class='stream-date-container' id='comment_file_div" + data.comment_id + "'><div id='new_comment" + data.comment_id + "'</div></div></li>"
           )
           $("#id_comments").val("")
           alert("Comment Submitted")
@@ -411,7 +413,7 @@
             "<div class='stream-post-container' id='attachment_name" + data.attachment_id + "'>" +
             `${(data.file_type[0]).startsWith('image') ? `<img src=${data.attachment_url} width="80px" height="80px" class="mb-2">` : ''}` +
             "<pre><span class='icon'><i style='font-size:1.5rem;' class='" + data.attachment_display + "'></i>&nbsp;&nbsp;</span>" + data.attachment + "&nbsp; &nbsp;<a href='" + data.download_url + "'>Download</a></pre></div>" +
-            "<div class='stream-container'><pre class='float-left'>" + data.created_by + "</pre><pre class='float-right date'>" + d.toLocaleString('en-US', { hour12: true }) + "</pre></div>" +
+            "<div class='stream-container'><pre class='float-left'>" + data.created_by + "</pre><pre class='float-right date' title='" + d.toLocaleString('en-US', { hour12: true }) + "'>" + data.created_on_arrow  + "</pre></div>"  +
             "</li>"
           )
           $("#AttachmentError").html("")
