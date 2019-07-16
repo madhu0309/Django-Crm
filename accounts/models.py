@@ -111,6 +111,11 @@ class Account(models.Model):
     def created_on_arrow(self):
         return arrow.get(self.created_on).humanize()
 
+    @property
+    def contact_values(self):
+        contacts = list(self.contacts.values_list('id', flat=True))
+        return ','.join(str(contact) for contact in contacts)
+
 
 class Email(models.Model):
     sender = models.ForeignKey(

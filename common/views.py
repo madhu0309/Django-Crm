@@ -43,6 +43,9 @@ from common.tasks import send_email_user_status, send_email_user_delete, send_em
 from teams.models import Teams
 from common.access_decorators_mixins import (
     sales_access_required, marketing_access_required, SalesAccessRequiredMixin, MarketingAccessRequiredMixin)
+from common.token_generator import account_activation_token
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_text
 
 
 def handler404(request, exception):
@@ -301,7 +304,6 @@ class CreateUserView(AdminRequiredMixin, CreateView):
         kwargs.update({"request_user": self.request.user})
         return kwargs
 
-
     def get_context_data(self, **kwargs):
         context = super(CreateUserView, self).get_context_data(**kwargs)
         context["user_form"] = context["form"]
@@ -441,7 +443,8 @@ def document_create(request):
                 doc.shared_to.add(*request.POST.getlist('shared_to'))
 
             if request.POST.getlist('teams', []):
-                user_ids = Teams.objects.filter(id__in=request.POST.getlist('teams')).values_list('users', flat=True)
+                user_ids = Teams.objects.filter(id__in=request.POST.getlist(
+                    'teams')).values_list('users', flat=True)
                 assinged_to_users_ids = doc.shared_to.all().values_list('id', flat=True)
                 for user_id in user_ids:
                     if user_id not in assinged_to_users_ids:
@@ -460,7 +463,7 @@ def document_create(request):
     return render(request, template_name, context)
 
 
-class DocumentListView(SalesAccessRequiredMixin,LoginRequiredMixin, TemplateView):
+class DocumentListView(SalesAccessRequiredMixin, LoginRequiredMixin, TemplateView):
     model = Document
     context_object_name = "documents"
     template_name = "doc_list_1.html"
@@ -533,6 +536,7 @@ class DocumentDeleteView(LoginRequiredMixin, DeleteView):
         self.object.delete()
         return redirect("common:doc_list")
 
+
 @login_required
 @sales_access_required
 def document_update(request, pk):
@@ -559,7 +563,8 @@ def document_update(request, pk):
                 doc.shared_to.add(*request.POST.getlist('shared_to'))
 
             if request.POST.getlist('teams', []):
-                user_ids = Teams.objects.filter(id__in=request.POST.getlist('teams')).values_list('users', flat=True)
+                user_ids = Teams.objects.filter(id__in=request.POST.getlist(
+                    'teams')).values_list('users', flat=True)
                 assinged_to_users_ids = doc.shared_to.all().values_list('id', flat=True)
                 for user_id in user_ids:
                     if user_id not in assinged_to_users_ids:
@@ -982,3 +987,25 @@ def create_lead_from_site(request):
                 return HttpResponse('Lead Created')
     from django.http import HttpResponseBadRequest
     return HttpResponseBadRequest('Bad Request')
+
+
+def activate_user(request, uidb64, token):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user)
+        # return redirect('home')
+        # if user.has_sales_access:
+        #     return HttpResponseRedirect('/')
+        # elif user.has_marketing_access:
+        #     return redirect('marketing:dashboard')
+        # else:
+        #     return HttpResponseRedirect('/')
+        return HttpResponse('Thank you for your email confirmation. Now you can login your account.')
+    else:
+        return HttpResponse('Activation link is invalid!')
