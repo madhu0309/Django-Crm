@@ -146,8 +146,7 @@ class LeadsPostrequestTestCase(TestLeadModel, TestCase):
         self.lead = Lead.objects.all()
         get_name = Lead.objects.get(first_name='jane doe')
         # print(get_name.first_name+get_name.last_name,str(get_name))
-        self.assertEqual(get_name.first_name +
-                         get_name.last_name, str(get_name))
+        self.assertEqual(get_name.title, str(get_name))
         response = self.client.get(reverse('leads:list'))
         self.assertEqual(response.status_code, 200)
 

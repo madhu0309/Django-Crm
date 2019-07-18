@@ -5,10 +5,10 @@
 {% block extralinks %}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
 <style>
-    .form-group label{
-      font-weight: 800;
-    }
-  </style>
+  .form-group label {
+    font-weight: 800;
+  }
+</style>
 {% endblock %}
 {% block content %}
 <!-- main_container starts here -->
@@ -201,7 +201,8 @@
                           {% with tags=lead.tags.all %}
                           {% if tags %}
                           {% for tag in tags %}
-                          <span class="text-left color{{forloop.counter}} tag_class_lead" data-link="{{tag.id}}" style="cursor: pointer;" id="list_tag">{{ tag.name }}</span>
+                          <span class="text-left color{{forloop.counter}} tag_class_lead" data-link="{{tag.id}}"
+                            style="cursor: pointer;" id="list_tag">{{ tag.name }}</span>
                           {% endfor %}
                           {% else %}
                           No Tags
@@ -296,7 +297,8 @@
                           {% with tags=lead.tags.all %}
                           {% if tags %}
                           {% for tag in tags %}
-                          <span class="text-left color{{forloop.counter}} tag_class_lead" data-link="{{tag.id}}" style="cursor: pointer;" id="list_tag">{{ tag.name }}</span>
+                          <span class="text-left color{{forloop.counter}} tag_class_lead" data-link="{{tag.id}}"
+                            style="cursor: pointer;" id="list_tag">{{ tag.name }}</span>
                           {% endfor %}
                           {% else %}
                           No Tags
@@ -464,19 +466,20 @@
                         {% endif %}
                       </div>
                     </div>
+                  </div>
+                  <div class="col-md-12">
+                    {% if lead_record.description %}
                     <div class="filter_col col-md-12">
-                      {% if lead_record.description %}
                       <div class="form-group">
                         <label class="lead_field_label" for="id_description" data-name="name">Description</label>
                         <div class="lead_field" id="lead_description" data-name="name">{{ lead_record.description }}
                         </div>
                       </div>
-                      {% endif %}
                     </div>
-                  </div>
-                  <div class="col-md-12">
+                    {% endif %}
                     <div class="created_information">
-                      Created by <b>{{ lead_record.created_by }}</b> created on <b title="{{ lead_record.created_on }}">{{ lead_record.created_on_arrow }}</b>
+                      Created by <b>{{ lead_record.created_by }}</b> created on <b
+                        title="{{ lead_record.created_on }}">{{ lead_record.created_on_arrow }}</b>
                     </div>
                   </div>
                 </div>
@@ -627,19 +630,20 @@
                         {% endif %}
                       </div>
                     </div>
+                  </div>
+                  <div class="col-md-12">
+                    {% if lead_record.description %}
                     <div class="filter_col col-md-12">
-                      {% if lead_record.description %}
                       <div class="form-group">
                         <label class="lead_field_label" for="id_description" data-name="name">Description</label>
                         <div class="lead_field" id="lead_description" data-name="name">{{ lead_record.description }}
                         </div>
                       </div>
-                      {% endif %}
                     </div>
-                  </div>
-                  <div class="col-md-12">
+                    {% endif %}
                     <div class="created_information">
-                      Created by <b>{{ lead_record.created_by }}</b> created on <b title="{{ lead_record.created_on }}">{{ lead_record.created_on_arrow }}</b>
+                      Created by <b>{{ lead_record.created_by }}</b> created on <b
+                        title="{{ lead_record.created_on }}">{{ lead_record.created_on_arrow }}</b>
                     </div>
                   </div>
                 </div>
@@ -674,11 +678,11 @@
   });
 
   $(".tag_class_lead").click(function () {
-      // $(".tag_class_opp").css('cursor', 'pointer')
-      url = "{% url 'leads:list' %}"
-      url = url + "?tag=" + $(this).attr('data-link')
-      window.location.href = url;
-    });
+    // $(".tag_class_opp").css('cursor', 'pointer')
+    url = "{% url 'leads:list' %}"
+    url = url + "?tag=" + $(this).attr('data-link')
+    window.location.href = url;
+  });
 
 
   search = "{{search}}"

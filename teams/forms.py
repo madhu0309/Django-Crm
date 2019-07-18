@@ -1,5 +1,6 @@
 from django import forms
 from teams.models import Teams
+from common.models import User
 
 
 class TeamForm(forms.ModelForm):
@@ -13,6 +14,7 @@ class TeamForm(forms.ModelForm):
         self.fields['name'].required = True
         self.fields['description'].required = False
         self.fields['users'].required = True
+        self.fields['users'].queryset = User.objects.filter(is_active=True)
 
     class Meta:
         model = Teams

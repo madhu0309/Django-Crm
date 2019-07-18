@@ -341,16 +341,6 @@
                       </div>
                     </div>
                     <div class="col-md-4">
-                      <div class="filter_col col-md-12">
-                        {% if opportunity_record.description %}
-                        <div class="form-group">
-                          <label class="opportunity_field_label" for="id_description"
-                            data-name="name">Description</label>
-                          <div class="opportunity_field" id="opportunity_description" data-name="name">
-                            {{opportunity_record.description}}</div>
-                        </div>
-                        {% endif %}
-                      </div>
                       {% if opportunity_record.tags.all %}
                       <div class="filter_col col-md-12">
                         <div class="form-group">
@@ -365,6 +355,16 @@
                       {% endif %}
                     </div>
                     <div class="col-md-12">
+                      {% if opportunity_record.description %}
+                      <div class="filter_col col-md-12">
+                        <div class="form-group">
+                          <label class="opportunity_field_label" for="id_description"
+                            data-name="name">Description</label>
+                          <div class="opportunity_field" id="opportunity_description" data-name="name">
+                            {{opportunity_record.description}}</div>
+                        </div>
+                      </div>
+                      {% endif %}
                       <div class="created_information">
                         Created by <b>{{ opportunity_record.created_by }}</b> created on
                         <b title="{{ opportunity_record.created_on }}">{{ opportunity_record.created_on_arrow }}</b>
@@ -397,6 +397,7 @@
       $(".list_filter_row").toggle();
     });
     $('#id_tag').select2();
+    $('#id_account').select2();
   });
 
   $(".tag_class_opp").click(function () {
