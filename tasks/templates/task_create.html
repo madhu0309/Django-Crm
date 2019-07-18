@@ -69,14 +69,14 @@
                   <div class="form-group ">
                     <label for="exampleInputEmail1" class="required">Account{% if form.account.field.required %}<span
                         class="error_marker" style="color:red">*</span>{% endif %}</label>
-                    <!-- <select name="account" class="form-control" placeholder="Account" required="" id="id_account">
+                    <select name="account" class="form-control" placeholder="Account" required="" id="id_account">
                       <option value="" selected="">---------</option>
                       {% for account in accounts %}
-                      <option value="{{account.id}}" {% ifequal account_obj.lead.id lead.id %}selected{% endifequal %}>
-                        {{lead.first_name}} {{lead.last_name}}</option>
+                      <option value="{{account.id}}" data-contact="{{account.contact_values}}">
+                        {{account.name}}</option>
                       {% endfor %}
-                    </select> -->
-                    {{ form.account }}
+                    </select>
+                    <!-- {{ form.account }} -->
                     <span class="error" id="id__account">{{ form.account.errors }}</span>
                   </div>
                 </div>
@@ -145,6 +145,7 @@
   // });
   $(document).ready(function () {
     $("#id_contacts").select2();
+
     $("#id_assigned_to").select2();
     $("#id_teams").select2();
     var date = new Date();
@@ -153,6 +154,7 @@
       'format': 'YYYY-MM-DD',
       minDate: today
     })
+
   });
 
   $('form#formid').ajaxForm({

@@ -28,6 +28,13 @@
   .download_icon {
     color: #28a745;
   }
+
+  .ellipses {
+    white-space: nowrap;
+    width: 18em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 </style>
 {% endblock %}
 {% block content %}
@@ -117,15 +124,19 @@
                 <!-- options -->
                 <div class="">
                   <div class="row">
-                    <div class="col-6">
-                      <span class="" style="display: inline-block;">
-                        <b> Title: </b> {% if document.title %}<a data-toggle="modal" href="#"
-                          data-target="#exampleModalCenter_doc{{document.id}}">
-                          {{ document.title }}
+                    <div class="col-12">
+                      <span class="">
+                        {% if document.title %}<a data-toggle="modal" href="#"
+                          data-target="#exampleModalCenter_doc{{document.id}}" style="color:black">
+                          <b>
+                            <div class="ellipses">
+                              {{ document.title }}
+                            </div>
+                          </b>
                         </a>{% endif %}
                       </span>
                     </div>
-                    <div class="col-6">
+                    <!-- <div class="col-6">
                       <span class="">
                         <div class="actions">
                           {% if request.user == document.created_by or request.user.role == 'ADMIN' %}
@@ -142,7 +153,7 @@
                           {% endif %}
                         </div>
                       </span>
-                    </div>
+                    </div> -->
                   </div>
                   <!-- <span class="float-left">
                     <b> Title: </b> {% if document.title %}<a data-toggle="modal" href="#"
@@ -214,6 +225,26 @@
                       {% endfor %}
                       {% endwith %}
                     </div>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-6 offset-6" style="margin-left: 60%; margin-bottom: -1em;">
+                    <span class="">
+                      <div class="actions">
+                        {% if request.user == document.created_by or request.user.role == 'ADMIN' %}
+                        <a href="{% url 'common:view_doc' document.id %}" class="view_icon"><i
+                            class="fas fa-eye edit_delete_options"></i></a>
+                        <a href="{% url 'common:edit_doc' document.id %}" class="edit_icon"><i
+                            class="fas fa-pencil-alt edit_delete_options"></i></a>
+                        <a href="{% url 'common:remove_doc' document.id %}" class="delete_icon"><i
+                            class="fas fa-trash-alt edit_delete_options"></i></a>
+                        {% endif %}
+                        {% if request.user in document.shared_to.all or request.user == document.created_by or request.user.role == 'ADMIN' %}
+                        <a href="{% url 'common:download_document' document.id %}" class="download_icon"><i
+                            class="fas fa-download edit_delete_options edit_delete_options"></i></a>
+                        {% endif %}
+                      </div>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -302,7 +333,7 @@
                         <div class="form-group">
                           <label class="contact_field_label" for="id_created_on" data-name="created_on">Created
                             On</label>
-                          <div class="contact_field" id="created_on" data-name="created_on">{{ doc_obj.created_on }}
+                          <div class="contact_field" id="created_on" data-name="created_on" title="{{ doc_obj.created_on }}">{{ doc_obj.created_on_arrow }}
                           </div>
                         </div>
                       </div>

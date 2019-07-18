@@ -152,6 +152,10 @@ class Comment(models.Model):
     def get_files(self):
         return Comment_Files.objects.filter(comment_id=self)
 
+    @property
+    def commented_on_arrow(self):
+        return arrow.get(self.commented_on).humanize()
+
 
 class Comment_Files(models.Model):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
@@ -228,6 +232,10 @@ class Attachments(models.Model):
         if self.attachment:
             return self.file_type()[1]
         return None
+
+    @property
+    def created_on_arrow(self):
+        return arrow.get(self.created_on).humanize()
 
 
 def document_path(self, filename):

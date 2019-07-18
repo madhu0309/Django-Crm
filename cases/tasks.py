@@ -15,7 +15,7 @@ def send_email_to_assigned_user(recipients, case_id, domain='demo.django-crm.io'
     case = Case.objects.get(id=case_id)
     for user in recipients:
         recipients_list = []
-        user = User.objects.filter(id=user).first()
+        user = User.objects.filter(id=user, is_active=True).first()
         if user:
             recipients_list.append(user.email)
             context = {}

@@ -65,12 +65,15 @@ def task_create(request):
     if request.method == 'GET':
         if request.user.role == 'ADMIN' or request.user.is_superuser:
             users = User.objects.filter(is_active=True).order_by('email')
+            accounts = Account.objects.filter(status="open")
         elif request.user.google.all():
             users = []
+            accounts = Account.objects.filter(created_by=request_user).filter(status="open")
         else:
             users = User.objects.filter(role='ADMIN').order_by('email')
+            accounts = Account.objects.filter(created_by=request_user).filter(status="open")
         form = TaskForm(request_user=request.user)
-        return render(request, 'task_create.html', {'form': form, 'users': users})
+        return render(request, 'task_create.html', {'form': form, 'users': users, 'accounts':accounts})
 
     if request.method == 'POST':
         form = TaskForm(request.POST, request_user=request.user)
@@ -215,6 +218,7 @@ class AddCommentView(LoginRequiredMixin, CreateView):
         return JsonResponse({
             "comment_id": comment.id, "comment": comment.comment,
             "commented_on": comment.commented_on,
+            "commented_on_arrow": comment.commented_on_arrow,
             "commented_by": comment.commented_by.email
         })
 
@@ -307,6 +311,7 @@ class AddAttachmentView(LoginRequiredMixin, CreateView):
                                     kwargs={'pk': attachment.id}),
             "attachment_display": attachment.get_file_type_display(),
             "created_on": attachment.created_on,
+            "created_on_arrow": attachment.created_on_arrow,
             "created_by": attachment.created_by.email,
             "file_type": attachment.file_type()
         })

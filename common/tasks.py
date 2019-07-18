@@ -1,19 +1,32 @@
 from celery.task import task
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import EmailMessage
 from django.shortcuts import reverse
 from django.template.loader import render_to_string
+from django.utils import six
 
 from common.models import Comment, User
+
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_text
+from common.token_generator import account_activation_token
 
 
 @task
 def send_email_to_new_user(user_email, created_by, domain='demo.django-crm.io', protocol='http'):
     """ Send Mail To Users When their account is created """
-    if user_email:
+
+    user_obj = User.objects.filter(email=user_email).first()
+    user_obj.is_active = False
+    user_obj.save()
+    if user_obj:
         context = {}
         context["user_email"] = user_email
         context["created_by"] = created_by
-        context["url"] = protocol + '://' + domain + '/'
+        context["url"] = protocol + '://' + domain
+        context["uid"] = urlsafe_base64_encode(force_bytes(user_obj.pk)),
+        context["token"] = account_activation_token.make_token(user_obj)
+        context["complete_url"] = context["url"] + reverse('common:activate_user', args=(context['uid'][0],context['token'],))
         recipients = []
         recipients.append(user_email)
         subject = 'Created account in CRM'
@@ -39,7 +52,7 @@ def send_email_user_mentions(comment_id, called_from, domain='demo.django-crm.io
         for comment_text in comment_text_list:
             if comment_text.startswith('@'):
                 if comment_text.strip('@').strip(',') not in recipients:
-                    if User.objects.filter(username=comment_text.strip('@').strip(',')).exists():
+                    if User.objects.filter(username=comment_text.strip('@').strip(','), is_active=True).exists():
                         email = User.objects.filter(
                             username=comment_text.strip('@').strip(',')).first().email
                         recipients.append(email)
@@ -108,6 +121,7 @@ def send_email_user_status(user_id, domain='demo.django-crm.io', protocol='http'
             )
             msg.content_subtype = "html"
             msg.send()
+
 
 @task
 def send_email_user_delete(user_email, domain='demo.django-crm.io', protocol='http'):
