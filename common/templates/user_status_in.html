@@ -11,7 +11,15 @@ Your account has been successfully created in Django CRM by {{created_by}}
 {% endblock content_body %}
 
 {% block button_link %}
-<div style="margin-bottom:20px"><a href="{{url}}"
-        style="display:inline-block;width:170px;background:#38abdd;padding:10px;text-align:center;color:#fff;font-size:1rem;font-weight:600;margin:0px auto;margin-bottom:20px;border-radius:5px;text-decoration:none;display:block">Login</a>
+
+<div style="margin-bottom:20px"><a href="{{complete_url}}"
+        style="display:inline-block;width:170px;background:#38abdd;padding:10px;text-align:center;color:#fff;font-size:1rem;font-weight:600;margin:0px auto;margin-bottom:20px;border-radius:5px;text-decoration:none;display:block">Click Here to Activate your Account</a>
 </div>
+
+{% comment %}
+<div style="margin-bottom:20px"><a href="{{url}}"
+                style="display:inline-block;width:170px;background:#38abdd;padding:10px;text-align:center;color:#fff;font-size:1rem;font-weight:600;margin:0px auto;margin-bottom:20px;border-radius:5px;text-decoration:none;display:block">Login</a>
+</div>
+{% endcomment %}
+
 {% endblock button_link %}

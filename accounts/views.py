@@ -32,7 +32,8 @@ class AccountsListView(SalesAccessRequiredMixin, LoginRequiredMixin, TemplateVie
     def get_queryset(self):
         queryset = self.model.objects.all()
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
-            queryset = queryset.filter(created_by=self.request.user.id)
+            queryset = queryset.filter(
+                Q(created_by=self.request.user) | Q(assigned_to=self.request.user)).distinct()
 
         if self.request.GET.get('tag', None):
             queryset = queryset.filter(tags__in = self.request.GET.getlist('tag'))
@@ -405,6 +406,7 @@ class AddCommentView(LoginRequiredMixin, CreateView):
         return JsonResponse({
             "comment_id": comment.id, "comment": comment.comment,
             "commented_on": comment.commented_on,
+            "commented_on_arrow": comment.commented_on_arrow,
             "commented_by": comment.commented_by.email
         })
 
@@ -497,6 +499,7 @@ class AddAttachmentView(LoginRequiredMixin, CreateView):
                                     kwargs={'pk': attachment.id}),
             "attachment_display": attachment.get_file_type_display(),
             "created_on": attachment.created_on,
+            "created_on_arrow": attachment.created_on_arrow,
             "created_by": attachment.created_by.email,
             "file_type": attachment.file_type()
         })

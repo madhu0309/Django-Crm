@@ -107,7 +107,7 @@
             </div>
             <div class="col-md-12">
               <div class="created_information">
-                Created by <b>{{ case_record.created_by }}</b> created on <b>{{ case_record.created_on }}</b>
+                Created by <b>{{ case_record.created_by }}</b> created on <b title="{{ case_record.created_on }}">{{ case_record.created_on_arrow }}</b>
               </div>
             </div>
           </div>
@@ -156,7 +156,7 @@
                   </div>
                   <div class="stream-container">
                     <pre class="float-left"> Uploaded by :{{ attachment.created_by }}</pre>
-                    <pre class="float-right date">{{ attachment.created_on|date:'m/d/Y,  h:i A' }}</pre>
+                    <pre class="float-right date" id="{{ attachment.created_on|date:'m/d/Y,  h:i A' }}">{{ attachment.created_on_arrow }}</pre>
                   </div>
                 </li>
                 {% endfor %}
@@ -209,7 +209,7 @@
                   </div>
                   <div class="stream-container">
                     <pre class="float-left">{{ comment.commented_by }}</pre>
-                    <pre class="float-right date">{{ comment.commented_on|date:'m/d/Y,  h:i:s A' }}</pre>
+                    <pre class="float-right date" title="{{ comment.commented_on|date:'m/d/Y,  h:i:s A' }}">{{ comment.commented_on_arrow }}</pre>
                   </div>
                 </li>
                 {% endfor %}
@@ -480,7 +480,7 @@
             "<div class='stream-post-container' id='attachment_name" + data.attachment_id + "'>" +
             `${(data.file_type[0]).startsWith('image') ? `<img src=${data.attachment_url} width="80px" height="80px" class="mb-2">` : ''}` +
             "<pre><span class='icon'><i style='font-size:1.5rem;' class='" + data.attachment_display + "'></i>&nbsp;&nbsp;</span>" + data.attachment + "&nbsp; &nbsp;<a href='" + data.download_url + "'>Download</a></pre></div>" +
-            "<div class='stream-container'><pre class='float-left'>" + data.created_by + "</pre><pre class='float-right date'>" + d.toLocaleString('en-US', { hour12: true }) + "</pre></div>" +
+            "<div class='stream-container'><pre class='float-left'>" + data.created_by + "</pre><pre class='float-right date' title='" + d.toLocaleString('en-US', { hour12: true }) + "'>" + data.created_on_arrow  + "</pre></div>" +
             "</li>"
           )
           $("#AttachmentError").html("")

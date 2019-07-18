@@ -19,7 +19,7 @@ def send_email(invoice_id, domain='demo.django-crm.io', protocol='http'):
         context['invoice_created_by'] = invoice.created_by
         context["url"] = protocol + '://' + domain + \
             reverse('invoices:invoice_details', args=(invoice.id,))
-        recipients = invoice.assigned_to.all()
+        recipients = invoice.assigned_to.filter(is_active=True)
         if recipients.count() > 0:
             for recipient in recipients:
                 context['user'] = recipient.email
