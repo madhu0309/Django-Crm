@@ -128,6 +128,7 @@ def task_detail(request, task_id):
 @sales_access_required
 def task_edit(request, task_id):
     task_obj = get_object_or_404(Task, pk=task_id)
+    accounts = Account.objects.filter(status="open")
 
     if not (request.user.role == 'ADMIN' or request.user.is_superuser or task_obj.created_by == request.user):
         raise PermissionDenied
@@ -141,7 +142,8 @@ def task_edit(request, task_id):
             users = User.objects.filter(role='ADMIN').order_by('email')
         # form = TaskForm(request_user=request.user)
         form = TaskForm(instance=task_obj, request_user=request.user)
-        return render(request, 'task_create.html', {'form': form, 'task_obj': task_obj, 'users': users})
+        return render(request, 'task_create.html', {'form': form, 'task_obj': task_obj,
+            'users': users, 'accounts':accounts})
 
     if request.method == 'POST':
         form = TaskForm(request.POST, instance=task_obj,

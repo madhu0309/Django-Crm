@@ -108,8 +108,9 @@
                   <th width="5%">S.No</th>
                   <th width="20%">Name</th>
                   <th width="20%">Account</th>
-                  <th width="15%">Status</th>
-                  <th width="15%">Priority</th>
+                  <th width="10%">Status</th>
+                  <th width="10%">Priority</th>
+                  <th width="15%">Created On</th>
                   <th width="15%">Actions</th>
                 </tr>
                 {% endif %}
@@ -134,6 +135,7 @@
                   </td>
                   <td id="status_id{{case.id}}" status="{{case.status}}">{{ case.status }}</td>
                   <td>{{ case.priority }}</td>
+                  <td title="{{ case.created_on }}">{{ case.created_on_arrow }}</td>
                   <td class="actions">
                     <a href="{% url 'cases:view_case' case.id %}" class="btn btn-info view"><i
                         class="fas fa-eye"></i></a>

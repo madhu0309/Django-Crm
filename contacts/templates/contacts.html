@@ -92,6 +92,7 @@
                   <th width="20%">Assigned To</th>
                   <th width="15%">City</th>
                   <th width="15%">State</th>
+                  <th width="15%">Created On</th>
                   <th width="15%">Actions</th>
                 </tr>
                 {% endif %}
@@ -141,6 +142,7 @@
                     Not Specified
                     {% endif %}
                   </td>
+                  <td title="{{contact.created_on}}">{{contact.created_on_arrow}}</td>
                   <td class="actions">
                     <a href="{% url 'contacts:view_contact' contact.id %}" class="btn btn-info view"><i
                         class="fas fa-eye"></i></a>

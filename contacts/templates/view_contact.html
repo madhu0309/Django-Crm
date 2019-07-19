@@ -265,11 +265,11 @@
                     <tbody>
                       {% for task in tasks %}
                       <tr id="task_{{task.id}}" class="text-center">
-                        <td scope="row">{{ forloop.counter }}</td>
-                        <td>{{task.title}}</td>
-                        <td>{{task.status}}</td>
-                        <td>{{task.priority}} {% if task.probability %} % {% endif %}</td>
-                        <td class="actions">
+                        <td class="text-center" scope="row">{{ forloop.counter }}</td>
+                        <td class="text-center">{{task.title}}</td>
+                        <td class="text-center">{{task.status}}</td>
+                        <td class="text-center">{{task.priority}} {% if task.probability %} % {% endif %}</td>
+                        <td class="actions text-center">
                           <a href="{% url 'tasks:task_detail' task.id %}" class="btn btn-primary"
                             style="color: white;">View</a>
                           <a href="{% url 'tasks:task_edit' task.id %}?view_account={{account_record.id}}"
