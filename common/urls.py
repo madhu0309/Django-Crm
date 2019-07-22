@@ -13,7 +13,7 @@ from common.views import (
     api_settings, add_api_settings, view_api_settings,
     update_api_settings, delete_api_settings,
     change_passsword_by_admin, google_login, create_lead_from_site,
-    activate_user
+    activate_user, resend_activation_link
 )
 from django.conf.urls.static import static
 from django.conf import settings
@@ -91,7 +91,8 @@ urlpatterns = [
          name='create_lead_from_site'),
 
     # user activate link
-    path('activate-user/<uidb64>/<token>/', activate_user, name='activate_user'),
+    path('activate-user/<uidb64>/<token>/<activation_key>/', activate_user, name='activate_user'),
+    path('resend_activation_link/<userId>/', resend_activation_link, name='resend_activation_link'),
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

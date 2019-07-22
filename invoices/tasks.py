@@ -11,8 +11,9 @@ from invoices.models import Invoice
 @task
 def send_email(invoice_id, domain='demo.django-crm.io', protocol='http'):
     invoice = Invoice.objects.filter(id=invoice_id).first()
+    created_by = invoice.created_by
     if invoice:
-        subject = 'Invoice : {0}'.format(invoice.invoice_title)
+        subject = 'Shared an invoice with you.'
         context = {}
         context['invoice_title'] = invoice.invoice_title
         context['invoice_id'] = invoice_id

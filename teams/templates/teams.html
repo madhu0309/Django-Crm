@@ -169,7 +169,7 @@
                           None
                           {% endif %}
                         </td>
-                        <td title="{{ team.created_on|date:'d-m-Y' }}">{{ team.created_on_arrow }}</td>
+                        <td title="{{ team.created_on }}">{{ team.created_on_arrow }}</td>
                         <td class="actions">
                           {% if request.user == team.created_by or request.user.role == 'ADMIN' or reques.user.is_superuser %}
                           <a href="{% url 'teams:team_detail' team.id %}" class="btn btn-info edit"><i

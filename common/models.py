@@ -1,5 +1,6 @@
 import arrow
 import binascii
+import datetime
 import os
 import time
 from django.db import models
@@ -14,6 +15,7 @@ from common.templatetags.common_tags import (
 )
 from common.utils import COUNTRIES, ROLES
 from phonenumber_field.modelfields import PhoneNumberField
+from django.utils import timezone
 
 
 def img_url(self, filename):
@@ -337,3 +339,16 @@ class Google(models.Model):
 
     def __str__(self):
         return self.email
+
+
+class Profile(models.Model):
+    """ this model is used for activating the user within a particular expiration time """
+    user = models.OneToOneField(User, related_name='profile',
+                                on_delete=models.CASCADE)  # 1 to 1 link with Django User
+    activation_key = models.CharField(max_length=50)
+    key_expires = models.DateTimeField()
+
+    def save(self, *args, **kwargs):
+        """ by default the expiration time is set to 2 hours """
+        self.key_expires = timezone.now() + datetime.timedelta(hours=2)
+        super(Profile, self).save(*args, **kwargs)

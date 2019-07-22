@@ -23,7 +23,8 @@ def send_email_to_assigned_user(recipients, opportunity_id, domain='demo.django-
                 reverse('opportunity:opp_view', args=(opportunity.id,))
             context["user"] = user
             context["opportunity"] = opportunity
-            subject = 'Assigned to opportunity.'
+            context["created_by"] = created_by
+            subject = 'Assigned an opportunity for you.'
             html_content = render_to_string(
                 'assigned_to/opportunity_assigned.html', context=context)
 
