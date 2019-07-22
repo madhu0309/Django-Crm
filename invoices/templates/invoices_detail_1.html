@@ -37,12 +37,12 @@
                 <h5>
                   <span class="float-left title">Overview</span>
                   <span style="margin-top: 0px">
-                    <div class="dropdown buttons_row">
+                    <div class="dropdown buttons_row" style="width:auto; display:inline-block; left:0">
                       <a href="{% url 'invoices:invoice_download' invoice.id %}" id="download_btn_" class="btn btn-info"
                         style="padding: 0.12em 0.6em;border-radius: 0;">Download</a>
                       <button class="btn primary_btn dropdown-toggle" type="button" data-toggle="dropdown">Actions
                         <span class="caret"></span></button>
-                      <ul class="dropdown-menu">
+                      <ul class="dropdown-menu" style="width:fit-content; min-width:5.5em;">
                         <li><a href="{% url 'invoices:invoice_edit' invoice.id %}">Edit</a></li>
                       </ul>
                     </div>
@@ -62,15 +62,6 @@
                       </div>
                     </div>
                     {% endif %}
-                    {% if invoice.invoice_number %}
-                    <div class="form-group row">
-                      <label for="inputPassword" class="col-sm-4 col-form-label">Invoice
-                        Number </label>
-                      <div class="col-sm-8 pl-0 col-form-label">
-                        {{ invoice.invoice_number }}
-                      </div>
-                    </div>
-                    {% endif %}
                   </div>
                   <div class="col-md-6">
                     {% if invoice.status %}
@@ -83,6 +74,17 @@
                     {% endif %}
 
                   </div>
+                  {% if invoice.invoice_number %}
+                  <div class="col-12">
+                  <div class="form-group row">
+                    <label for="inputPassword" class="col-sm-3 col-form-label" style="margin-right: -3em;">Invoice
+                      Number </label>
+                    <div class="col-sm-9 pl-0 col-form-label">
+                      {{ invoice.invoice_number }}
+                    </div>
+                  </div>
+                </div>
+                  {% endif %}
                   <!-- <div class="col-md-6">
                       <div class="form-group row">
                         <label for="id_contacts" class="col-sm-4 col-form-label">Status{% if form.status.field.required %}<span
@@ -105,48 +107,47 @@
                   <!-- </div> -->
                   <div class="col-md-12">
                     <div class="row">
+                      {% if invoice.from_address.address_line or invoice.from_address.street or invoice.from_address.city or invoice.from_address.state or invoice.from_address.postcode or invoice.from_address.country %}
                       <div class="form-group mt-5 col-md-6">
                         <!-- <label for="exampleFormControlTextarea1">From Address</label>
                           <textarea class="form-control" id="exampleFormControlTextarea1"
                             placeholder="Micropyramid Informatics, 6th Floor, Krish saphire Building, Madhapur"
                             rows="6"></textarea> -->
                         <div class="form-group">
-                          {% if invoice.from_address.address_line or invoice.from_address.street or invoice.from_address.city or invoice.from_address.state or invoice.from_address.postcode or invoice.from_address.country %}
                           <label for="exampleInputEmail1">From Address</label>
                           <div>
                             {{invoice.from_address.get_complete_address}}
                           </div>
-                          {% endif %}
                         </div>
                         <br>
                       </div>
+                      {% endif %}
+                      {% if invoice.to_address.address_line or invoice.to_address.street or invoice.to_address.city or invoice.to_address.state or invoice.to_address.postcode or invoice.to_address.country %}
                       <div class="form-group mt-5 col-md-6">
                         <!-- <label for="exampleFormControlTextarea1">To Address</label>
                           <textarea class="form-control" id="exampleFormControlTextarea1" rows="6"
                             placeholder="Micropyramid Informatics, 6th Floor, Krish saphire Building, Madhapur"></textarea> -->
                         <div class="form-group">
-                          {% if invoice.to_address.address_line or invoice.to_address.street or invoice.to_address.city or invoice.to_address.state or invoice.to_address.postcode or invoice.to_address.country %}
                           <label for="exampleInputEmail1">From Address</label>
                           <div>
                             {{invoice.to_address.get_complete_address}}
                           </div>
-                          {% endif %}
                         </div>
                         <br>
                       </div>
+                      {% endif %}
                     </div>
                   </div>
-                  <div class="col-md-6 mt-5">
+                  <div class="col-md-6">
+                    {% if invoice.name %}
                     <div class="form-group row">
-                      {% if invoice.name %}
                       <label for="staticEmail" class="col-sm-4 col-form-label">Name
                       </label>
                       <div class="col-sm-8 pl-0 col-form-label">
                         {{ invoice.name }}
-                        <span class="error" id="id__name">{{ form.name.errors }}</span>
                       </div>
-                      {% endif %}
                     </div>
+                    {% endif %}
                     <div class="form-group row">
                       {% if invoice.email %}
                       <label for="staticEmail" class="col-sm-4 col-form-label">Email</label>
@@ -164,7 +165,7 @@
                       {% endif %}
                     </div>
                   </div>
-                  <div class="col-md-6 mt-5">
+                  <div class="col-md-6">
                     <div class="form-group row">
                       {% if invoice.currency %}
                       <label for="inputState" class="col-sm-4">Currency{% if form.currency.field.required %}<span
@@ -197,29 +198,29 @@
                       {% endif %}
                     </div>
                   </div>
-                  <div class="col-md-12 mt-5">
+                  <div class="col-md-12 ">
                     <div class="row pt-0 pb-4">
+                      {% if invoice.quantity %}
                       <div class="form-group col-md-4">
-                        {% if invoice.quantity %}
                         <label for="inputCity">Quality Hours</label>
                         {{ invoice.quantity }}
-                        {% endif %}
                       </div>
+                      {% endif %}
+                      {% if invoice.rate %}
                       <div class="form-group col-md-4">
-                        {% if invoice.rate %}
                         <label for="inputCity">Rate</label>
                         {{ invoice.rate }}
-                        {% endif %}
                       </div>
+                      {% endif %}
+                      {% if invoice.total_amount %}
                       <div class="form-group col-md-4">
-                        {% if invoice.total_amount %}
                         <label for="inputCity">Total Amount</label>
                         {{ invoice.total_amount }}
-                        {% endif %}
                       </div>
+                      {% endif %}
                     </div>
                   </div>
-                  <div class="col-md-12 mt-1">
+                  <div class="col-md-12">
                     <div class="form-group">
                       {% if invoice.details %}
                       <label for="inputZip">Details</label>

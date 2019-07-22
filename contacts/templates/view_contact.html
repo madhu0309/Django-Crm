@@ -30,10 +30,10 @@
             <h5>
               <span class="float-left title">Overview</span>
               <span class="" style="margin-top: 0px">
-                <div class="dropdown buttons_row">
+                <div class="dropdown buttons_row" style="width:auto; display:inline-block; left:0">
                   <button class="btn primary_btn dropdown-toggle" type="button" data-toggle="dropdown">Actions
                     <span class="caret"></span></button>
-                  <ul class="dropdown-menu">
+                  <ul class="dropdown-menu" style="width:fit-content; min-width:-webkit-fill-available;">
                     <li><a href="{% url 'contacts:edit_contact' contact_record.id %}">Edit</a></li>
                   </ul>
                 </div>
@@ -265,11 +265,11 @@
                     <tbody>
                       {% for task in tasks %}
                       <tr id="task_{{task.id}}" class="text-center">
-                        <td scope="row">{{ forloop.counter }}</td>
-                        <td>{{task.title}}</td>
-                        <td>{{task.status}}</td>
-                        <td>{{task.priority}} {% if task.probability %} % {% endif %}</td>
-                        <td class="actions">
+                        <td class="text-center" scope="row">{{ forloop.counter }}</td>
+                        <td class="text-center">{{task.title}}</td>
+                        <td class="text-center">{{task.status}}</td>
+                        <td class="text-center">{{task.priority}} {% if task.probability %} % {% endif %}</td>
+                        <td class="actions text-center">
                           <a href="{% url 'tasks:task_detail' task.id %}" class="btn btn-primary"
                             style="color: white;">View</a>
                           <a href="{% url 'tasks:task_edit' task.id %}?view_account={{account_record.id}}"

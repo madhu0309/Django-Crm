@@ -31,10 +31,10 @@
             <h5>
               <span class="float-left title">Overview</span>
               <span style="margin-top: 0px">
-                <div class="dropdown buttons_row">
+                <div class="dropdown buttons_row" style="width:auto; display:inline-block; left:0">
                   <button class="btn primary_btn dropdown-toggle" type="button" data-toggle="dropdown">Actions
                     <span class="caret"></span></button>
-                  <ul class="dropdown-menu">
+                  <ul class="dropdown-menu" style="width:fit-content; min-width:-webkit-fill-available;">
                     <li><a href="{% url 'accounts:edit_account' account_record.id %}">Edit</a></li>
                   </ul>
                 </div>
@@ -328,11 +328,11 @@
                     <tbody>
                       {% for contact in contacts %}
                       <tr id="contacts_details{{contact.id}}" class="text-center">
-                        <td scope="row">{{ forloop.counter }}</td>
-                        <td>{{ contact.first_name }} {{ contact.last_name }}</td>
-                        <td>{{ contact.phone }}</td>
-                        <td>{{ contact.email }}</td>
-                        <td class="actions">
+                        <td class="text-center" scope="row">{{ forloop.counter }}</td>
+                        <td class="text-center">{{ contact.first_name }} {{ contact.last_name }}</td>
+                        <td class="text-center">{{ contact.phone }}</td>
+                        <td class="text-center">{{ contact.email }}</td>
+                        <td class="actions text-center" >
                           <a href="{% url 'contacts:view_contact' pk=contact.id %}" class="btn btn-primary"
                             style="color: white;">View</a>
                           <a href="{% url 'contacts:edit_contact' pk=contact.id %}?view_account={{account_record.id}}"
@@ -380,11 +380,11 @@
                     <tbody>
                       {% for opportunity in opportunity_list %}
                       <tr id="opp_details{{opportunity.id}}" class="text-center">
-                        <td scope="row">{{ forloop.counter }}</td>
-                        <td>{{opportunity.name}}</td>
-                        <td>{{opportunity.stage}}</td>
-                        <td>{{opportunity.probability}} {% if opportunity.probability %} % {% endif %}</td>
-                        <td class="actions">
+                        <td scope="row" class="text-center">{{ forloop.counter }}</td>
+                        <td class="text-center">{{opportunity.name}}</td>
+                        <td class="text-center">{{opportunity.stage}}</td>
+                        <td class="text-center">{{opportunity.probability}} {% if opportunity.probability %} % {% endif %}</td>
+                        <td class="actions text-center">
                           <a href="{% url 'opportunities:opp_view' pk=opportunity.id %}" class="btn btn-primary"
                             style="color: white;">View</a>
                           <a href="{% url 'opportunities:opp_edit' pk=opportunity.id %}?view_account={{account_record.id}}"
@@ -432,12 +432,12 @@
                     <tbody>
                       {% for case in cases %}
                       <tr id="cases_details{{case.id}}" class="text-center">
-                        <td scope="row">{{ forloop.counter }}</td>
-                        <td>{{ case.name }}</td>
-                        <td>{{ case.status }}</td>
-                        <td>{{ case.priority }}</td>
-                        <td class="actions">
-                          <a href="{% url 'cases:view_case' pk=case.id %}" class="btn btn-primary"
+                        <td scope="row" class="text-center">{{ forloop.counter }}</td>
+                        <td class="text-center">{{ case.name }}</td>
+                        <td class="text-center">{{ case.status }}</td>
+                        <td class="text-center">{{ case.priority }}</td>
+                        <td class="actions text-center">
+                          <a href="{% url 'cases:view_case' pk=case.id %}" class="text-center btn btn-primary"
                             style="color: white;">View</a>
                           <a href="{% url 'cases:edit_case' pk=case.id %}?view_account={{account_record.id}}"
                             class="btn btn-success">Edit</a>
@@ -484,11 +484,11 @@
                     <tbody>
                       {% for task in tasks %}
                       <tr id="task_{{task.id}}" class="text-center">
-                        <td scope="row">{{ forloop.counter }}</td>
-                        <td>{{task.title}}</td>
-                        <td>{{task.status}}</td>
-                        <td>{{task.priority}} {% if task.probability %} % {% endif %}</td>
-                        <td class="actions">
+                        <td class="text-center" scope="row">{{ forloop.counter }}</td>
+                        <td class="text-center">{{task.title}}</td>
+                        <td class="text-center">{{task.status}}</td>
+                        <td class="text-center">{{task.priority}} {% if task.probability %} % {% endif %}</td>
+                        <td class="actions text-center">
                           <a href="{% url 'tasks:task_detail' task.id %}" class="btn btn-primary"
                             style="color: white;">View</a>
                           <a href="{% url 'tasks:task_edit' task.id %}?view_account={{account_record.id}}"

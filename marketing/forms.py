@@ -224,12 +224,12 @@ class ContactForm(forms.ModelForm):
         fields = ["name", "email", "contact_number",
                   "last_name", "city", "state", "company_name"]
 
-    # def clean_email(self):
-    #     email = self.cleaned_data.get('email')
-    #     if Contact.objects.filter(email=email).exclude(id=self.instance.id).exists():
-    #         raise forms.ValidationError(
-    #             'Contact with this Email already exists')
-    #     return email
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if Contact.objects.filter(email=email).exclude(id=self.instance.id).exists():
+            raise forms.ValidationError(
+                'Contact with this Email already exists')
+        return email
 
     # def clean_contact_list(self):
     #     contact_list = self.cleaned_data.get("contact_list")

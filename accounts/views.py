@@ -213,7 +213,8 @@ class AccountDetailView(SalesAccessRequiredMixin, LoginRequiredMixin, DetailView
         context = super(AccountDetailView, self).get_context_data(**kwargs)
         account_record = context["account_record"]
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
-            if self.request.user != account_record.created_by:
+            if not ((self.request.user == account_record.created_by) or
+                (self.request.user in account_record.assigned_to.all())):
                 raise PermissionDenied
 
         comment_permission = True if (

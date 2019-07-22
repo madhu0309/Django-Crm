@@ -573,6 +573,9 @@ def campaign_new(request):
             # contacts = Contact.objects.filter(contact_list__in=json.loads(request.POST['contact_list'])).distinct()
             # for each_contact in contacts:
             #     instance.contacts.add(each_contact)
+            instance.original_contact_count = instance.contact_lists.exclude(
+                contacts__email=None).values_list('contacts__email').count()
+            instance.save()
             tags = request.POST['tags'].split(
                 ',') if request.POST['tags'] else []
             for each in tags:
@@ -912,8 +915,8 @@ def download_contacts_for_campaign(request, compaign_id):
         raise PermissionDenied
     if request.method == 'GET':
         if request.GET.get('is_bounced') == 'true':
-            contact_ids = campaign_obj.contact_lists.filter(contacts__is_bounced=True).values_list(
-                'contacts__id', flat=True)
+            contact_ids = campaign_obj.campaign_log_contacts.filter(contact__is_bounced=True).values_list(
+                'contact__id', flat=True)
             contacts = Contact.objects.filter(id__in=contact_ids).values(
                 'company_name', 'email', 'name', 'last_name', 'city', 'state')
 
@@ -921,8 +924,8 @@ def download_contacts_for_campaign(request, compaign_id):
 
             # unsubscribe_contacts_ids = ContactUnsubscribedCampaign.objects.filter(
             #     campaigns=campaign_obj, is_unsubscribed=True).values_list('contacts_id', flat=True)
-            contact_ids = campaign_obj.contact_lists.filter(contacts__is_unsubscribed=True).values_list(
-                'contacts__id', flat=True)
+            contact_ids = campaign_obj.campaign_log_contacts.filter(contact__is_unsubscribed=True).values_list(
+                'contact__id', flat=True)
             contacts = Contact.objects.filter(id__in=contact_ids).values(
                 'company_name', 'email', 'name', 'last_name', 'city', 'state')
 

@@ -72,7 +72,7 @@ class TaskForm(forms.ModelForm):
 
 
 class TaskCommentForm(forms.ModelForm):
-    comment = forms.CharField(max_length=64, required=True)
+    comment = forms.CharField(max_length=255, required=True)
 
     class Meta:
         model = Comment

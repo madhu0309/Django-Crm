@@ -33,8 +33,7 @@ def invoices_list(request):
     elif request.user.google.all():
         users = User.objects.none()
     elif request.user.role == 'USER':
-        users = User.objects.filter(role='ADMIN')
-
+        users = User.objects.filter(Q(role='ADMIN') | Q(id=request.user.id))
     status = (
         ('Draft', 'Draft'),
         ('Sent', 'Sent'),
