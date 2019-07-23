@@ -239,7 +239,7 @@ class OpportunityDetailView(SalesAccessRequiredMixin, LoginRequiredMixin, Detail
         comments = context["opportunity_record"].opportunity_comments.all()
 
         if self.request.user.is_superuser or self.request.user.role == 'ADMIN':
-            users_mention = list(User.objects.all().values('username'))
+            users_mention = list(User.objects.filter(is_active=True).values('username'))
         elif self.request.user != context['object'].created_by:
             users_mention = [{'username': context['object'].created_by.username}]
         else:

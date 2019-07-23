@@ -42,8 +42,10 @@
                         style="padding: 0.12em 0.6em;border-radius: 0;">Download</a>
                       <button class="btn primary_btn dropdown-toggle" type="button" data-toggle="dropdown">Actions
                         <span class="caret"></span></button>
-                      <ul class="dropdown-menu" style="width:fit-content; min-width:5.5em;">
-                        <li><a href="{% url 'invoices:invoice_edit' invoice.id %}">Edit</a></li>
+                      <ul class="dropdown-menu" style="width:fit-content; min-width:5.5em; margin-top: 0;">
+                        <li><a href="{% url 'invoices:invoice_edit' invoice.id %}"
+                          style="background:#17a2b8; color: white; font-weight: 600;"
+                          >Edit</a></li>
                       </ul>
                     </div>
                   </span>

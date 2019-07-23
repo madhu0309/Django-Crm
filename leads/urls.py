@@ -3,7 +3,8 @@ from leads.views import (
     LeadListView, create_lead, LeadDetailView,
     update_lead, DeleteLeadView, convert_lead,
     GetLeadsView, AddCommentView, UpdateCommentView, DeleteCommentView,
-    AddAttachmentsView, DeleteAttachmentsView, create_lead_from_site
+    AddAttachmentsView, DeleteAttachmentsView, create_lead_from_site,
+    update_lead_tags, remove_lead_tag
 )
 
 
@@ -32,4 +33,6 @@ urlpatterns = [
          AddAttachmentsView.as_view(), name="add_attachment"),
     path('attachment/remove/', DeleteAttachmentsView.as_view(),
          name="remove_attachment"),
+    path('update_lead_tags/<pk>/', update_lead_tags, name="update_lead_tags"),
+    path('remove_lead_tag/', remove_lead_tag, name="remove_lead_tag"),
 ]

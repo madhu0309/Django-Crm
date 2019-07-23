@@ -222,7 +222,7 @@ class ContactDetailView(SalesAccessRequiredMixin, LoginRequiredMixin, DetailView
             assigned_data.append(assigned_dict)
 
         if self.request.user.is_superuser or self.request.user.role == 'ADMIN':
-            users_mention = list(User.objects.all().values('username'))
+            users_mention = list(User.objects.filter(is_active=True).values('username'))
         elif self.request.user != context['object'].created_by:
             users_mention = [{'username': context['object'].created_by.username}]
         else:

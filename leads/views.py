@@ -278,7 +278,7 @@ class LeadDetailView(SalesAccessRequiredMixin, LoginRequiredMixin, DetailView):
             assigned_data.append(assigned_dict)
 
         if self.request.user.is_superuser or self.request.user.role == 'ADMIN':
-            users_mention = list(User.objects.all().values('username'))
+            users_mention = list(User.objects.filter(is_active=True).values('username'))
         elif self.request.user != context['object'].created_by:
             users_mention = [{'username': context['object'].created_by.username}]
         else:
@@ -739,3 +739,40 @@ def create_lead_from_site(request):
     return JsonResponse({
         'error': True, 'message': "In-valid request method."},
         status=status.HTTP_400_BAD_REQUEST)
+
+
+@login_required
+@sales_access_required
+def update_lead_tags(request, pk):
+    lead = get_object_or_404(Lead, pk=pk)
+    if request.user == lead.created_by or request.user.role == 'ADMIN' or request.user.is_superuser:
+        lead.tags.clear()
+        if request.POST.get('tags', ''):
+            tags = request.POST.get("tags")
+            splitted_tags = tags.split(",")
+            for t in splitted_tags:
+                tag = Tags.objects.filter(name=t)
+                if tag:
+                    tag = tag[0]
+                else:
+                    tag = Tags.objects.create(name=t)
+                lead.tags.add(tag)
+    else:
+        raise PermissionDenied
+    return HttpResponseRedirect(request.POST.get('full_path'))
+
+
+@login_required
+@sales_access_required
+def remove_lead_tag(request):
+    # import pdb; pdb.set_trace()
+    data = {}
+    lead_id = request.POST.get('lead')
+    tag_id = request.POST.get('tag')
+    lead = get_object_or_404(Lead, pk=lead_id)
+    if request.user == lead.created_by or request.user.role == 'ADMIN' or request.user.is_superuser:
+        lead.tags.remove(tag_id)
+        data = {'data':'Tag Removed'}
+    else:
+        data = {'error': "You don't have permission to delete this tag."}
+    return JsonResponse(data)

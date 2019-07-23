@@ -52,6 +52,8 @@ def invoices_list(request):
         context['invoices'] = invoices.order_by('id')
         context['status'] = status
         context['users'] = users
+        user_ids = invoices.values_list('created_by', flat=True)
+        context['created_by_users'] = users.filter(is_active=True, id__in=user_ids)
         return render(request, 'invoices_list.html', context)
 
     if request.method == 'POST':
@@ -86,6 +88,8 @@ def invoices_list(request):
             invoices = invoices.filter(
                 total_amount=request.POST.get('total_amount'))
 
+        user_ids = invoices.values_list('created_by', flat=True)
+        context['created_by_users'] = users.filter(is_active=True, id__in=user_ids)
         context['invoices'] = invoices.distinct().order_by('id')
         return render(request, 'invoices_list.html', context)
 
@@ -153,7 +157,7 @@ def invoice_details(request, invoice_id):
         context['comments'] = invoice.invoice_comments.all()
         if request.user.is_superuser or request.user.role == 'ADMIN':
             context['users_mention'] = list(
-                User.objects.all().values('username'))
+                User.objects.filter(is_active=True).values('username'))
         elif request.user != invoice.created_by:
             context['users_mention'] = [
                 {'username': invoice.created_by.username}]

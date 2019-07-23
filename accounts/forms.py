@@ -66,6 +66,7 @@ class AccountForm(forms.ModelForm):
         # lead is not mandatory while editing
         if self.instance.id:
             self.fields['lead'].required = False
+        self.fields['lead'].required = False
 
     class Meta:
         model = Account
