@@ -34,10 +34,11 @@
                 <div class="dropdown buttons_row" style="width:auto; display:inline-block; left:0">
                   <button class="btn primary_btn dropdown-toggle" type="button" data-toggle="dropdown">Actions
                     <span class="caret"></span></button>
-                  <ul class="dropdown-menu" style="width:fit-content; min-width:-webkit-fill-available;">
-                    <li><a href="{% url 'leads:edit_lead' lead_record.id %}">Edit</a></li>
+                  <ul class="dropdown-menu" style="width:fit-content; min-width:-webkit-fill-available; margin-top: 0;">
+                    <li><a href="{% url 'leads:edit_lead' lead_record.id %}"
+                      style="background:#17a2b8; color: white; font-weight: 600;">Edit</a></li>
                     <li><a href="{% url 'leads:leads_convert' lead_record.id %}" class=""
-                        role="button">Convert</a></li>
+                        role="button" style="background:#17a2b8; color: white; font-weight: 600;">Convert</a></li>
                     <!-- <li><a href="{% url 'leads:leads_convert' lead_record.id %}" class="btn btn-info"
                         role="button">Convert</a></li> -->
                   </ul>

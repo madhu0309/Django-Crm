@@ -43,7 +43,7 @@
                     <select name="created_by" id="created_by" class="assigned_users_ form-control">
                       <option value="">
                         ------------------</option>
-                      {% for user in users %}
+                      {% for user in created_by_users %}
                       <option value="{{user.id}}" {% if user.id|slugify == request.POST.created_by %} selected=""
                         {% endif %}>
                         {{user.email}}</option>
@@ -184,7 +184,7 @@
                         <td>{{ event.start_date }} </td>
                         <td>{{ event.date_of_meeting }} </td>
                         <td>{{ event.end_date }} </td>
-                        <td title="{{ event.created_on|date:'d-m-Y' }}">{{ event.created_on_arrow }}</td>
+                        <td title="{{ event.created_on }}">{{ event.created_on_arrow }}</td>
                         <td>
                           {% if event.created_by %}
                           {% if event.created_by.profile_pic %}

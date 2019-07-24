@@ -114,7 +114,7 @@ def task_detail(request, task_id):
         attachments = task.tasks_attachment.all()
         comments = task.tasks_comments.all()
         if request.user.is_superuser or request.user.role == 'ADMIN':
-            users_mention = list(User.objects.all().values('username'))
+            users_mention = list(User.objects.filter(is_active=True).values('username'))
         elif request.user != task.created_by:
             users_mention = [{'username': task.created_by.username}]
         else:

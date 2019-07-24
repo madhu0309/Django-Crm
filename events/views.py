@@ -41,6 +41,8 @@ def events_list(request):
         context['events'] = events.order_by('id')
         # context['status'] = status
         context['users'] = users
+        user_ids = events.values_list('created_by', flat=True)
+        context['created_by_users'] = users.filter(is_active=True, id__in=user_ids)
         return render(request, 'events_list.html', context)
 
     if request.method == 'POST':
@@ -72,6 +74,8 @@ def events_list(request):
                 date_of_meeting=request.POST.get('date_of_meeting'))
 
         context['events'] = events.distinct().order_by('id')
+        user_ids = events.values_list('created_by', flat=True)
+        context['created_by_users'] = users.filter(is_active=True, id__in=user_ids)
         return render(request, 'events_list.html', context)
 
 
@@ -155,7 +159,7 @@ def event_detail_view(request, event_id):
         context['comments'] = event.events_comments.all()
         if request.user.is_superuser or request.user.role == 'ADMIN':
             context['users_mention'] = list(
-                User.objects.all().values('username'))
+                User.objects.filter(is_active=True).values('username'))
         elif request.user != event.created_by:
             context['users_mention'] = [
                 {'username': event.created_by.username}]
