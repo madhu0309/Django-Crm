@@ -18,7 +18,7 @@ from common.tasks import send_email_user_mentions
 from invoices.forms import (InvoiceAddressForm, InvoiceAttachmentForm,
                             InvoiceCommentForm, InvoiceForm)
 from invoices.models import Invoice
-from invoices.tasks import send_email, send_invoice_email, send_invoice_email_cancel
+from invoices.tasks import send_email, send_invoice_email, send_invoice_email_cancel, create_invoice_history
 from common.access_decorators_mixins import (
     sales_access_required, marketing_access_required, SalesAccessRequiredMixin, MarketingAccessRequiredMixin)
 from teams.models import Teams
@@ -155,6 +155,7 @@ def invoice_details(request, invoice_id):
         context['invoice'] = invoice
         context['attachments'] = invoice.invoice_attachment.all()
         context['comments'] = invoice.invoice_comments.all()
+        context['invoice_history'] = invoice.invoice_history.all()
         if request.user.is_superuser or request.user.role == 'ADMIN':
             context['users_mention'] = list(
                 User.objects.filter(is_active=True).values('username'))
@@ -194,6 +195,13 @@ def invoice_edit(request, invoice_id):
         to_address_form = InvoiceAddressForm(
             request.POST, instance=invoice_obj.to_address, prefix='to')
         if form.is_valid() and from_address_form.is_valid() and to_address_form.is_valid():
+            form_changed_data = form.changed_data
+            form_changed_data.remove('from_address')
+            form_changed_data.remove('to_address')
+            form_changed_data = form_changed_data + ['from_' + field for field in from_address_form.changed_data]
+            form_changed_data = form_changed_data + ['to_' + field for field in to_address_form.changed_data]
+            if form_changed_data:
+                create_invoice_history(invoice_obj.id, request.user.id, form_changed_data)
             from_address_obj = from_address_form.save()
             to_address_obj = to_address_form.save()
             invoice_obj = form.save(commit=False)
@@ -212,6 +220,7 @@ def invoice_edit(request, invoice_id):
 
             kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
             send_email.delay(invoice_obj.id, **kwargs)
+
             return JsonResponse({'error': False, 'success_url': reverse('invoices:invoices_list')})
         else:
             return JsonResponse({'error': True, 'errors': form.errors,

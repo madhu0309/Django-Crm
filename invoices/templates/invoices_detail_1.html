@@ -1,5 +1,6 @@
 {% extends 'sales/base.html' %}
 {% load staticfiles %}
+{% load paginate %}
 {% load thumbnail %}
 {% block breadcrumb %}
 {% block extralinks %}
@@ -44,8 +45,7 @@
                         <span class="caret"></span></button>
                       <ul class="dropdown-menu" style="width:fit-content; min-width:5.5em; margin-top: 0;">
                         <li><a href="{% url 'invoices:invoice_edit' invoice.id %}"
-                          style="background:#17a2b8; color: white; font-weight: 600;"
-                          >Edit</a></li>
+                            style="background:#17a2b8; color: white; font-weight: 600;">Edit</a></li>
                       </ul>
                     </div>
                   </span>
@@ -78,14 +78,14 @@
                   </div>
                   {% if invoice.invoice_number %}
                   <div class="col-12">
-                  <div class="form-group row">
-                    <label for="inputPassword" class="col-sm-3 col-form-label" style="margin-right: -3em;">Invoice
-                      Number </label>
-                    <div class="col-sm-9 pl-0 col-form-label">
-                      {{ invoice.invoice_number }}
+                    <div class="form-group row">
+                      <label for="inputPassword" class="col-sm-3 col-form-label" style="margin-right: -3em;">Invoice
+                        Number </label>
+                      <div class="col-sm-9 pl-0 col-form-label">
+                        {{ invoice.invoice_number }}
+                      </div>
                     </div>
                   </div>
-                </div>
                   {% endif %}
                   <!-- <div class="col-md-6">
                       <div class="form-group row">
@@ -234,7 +234,7 @@
                   <div class="col-md-12 mt-1">
                     <div class="form-group">
                       Created by <b>{{ invoice.created_by }}</b> on <b
-                  title="{{ invoice.created_on }}">{{ invoice.created_on_arrow }}</b>
+                        title="{{ invoice.created_on }}">{{ invoice.created_on_arrow }}</b>
                     </div>
                   </div>
                 </div>
@@ -285,7 +285,8 @@
                           </div>
                           <div class="stream-container">
                             <pre class="float-left">Uploaded by :{{ attachment.created_by }}</pre>
-                            <pre class="float-right date" title="{{ attachment.created_on|date:'m/d/Y,  h:i A' }}">{{ attachment.created_on_arrow }}</pre>
+                            <pre class="float-right date"
+                              title="{{ attachment.created_on|date:'m/d/Y,  h:i A' }}">{{ attachment.created_on_arrow }}</pre>
                           </div>
                         </li>
                         {% endfor %}
@@ -339,7 +340,8 @@
                           </div>
                           <div class="stream-container">
                             <pre class="float-left">{{ comment.commented_by }}</pre>
-                            <pre class="float-right date" title="{{ comment.commented_on|date:'m/d/Y,  h:i:s A' }}">{{ comment.commented_on_arrow }}</pre>
+                            <pre class="float-right date"
+                              title="{{ comment.commented_on|date:'m/d/Y,  h:i:s A' }}">{{ comment.commented_on_arrow }}</pre>
                           </div>
                         </li>
                         {% endfor %}
@@ -374,6 +376,60 @@
                   </div>
                 </div>
                 <!-- Comments Section Ends-->
+                <div class="table_container_row row marl no-gutters">
+                  <div class="col-md-12">
+                    <div class="card">
+                      <div class="card-body">
+                        <div class="panel-heading-list card-title view-pad">
+                          Invoice History
+                        </div>
+                        <div class="table-responsive">
+                          <table class="table table-bordered table-striped table-condensed">
+                            {% if invoice_history|length > 0 %}
+                            <thead>
+                              <tr>
+                                <th width="5%" style="text-align:center;">S.No</th>
+                                <th width="20%" style="text-align:center;">Date</th>
+                                <th width="20%" style="text-align:center;">Invoice Number</th>
+                                <th width="20%" style="text-align:center;">Name</th>
+                                <th width="10%" style="text-align:center;">Status </th>
+                                <th width="40%" style="text-align:center;">Description </th>
+                                <th width="25%" style="text-align:center;">Amount </th>
+                              </tr>
+                            </thead>
+                            {% endif %}
+                            <tbody>
+                              {% if per_page %}
+                              {% paginate per_page invoice_history %}
+                              {% else%}
+                              {% paginate 10 invoice_history %}
+                              {% endif %}
+                              {% for invoice in invoice_history %}
+                              <tr id="opp_details{{opportunity.id}}" class="text-center">
+                                <td scope="row" class="text-center">{{ forloop.counter }}</td>
+                                <td scope="row" class="text-center" title="{{invoice.created_on}}">
+                                  {{ invoice.created_on_arrow }}</td>
+                                <td scope="row" class="text-center">{{ invoice.invoice_number }}</td>
+                                <td scope="row" class="text-center">{{ invoice.name }}</td>
+                                <td scope="row" class="text-center">{{ invoice.status }}</td>
+                                <td scope="row" class="text-center">{{ invoice.details }}</td>
+                                <td scope="row" class="text-center">{{ invoice.total_amount }}</td>
+                              </tr>
+                              {% endfor %}
+                            </tbody>
+                          </table>
+                          <div class="text-center row marl mt-5">
+                            {% show_pages %}
+                          </div>
+                        </div>
+                        {% ifequal invoice_history|length 0 %}
+                        <h6 class="text-center">No Invoice History Records Found</h6>
+                        {% endifequal %}
+                      </div>
+                    </div>
+                    <br clear="all">
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -517,7 +573,7 @@
               "<div class='stream-post-container' id='attachment_name" + data.attachment_id + "'>" +
               `${(data.file_type[0]).startsWith('image') ? `<img src=${data.attachment_url} width="80px" height="80px" class="mb-2">` : ''}` +
               "<pre><span class='icon'><i style='font-size:1.5rem;' class='" + data.attachment_display + "'></i>&nbsp;&nbsp;</span>" + data.attachment + "&nbsp; &nbsp;<a href='" + data.download_url + "'>Download</a></pre></div>" +
-              "<div class='stream-container'><pre class='float-left'>" + data.created_by + "</pre><pre class='float-right date' title='" + d.toLocaleString('en-US', { hour12: true }) + "'>" + data.created_on_arrow  + "</pre></div>" +
+              "<div class='stream-container'><pre class='float-left'>" + data.created_by + "</pre><pre class='float-right date' title='" + d.toLocaleString('en-US', { hour12: true }) + "'>" + data.created_on_arrow + "</pre></div>" +
               "</li>"
             )
             $("#AttachmentError").html("")
