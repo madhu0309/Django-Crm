@@ -13,8 +13,9 @@ from tasks.models import Task
 @task
 def send_email(task_id, domain='demo.django-crm.io', protocol='http'):
     task = Task.objects.filter(id=task_id).first()
+    created_by = task.created_by
     if task:
-        subject = 'CRM Task : {0}'.format(task.title)
+        subject = ' Assigned a task for you .'
         context = {}
         context['task_title'] = task.title
         context['task_id'] = task.id

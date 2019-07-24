@@ -44,7 +44,7 @@
                     <select name="created_by" id="created_by" class="assigned_users_ form-control">
                       <option value="">
                         ------------------</option>
-                      {% for user in users %}
+                      {% for user in created_by_users %}
                       <option value="{{user.id}}" {% if user.id|slugify == request.POST.created_by %} selected=""
                         {% endif %}>
                         {{user.email}}</option>
@@ -188,7 +188,7 @@
                           None
                           {% endif %}
                         </td>
-                        <td title="{{ invoice.created_on|date:'d-m-Y' }}">{{ invoice.created_on_arrow }}</td>
+                        <td title="{{ invoice.created_on }}">{{ invoice.created_on_arrow }}</td>
                         <td class="actions">
                           <a href="{% url 'invoices:invoice_edit' invoice.id %}" class="btn btn-success edit"><i
                               class="fas fa-pencil-alt"></i></a>

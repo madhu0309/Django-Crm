@@ -68,6 +68,7 @@ def send_lead_assigned_emails(lead_id, new_assigned_to_list, site_address):
 def send_email_to_assigned_user(recipients, lead_id, domain='demo.django-crm.io', protocol='http'):
     """ Send Mail To Users When they are assigned to a lead """
     lead = Lead.objects.get(id=lead_id)
+    created_by = lead.created_by
     for user in recipients:
         recipients_list = []
         user = User.objects.filter(id=user, is_active=True).first()
@@ -78,7 +79,8 @@ def send_email_to_assigned_user(recipients, lead_id, domain='demo.django-crm.io'
                 reverse('leads:view_lead', args=(lead.id,))
             context["user"] = user
             context["lead"] = lead
-            subject = 'Assigned to lead.'
+            context["created_by"] = created_by
+            subject = 'Assigned a lead for you. '
             html_content = render_to_string(
                 'assigned_to/leads_assigned.html', context=context)
 
