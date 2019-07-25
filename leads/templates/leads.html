@@ -12,6 +12,10 @@
   .add_opacity {
     opacity: 0.2;
   }
+
+  .opacity_block {
+    opacity: 0.2;
+  }
 </style>
 {% endblock %}
 {% block content %}
@@ -27,7 +31,7 @@
     </div>
   </div>
   <!-- heading_create ends here -->
-  <div class="filter_row list_filter_row row marl">
+  <div class="filter_row list_filter_row row marl" id="opacity_block">
     <div class="col-md-12">
       <div class="card">
         <div class="card-body">
@@ -785,14 +789,15 @@
             <div class="form-group">
               <label>Leads File <span class="error">{% if contact_list %}{% else %}*{% endif %}</span>
               </label>
-              <input type="file" class="form-control" name="leads_file" accept=".csv">
+              <input type="file" class="form-control" name="leads_file" accept=".csv" id="leads_file_input">
               <span id="id_leads_file"></span>
             </div>
           </div>
           <div class="col-md-12">
             <div class="row marl buttons_row text-center form_btn_row">
               <button type="submit" class="btn btn-default save">Save</button>
-              <button type="button" class="btn btn-default clear" data-dismiss="modal" id="close_upload_form">Cancel</button>
+              <button type="button" class="btn btn-default clear" data-dismiss="modal"
+                id="close_upload_form">Cancel</button>
               <!-- <a href="{{request.get_full_path}}" class="btn btn-default clear">Cancel</a> -->
             </div>
           </div>
@@ -804,8 +809,15 @@
         </div>
       </div>
     </div>
+    <div class="overview_form_block row marl justify-content-center" id="loading_spinner"
+      style="z-index: 1000; left: 0; right: 0; vertical-align: middle; position: absolute; margin-top: -16%;">
+      <div class="spinner-border text-primary" style="width: 3em; height: 3em;" role="status" id="spinner_body">
+        <span class="sr-only">Processing File...</span>
+      </div>
+    </div>
   </div>
 </div>
+
 
 {% endblock %}
 {% block js_block %}
@@ -817,12 +829,22 @@
   $(document).ready(function () {
     $('.assigned_users').select2();
     $('#id_tag').select2();
+    $('#loading_spinner').hide()
+    $('#spinner_body').hide()
     $('#tags_1').tagsInput({ width: 'auto' });
     $('.tags_1').tagsInput({ width: 'auto' });
     $(".filter_toggle").click(function () {
       $(".list_filter_row").toggle();
     });
     $('.remove_tag').hide()
+  });
+
+  $("#uploadleadfile").on("hidden.bs.modal", function () {
+    // put your default event here
+    $('#loading_spinner').hide()
+    $('#spinner_body').hide()
+    $('p.failure').remove();
+    $('#leads_file_input').val('');
   });
 
   $(".tag_class_lead_").hover(
@@ -887,6 +909,7 @@
     data: $(this).serialize(),
     beforeSend: function () {
       $('#loading_spinner').show()
+      $('#spinner_body').show()
       $('#cover_screen').addClass('add_opacity')
     },
     success: function (data) {
@@ -900,6 +923,7 @@
         for (var key in data.errors) {
           $('#id_' + key).html('<p class="error failure"> *' + data.errors[key] + '</p>');
           $('#loading_spinner').hide()
+          $('#spinner_body').hide()
           $('#cover_screen').removeClass('add_opacity')
 
         }
