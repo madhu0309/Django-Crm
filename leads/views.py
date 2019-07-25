@@ -5,7 +5,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from django.db.models import Q
 from django.forms.models import modelformset_factory
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -18,13 +18,13 @@ from common.utils import LEAD_STATUS, LEAD_SOURCE, COUNTRIES
 from common import status
 from contacts.models import Contact
 from leads.models import Lead
-from leads.forms import LeadCommentForm, LeadForm, LeadAttachmentForm
+from leads.forms import LeadCommentForm, LeadForm, LeadAttachmentForm, LeadListForm
 from planner.models import Event, Reminder
 from planner.forms import ReminderForm
 from leads.tasks import send_lead_assigned_emails
 from django.core.exceptions import PermissionDenied
 from common.tasks import send_email_user_mentions
-from leads.tasks import send_email_to_assigned_user
+from leads.tasks import send_email_to_assigned_user, create_lead_from_file
 from common.access_decorators_mixins import (
     sales_access_required, marketing_access_required, SalesAccessRequiredMixin, MarketingAccessRequiredMixin)
 from teams.models import Teams
@@ -765,7 +765,6 @@ def update_lead_tags(request, pk):
 @login_required
 @sales_access_required
 def remove_lead_tag(request):
-    # import pdb; pdb.set_trace()
     data = {}
     lead_id = request.POST.get('lead')
     tag_id = request.POST.get('tag')
@@ -776,3 +775,32 @@ def remove_lead_tag(request):
     else:
         data = {'error': "You don't have permission to delete this tag."}
     return JsonResponse(data)
+
+@login_required
+@sales_access_required
+def upload_lead_csv_file(request):
+    if request.method == 'POST':
+        lead_form = LeadListForm(request.POST, request.FILES)
+        if lead_form.is_valid():
+            create_lead_from_file.delay(
+                    lead_form.validated_rows, lead_form.invalid_rows, request.user.id)
+            return JsonResponse({'error': False, 'data': lead_form.data},
+                status=status.HTTP_201_CREATED)
+        else:
+            return JsonResponse({'error': True, 'errors': lead_form.errors},
+                status=status.HTTP_200_OK)
+
+
+def sample_lead_file(request):
+    sample_data = [
+        'title,first name,last name,website,phone,email,address\n',
+        'lead1,john,doe,www.example.com,911234567890,user1@email.com,address for lead1\n',
+        'lead2,jane,doe,www.website.com,911234567891,user2@email.com,address for lead2\n',
+        'lead3,joe,doe,www.test.com,911234567892,user3@email.com,address for lead3\n',
+        'lead4,john,doe,www.sample.com,911234567893,user4@email.com,address for lead4\n',
+    ]
+    response = HttpResponse(
+        sample_data, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename={}'.format(
+        'sample_data.csv')
+    return response

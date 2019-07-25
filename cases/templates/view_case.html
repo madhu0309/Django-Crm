@@ -194,12 +194,12 @@
                     <div class="list-row-buttons btn-group float-right">
                       <button class="btn primary_btn btn-sm dropdown-toggle" data-toggle="dropdown"
                         type="button">Actions <span class="caret"></span></button>
-                      <ul class="dropdown-menu text-center">
+                      <ul class="dropdown-menu text-center" style='width: fit-content; min-width: -webkit-fill-available;'>
                         <li>
-                          <a class="action" onclick="edit_comment({{comment.id}})">Edit</a>
+                          <a style='padding: 0.5em; background: #17a2b8; color:white; font-weight: 600;' class="action" onclick="edit_comment({{comment.id}})">Edit</a>
                         </li>
                         <li>
-                          <a class="action" onclick="remove_comment({{comment.id}})">Remove</a>
+                          <a style='padding: 0.5em; background: #17a2b8; color:white; font-weight: 600;' class="action" onclick="remove_comment({{comment.id}})">Remove</a>
                         </li>
                       </ul>
                     </div>
