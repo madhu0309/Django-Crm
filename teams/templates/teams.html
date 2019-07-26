@@ -43,7 +43,7 @@
                     <select name="created_by" id="created_by" class="assigned_users_ form-control">
                       <option value="">
                         ------------------</option>
-                      {% for user in users %}
+                      {% for user in created_by_users %}
                       <option value="{{user.id}}" {% if user.id|slugify == request.POST.created_by %} selected=""
                         {% endif %}>
                         {{user.email}}</option>

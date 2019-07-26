@@ -27,9 +27,12 @@ def events_list(request):
     if request.user.role == 'ADMIN' or request.user.is_superuser:
         users = User.objects.all()
     elif request.user.google.all():
-        users = User.objects.none()
+        # users = User.objects.none()
+        users = User.objects.filter(Q(role='ADMIN') | Q(id=request.user.id))
     elif request.user.role == 'USER':
-        users = User.objects.filter(role='ADMIN')
+        # users = User.objects.filter(role='ADMIN')
+        users = User.objects.filter(Q(role='ADMIN') | Q(id=request.user.id))
+
 
     if request.method == 'GET':
         context = {}
@@ -41,7 +44,8 @@ def events_list(request):
         context['events'] = events.order_by('id')
         # context['status'] = status
         context['users'] = users
-        user_ids = events.values_list('created_by', flat=True)
+        user_ids = list(events.values_list('created_by', flat=True))
+        user_ids.append(request.user.id)
         context['created_by_users'] = users.filter(is_active=True, id__in=user_ids)
         return render(request, 'events_list.html', context)
 
@@ -74,7 +78,8 @@ def events_list(request):
                 date_of_meeting=request.POST.get('date_of_meeting'))
 
         context['events'] = events.distinct().order_by('id')
-        user_ids = events.values_list('created_by', flat=True)
+        user_ids = list(events.values_list('created_by', flat=True))
+        user_ids.append(request.user.id)
         context['created_by_users'] = users.filter(is_active=True, id__in=user_ids)
         return render(request, 'events_list.html', context)
 
