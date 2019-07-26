@@ -31,7 +31,9 @@ def invoices_list(request):
     if request.user.role == 'ADMIN' or request.user.is_superuser:
         users = User.objects.all()
     elif request.user.google.all():
-        users = User.objects.none()
+        # users = User.objects.none()
+        # users = User.objects.filter(id=request.user.id)
+        users = User.objects.filter(Q(role='ADMIN') | Q(id=request.user.id))
     elif request.user.role == 'USER':
         users = User.objects.filter(Q(role='ADMIN') | Q(id=request.user.id))
     status = (
@@ -52,7 +54,8 @@ def invoices_list(request):
         context['invoices'] = invoices.order_by('id')
         context['status'] = status
         context['users'] = users
-        user_ids = invoices.values_list('created_by', flat=True)
+        user_ids = list(invoices.values_list('created_by', flat=True))
+        user_ids.append(request.user.id)
         context['created_by_users'] = users.filter(is_active=True, id__in=user_ids)
         return render(request, 'invoices_list.html', context)
 
@@ -88,7 +91,8 @@ def invoices_list(request):
             invoices = invoices.filter(
                 total_amount=request.POST.get('total_amount'))
 
-        user_ids = invoices.values_list('created_by', flat=True)
+        user_ids = list(invoices.values_list('created_by', flat=True))
+        user_ids.append(request.user.id)
         context['created_by_users'] = users.filter(is_active=True, id__in=user_ids)
         context['invoices'] = invoices.distinct().order_by('id')
         return render(request, 'invoices_list.html', context)
@@ -210,6 +214,8 @@ def invoice_edit(request, invoice_id):
             invoice_obj.to_address = to_address_obj
             invoice_obj.save()
             form.save_m2m()
+            if form_changed_data:
+                create_invoice_history(invoice_obj.id, request.user.id, form_changed_data)
 
             if request.POST.getlist('teams', []):
                 user_ids = Teams.objects.filter(id__in=request.POST.getlist('teams')).values_list('users', flat=True)

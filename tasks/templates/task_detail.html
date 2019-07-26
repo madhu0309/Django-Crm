@@ -34,9 +34,9 @@
                     <span class="caret"></span></button>
                   <ul class="dropdown-menu" style="width:fit-content; min-width:-webkit-fill-available; margin-top: 0;">
                     <li><a href="{% url 'tasks:task_edit' task.id %}"
-                      style="background:#17a2b8; color: white; font-weight: 600;">Edit</a></li>
+                        style="background:#17a2b8; color: white; font-weight: 600;">Edit</a></li>
                     <li><a href="{% url 'tasks:task_delete' task.id %}"
-                      style="background:#17a2b8; color: white; font-weight: 600;">Delete</a></li>
+                        style="background:#17a2b8; color: white; font-weight: 600;">Delete</a></li>
                   </ul>
                 </div>
               </span>
@@ -166,7 +166,8 @@
                           </div>
                           <div class="stream-container">
                             <pre class="float-left">Uploaded by :{{ attachment.created_by }}</pre>
-                            <pre class="float-right date" title="{{ attachment.created_on|date:'m/d/Y,  h:i A' }}">{{ attachment.created_on_arrow }}</pre>
+                            <pre class="float-right date"
+                              title="{{ attachment.created_on }}">{{ attachment.created_on_arrow }}</pre>
                           </div>
                         </li>
                         {% endfor %}
@@ -204,12 +205,15 @@
                           <div class="list-row-buttons btn-group float-right">
                             <button class="btn primary_btn btn-sm dropdown-toggle" data-toggle="dropdown"
                               type="button">Actions<span class="caret"></span></button>
-                            <ul class="dropdown-menu text-center" style='width: fit-content; min-width: -webkit-fill-available;'>
+                            <ul class="dropdown-menu text-center"
+                              style='width: fit-content; min-width: -webkit-fill-available;'>
                               <li>
-                                <a style='padding: 0.5em; background: #17a2b8; color:white; font-weight: 600;' class="action" onclick="edit_comment({{comment.id}})">Edit</a>
+                                <a style='padding: 0.5em; background: #17a2b8; color:white; font-weight: 600;'
+                                  class="action" onclick="edit_comment({{comment.id}})">Edit</a>
                               </li>
                               <li>
-                                <a style='padding: 0.5em; background: #17a2b8; color:white; font-weight: 600;' class="action" onclick="remove_comment({{comment.id}})">Remove</a>
+                                <a style='padding: 0.5em; background: #17a2b8; color:white; font-weight: 600;'
+                                  class="action" onclick="remove_comment({{comment.id}})">Remove</a>
                               </li>
                             </ul>
                           </div>
@@ -219,7 +223,8 @@
                           </div>
                           <div class="stream-container">
                             <pre class="float-left">{{ comment.commented_by }}</pre>
-                            <pre class="float-right date" title="{{ comment.commented_on|date:'m/d/Y,  h:i:s A' }}">{{ comment.commented_on_arrow }}</pre>
+                            <pre class="float-right date"
+                              title="{{ comment.commented_on }}">{{ comment.commented_on_arrow }}</pre>
                           </div>
                         </li>
                         {% endfor %}
@@ -298,6 +303,14 @@
           $("#CommentError").html(data.error).show()
         } else {
           d = new Date(data.commented_on);
+          let options = {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          };
+          d = d.toLocaleString('en-us', options);
           $("#comments_div").prepend("<li class='list-group-item list-row' id='comment" + data.comment_id + "'>" +
             "<div class='float-right right-container'>" +
             "<div class='list-row-buttons btn-group float-right'>" +
@@ -409,13 +422,21 @@
           $('#opacity_block').removeClass('opacity_block')
         } else {
           d = new Date(data.created_on)
+          let options = {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          };
+          d = d.toLocaleString('en-us', options);
           $("#attachment_div").prepend(
             "<li class='list-group-item list-row' id='attachment" + data.attachment_id + "'>" +
             "<div class='float-right right-container'><div class='list-row-buttons btn-group float-right'><button class='action btn primary_btn' onclick='remove_attachment(" + data.attachment_id + ")''>Remove</button></div></div>" +
             "<div class='stream-post-container' id='attachment_name" + data.attachment_id + "'>" +
             `${(data.file_type[0]).startsWith('image') ? `<img src=${data.attachment_url} width="80px" height="80px" class="mb-2">` : ''}` +
             "<pre><span class='icon'><i style='font-size:1.5rem;' class='" + data.attachment_display + "'></i>&nbsp;&nbsp;</span>" + data.attachment + "&nbsp; &nbsp;<a href='" + data.download_url + "'>Download</a></pre></div>" +
-            "<div class='stream-container'><pre class='float-left'>" + data.created_by + "</pre><pre class='float-right date' title='" + d.toLocaleString('en-US', { hour12: true }) + "'>" + data.created_on_arrow  + "</pre></div>"  +
+            "<div class='stream-container'><pre class='float-left'>" + data.created_by + "</pre><pre class='float-right date' title='" + d.toLocaleString('en-US', { hour12: true }) + "'>" + data.created_on_arrow + "</pre></div>" +
             "</li>"
           )
           $("#AttachmentError").html("")
