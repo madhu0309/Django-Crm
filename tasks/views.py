@@ -93,7 +93,10 @@ def task_create(request):
 
             kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
             send_email.delay(task.id, **kwargs)
-            return JsonResponse({'error': False, 'success_url': reverse('tasks:tasks_list')})
+            success_url = reverse('tasks:tasks_list')
+            if request.POST.get('from_account'):
+                success_url = reverse('accounts:view_account', args=(request.POST.get('from_account'),))
+            return JsonResponse({'error': False, 'success_url': success_url})
         else:
             return JsonResponse({'error': True, 'errors': form.errors})
 
@@ -150,6 +153,7 @@ def task_edit(request, task_id):
                         request_user=request.user)
         if form.is_valid():
             task = form.save(commit=False)
+            task.save()
             form.save_m2m()
             # task.assigned_to.clear()
             # task.contacts.clear()
@@ -163,7 +167,11 @@ def task_edit(request, task_id):
                         task.assigned_to.add(user_id)
             kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
             send_email.delay(task.id, **kwargs)
-            return JsonResponse({'error': False, 'success_url': reverse('tasks:tasks_list')})
+            success_url = reverse('tasks:tasks_list')
+            import pdb; pdb.set_trace()
+            if request.POST.get('from_account'):
+                success_url = reverse('accounts:view_account', args=(request.POST.get('from_account'),))
+            return JsonResponse({'error': False, 'success_url': success_url})
         else:
             return JsonResponse({'error': True, 'errors': form.errors})
 
@@ -178,11 +186,9 @@ def task_delete(request, task_id):
 
     if request.method == 'GET':
         task_obj.delete()
-        if request.GET.get('view_account', None):
-            return redirect(reverse('accounts:view_account', args=(request.GET.get('view_account'))))
 
         if request.GET.get('view_account', None):
-            return redirect(reverse('accounts:view_account', args=(request.GET.get('view_account'))))
+            return redirect(reverse('accounts:view_account', args=(request.GET.get('view_account'),)))
         return redirect('tasks:tasks_list')
 
 

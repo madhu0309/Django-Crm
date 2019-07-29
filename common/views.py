@@ -373,7 +373,7 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
                 self.request.user.is_superuser):
             if self.request.is_ajax():
                 data = {'success_url': reverse_lazy(
-                    'common:users_list'), 'error': False}
+                    'common:view_user', args=(user.id,)), 'error': False}
                 return JsonResponse(data)
         if self.request.is_ajax():
             data = {'success_url': reverse_lazy(
@@ -614,7 +614,8 @@ class DocumentDetailView(SalesAccessRequiredMixin, LoginRequiredMixin, DetailVie
 
 
 def download_document(request, pk):
-    doc_obj = Document.objects.filter(id=pk).last()
+    # doc_obj = Document.objects.filter(id=pk).last()
+    doc_obj = Document.objects.get(id=pk)
     if doc_obj:
         if not request.user.role == 'ADMIN':
             if (not request.user == doc_obj.created_by and

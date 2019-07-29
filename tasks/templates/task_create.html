@@ -65,6 +65,7 @@
                     <span class="error" id="id__due_date">{{ form.due_date.errors }}</span>
                   </div>
                 </div>
+                <input type="hidden" name="from_account" value="{{request.GET.view_account}}">
                 <div class="filter_col col-md-12">
                   <div class="form-group ">
                     <label for="exampleInputEmail1" class="required">Account{% if form.account.field.required %}<span
@@ -145,7 +146,7 @@
   // });
   $(document).ready(function () {
     $("#id_contacts").select2();
-
+    $("#id_account option[value=" + '{{request.GET.view_account}}' + "]").attr('selected', true);
     $("#id_assigned_to").select2();
     $("#id_teams").select2();
     var date = new Date();
