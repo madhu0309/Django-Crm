@@ -608,7 +608,7 @@ class TestUserUpdate(ObjectsCreation, TestCase):
             'has_sales_access': 'true'
         }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(force_text(response.content), json.dumps(
-            {'success_url': reverse('common:users_list'), 'error': False}))
+            {'success_url': reverse('common:view_user', args=(self.user2.id,)), 'error': False}))
 
         response = self.client.post(reverse('common:edit_user', args=(self.user2.id,)), {},
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')

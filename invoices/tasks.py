@@ -30,6 +30,16 @@ def send_email(invoice_id, domain='demo.django-crm.io', protocol='http'):
                     subject=subject, body=html_content, to=[recipient.email, ])
                 msg.content_subtype = "html"
                 msg.send()
+        recipients = invoice.accounts.filter(status='open')
+        if recipients.count() > 0:
+            for recipient in recipients:
+                context['user'] = recipient.email
+                html_content = render_to_string(
+                    'assigned_to_email_template.html', context=context)
+                msg = EmailMessage(
+                    subject=subject, body=html_content, to=[recipient.email, ])
+                msg.content_subtype = "html"
+                msg.send()
 
 
 @task

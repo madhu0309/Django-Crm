@@ -472,8 +472,8 @@
               <div class="card-body">
                 <div class="panel-heading-list card-title view-pad">
                   Tasks
-                  <!-- <a href="{% url 'opportunity:save' %}?view_account={{account_record.id}}"><span
-                      class="fa fa-plus pull-right" style="color:black;"></span></a> -->
+                  <a href="{% url 'tasks:task_create' %}?view_account={{account_record.id}}"><span
+                    class="fa fa-plus pull-right" style="color:black;"></span></a>
                 </div>
                 <div class="table-responsive">
                   <table class="table table-bordered table-striped table-condensed">
@@ -510,6 +510,58 @@
                 </div>
                 {% ifequal tasks|length 0 %}
                 <h6 class="text-center">No tasks Records Found</h6>
+                {% endifequal %}
+              </div>
+            </div>
+            <br clear="all">
+          </div>
+        </div>
+      </form>
+      <form method='GET' class="accountdetails_row">
+        <div class="table_container_row row marl no-gutters">
+          <div class="col-md-12">
+            <div class="card">
+              <div class="card-body">
+                <div class="panel-heading-list card-title view-pad">
+                  Invoices
+                  <a href="{% url 'invoices:invoices_create' %}?view_account={{account_record.id}}"><span
+                      class="fa fa-plus pull-right" style="color:black;"></span></a>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-bordered table-striped table-condensed">
+                    {% if invoices|length > 0 %}
+                    <thead>
+                      <tr>
+                        <th width="5%" style="text-align:center;">S.No</th>
+                        <th width="30%" style="text-align:center;">Title</th>
+                        <th width="20%" style="text-align:center;">Email</th>
+                        <th width="20%" style="text-align:center;">Status</th>
+                        <th width="25%" style="text-align:center;">Actions </th>
+                      </tr>
+                    </thead>
+                    {% endif %}
+                    <tbody>
+                      {% for invoice in invoices %}
+                      <tr id="invoice_{{invoice.id}}" class="text-center">
+                        <td class="text-center" scope="row">{{ forloop.counter }}</td>
+                        <td class="text-center">{{invoice.invoice_title}}</td>
+                        <td class="text-center">{{invoice.email}}</td>
+                        <td class="text-center">{{invoice.status}} {% if task.probability %} % {% endif %}</td>
+                        <td class="actions text-center">
+                          <a href="{% url 'invoices:invoice_details' invoice.id %}" class="btn btn-primary"
+                            style="color: white;">View</a>
+                          <a href="{% url 'invoices:invoice_edit' invoice.id %}?view_account={{account_record.id}}"
+                            class="btn btn-success">Edit</a>
+                          <a href="{% url 'invoices:invoice_delete' invoice.id %}?view_account={{account_record.id}}"
+                            class="btn btn-danger">Remove</a>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+                {% ifequal invoices|length 0 %}
+                <h6 class="text-center">No invoices Records Found</h6>
                 {% endifequal %}
               </div>
             </div>

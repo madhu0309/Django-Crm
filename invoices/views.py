@@ -139,6 +139,9 @@ def invoices_create(request):
 
             kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
             send_email.delay(invoice_obj.id, **kwargs)
+            if request.POST.get('from_account'):
+                return JsonResponse({'error': False, 'success_url': reverse('accounts:view_account',
+                    args=(request.POST.get('from_account'),))})
             return JsonResponse({'error': False, 'success_url': reverse('invoices:invoices_list')})
         else:
             return JsonResponse({'error': True, 'errors': form.errors,
@@ -226,7 +229,9 @@ def invoice_edit(request, invoice_id):
 
             kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
             send_email.delay(invoice_obj.id, **kwargs)
-
+            if request.POST.get('from_account'):
+                return JsonResponse({'error': False, 'success_url': reverse('accounts:view_account',
+                    args=(request.POST.get('from_account'),))})
             return JsonResponse({'error': False, 'success_url': reverse('invoices:invoices_list')})
         else:
             return JsonResponse({'error': True, 'errors': form.errors,
@@ -243,6 +248,8 @@ def invoice_delete(request, invoice_id):
 
     if request.method == 'GET':
         invoice.delete()
+        if request.GET.get('view_account'):
+            return redirect(reverse('accounts:view_account', args=(request.GET.get('view_account'),)))
         return redirect('invoices:invoices_list')
 
 

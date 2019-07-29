@@ -255,6 +255,7 @@ class AccountDetailView(SalesAccessRequiredMixin, LoginRequiredMixin, DetailView
             "case_status": STATUS_CHOICE,
             'comment_permission': comment_permission,
             'tasks':account_record.accounts_tasks.all(),
+            'invoices':account_record.accounts_invoices.all(),
             'users_mention': users_mention,
         })
         return context

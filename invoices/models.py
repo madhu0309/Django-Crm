@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from common.models import Address, User
 from common.utils import CURRENCY_CODES
+from accounts.models import Account
 from phonenumber_field.modelfields import PhoneNumberField
 
 
@@ -51,6 +52,7 @@ class Invoice(models.Model):
                               max_length=15, default="Draft")
     details = models.TextField(_('Details'), null=True, blank=True)
     due_date = models.DateField(blank=True, null=True)
+    accounts = models.ManyToManyField(Account, related_name='accounts_invoices')
 
     class Meta:
         """Meta definition for Invoice."""
@@ -111,7 +113,8 @@ class InvoiceHistory(models.Model):
         ('Pending', 'Pending'),
         ('Cancelled', 'Cancel'),
     )
-    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='invoice_history')
+    invoice = models.ForeignKey(
+        Invoice, on_delete=models.CASCADE, related_name='invoice_history')
     invoice_title = models.CharField(_('Invoice Title'), max_length=50)
     invoice_number = models.CharField(_('Invoice Number'), max_length=50)
     from_address = models.ForeignKey(
