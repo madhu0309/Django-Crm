@@ -53,8 +53,10 @@ def dashboard(request):
         campaign = Campaign.objects.filter(created_by=request.user)
         contacts_list = ContactList.objects.filter(created_by=request.user)
 
+    # x_axis_titles = [
+    #     campaign_obj.title for campaign_obj in campaign[:5]]
     x_axis_titles = [
-        campaign_obj.title for campaign_obj in campaign[:5]]
+        campaign_obj.title[0:10] + '...' if len(campaign_obj.title) > 15 else campaign_obj.title for campaign_obj in campaign[:5]]
     y_axis_bounces = [
         campaign_obj.get_all_email_bounces_count for campaign_obj in campaign[:5]]
     y_axis_unsubscribed = [

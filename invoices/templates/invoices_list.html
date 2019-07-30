@@ -8,6 +8,10 @@
   .form-group label {
     font-weight: 800;
   }
+
+  .table_container_row .card .card-body table tbody .due_date td {
+    color: red;
+  }
 </style>
 {% endblock %}
 {% block content %}
@@ -146,6 +150,85 @@
                       {% paginate 10 invoices %}
                       {% endif %}
                       {% for invoice in invoices %}
+                      {% if invoice.due_date < today %}
+                      <tr class="text-center due_date">
+                        <td scope="row" >{{ forloop.counter }}</td>
+                        <td><a style="color: red;" href="#" data-toggle="modal" data-target="#exampleModalCenter_invoice{{invoice.id}}">
+                            {{ invoice.invoice_title }} </a></td>
+                        <td>{{ invoice.invoice_number }} </td>
+                        <td>{{ invoice.email }} </td>
+                        <td>{{ invoice.status }} </td>
+                        <td>
+                          {% with users=invoice.assigned_to.all %}
+                          {% for user in users %}
+                          {% if user.profile_pic %}
+                          {% thumbnail user.profile_pic "40x40" crop="center" as im %}
+                          <a href="{% url 'common:view_user' user.id %}">
+                            <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"
+                              title="{{ user.email }}">
+                          </a>
+                          {% endthumbnail %}
+                          {% else %}
+                          <a href="{% url 'common:view_user' user.id %}">
+                            <img src="{% static 'images/user.png' %}" title="{{ user.email }}" width="40" height="40">
+                          </a>
+                          {% endif %}
+                          {% empty %}
+                          None
+                          {% endfor %}
+                          {% endwith %}
+                        </td>
+                        <td>
+                          {% if invoice.created_by %}
+                          {% if invoice.created_by.profile_pic %}
+                          {% thumbnail invoice.created_by.profile_pic "40x40" crop="center" as im %}
+                          <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"
+                            title="{{ invoice.created_by }}" style="border-radius: 50%" />
+                          {% endthumbnail %}
+                          {% else %}
+                          <img src="{% static 'images/user.png' %}" alt="Micro profile pic"
+                            style="width: 40px;height: 40px;border-radius: 50%;" title="{{ invoice.created_by }}" />
+                          {% endif %}
+                          {% else %}
+                          None
+                          {% endif %}
+                        </td>
+                        <td title="{{ invoice.created_on }}">{{ invoice.created_on_arrow }}</td>
+                        <td class="actions">
+                          <a href="{% url 'invoices:invoice_edit' invoice.id %}" class="btn btn-success edit"><i
+                              class="fas fa-pencil-alt"></i></a>
+                          {% if request.user == invoice.created_by or request.user.role == "ADMIN" or request.user.is_superuser %}
+                          <a href="{% url 'invoices:invoice_details' invoice.id %}" class="btn btn-info edit"><i
+                              class="fas fa-eye"></i></a>
+                          <a href="{% url 'invoices:invoice_delete' invoice.id %}"
+                            class="btn btn-danger delete remove_account"><i class="fas fa-trash-alt"></i></a>
+                          {% if invoice.is_draft %}
+                          <a href="{% url 'invoices:invoice_send_mail' invoice.id %}" title="send mail"
+                            class="btn btn-info to_send_mail"><i class="fas fa-paper-plane"></i></a>
+                          {% endif %}
+                          {% if invoice.is_sent == True %}
+                          <a href="{% url 'invoices:invoice_send_mail' invoice.id %}" title="re send mail"
+                            class="btn btn-secondary to_re_send_mail"><i class="fas fa-paper-plane"></i></a>
+                          <a href="{% url 'invoices:invoice_change_status_paid' invoice.id %}" title="Paid"
+                            class="btn btn-info to_paid"><i class="fas fa-check-square"></i></a>
+                          <a href="{% url 'invoices:invoice_change_status_cancelled' invoice.id %}" title="Cancel"
+                            class="btn btn-danger to_cancel" style="background-color: red;"><i
+                              class="fas fa-window-close"></i></a>
+                          {% endif %}
+                          {% if invoice.is_resent %}
+                          <a href="{% url 'invoices:invoice_change_status_paid' invoice.id %}" title="Paid"
+                            class="btn btn-info to_paid"><i class="fas fa-check-square"></i></a>
+                          <a href="{% url 'invoices:invoice_change_status_cancelled' invoice.id %}" title="Cancel"
+                            class="btn btn-danger to_cancel" style="background-color: red;"><i
+                              class="fas fa-window-close"></i></a>
+                          {% endif %}
+                          {% if invoice.is_paid_or_cancelled == True %}
+                          <!-- <a  title="re send mail" class="btn btn-secondary">no actions</a> -->
+                          {% endif %}
+                          {% endif %}
+                        </td>
+                      </tr>
+                      {% else %}
                       <tr class="text-center">
                         <td scope="row">{{ forloop.counter }}</td>
                         <td><a href="#" data-toggle="modal" data-target="#exampleModalCenter_invoice{{invoice.id}}">
@@ -199,22 +282,22 @@
                             class="btn btn-danger delete remove_account"><i class="fas fa-trash-alt"></i></a>
                           {% if invoice.is_draft %}
                           <a href="{% url 'invoices:invoice_send_mail' invoice.id %}" title="send mail"
-                            class="btn btn-info"><i class="fas fa-paper-plane"></i></a>
+                            class="btn btn-info to_send_mail"><i class="fas fa-paper-plane"></i></a>
                           {% endif %}
                           {% if invoice.is_sent == True %}
                           <a href="{% url 'invoices:invoice_send_mail' invoice.id %}" title="re send mail"
-                            class="btn btn-secondary"><i class="fas fa-paper-plane"></i></a>
+                            class="btn btn-secondary to_re_send_mail"><i class="fas fa-paper-plane"></i></a>
                           <a href="{% url 'invoices:invoice_change_status_paid' invoice.id %}" title="Paid"
-                            class="btn btn-info"><i class="fas fa-check-square"></i></a>
+                            class="btn btn-info to_paid"><i class="fas fa-check-square"></i></a>
                           <a href="{% url 'invoices:invoice_change_status_cancelled' invoice.id %}" title="Cancel"
                             class="btn btn-danger " style="background-color: red;"><i
-                              class="fas fa-window-close"></i></a>
+                              class="fas fa-window-close to_cancel"></i></a>
                           {% endif %}
                           {% if invoice.is_resent %}
                           <a href="{% url 'invoices:invoice_change_status_paid' invoice.id %}" title="Paid"
-                            class="btn btn-info"><i class="fas fa-check-square"></i></a>
+                            class="btn btn-info to_paid"><i class="fas fa-check-square"></i></a>
                           <a href="{% url 'invoices:invoice_change_status_cancelled' invoice.id %}" title="Cancel"
-                            class="btn btn-danger " style="background-color: red;"><i
+                            class="btn btn-danger to_cancel" style="background-color: red;"><i
                               class="fas fa-window-close"></i></a>
                           {% endif %}
                           {% if invoice.is_paid_or_cancelled == True %}
@@ -223,6 +306,7 @@
                           {% endif %}
                         </td>
                       </tr>
+                      {% endif %}
                       {% endfor %}
                     </tbody>
                   </table>
@@ -557,6 +641,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 <script type="text/javascript">
   $(document).ready(function () {
+    // $('.due_date').find('*').width('100%');
     $('.assigned_users').select2();
     $('#id_tag').select2();
     $('#created_by').select2();
@@ -590,6 +675,38 @@
     e.preventDefault()
     url = $(this).attr('href')
     if (!confirm('Are you sure you want to delete?'))
+      return;
+    window.location = $(this).attr('href')
+  });
+
+  $('.to_paid').click(function (e) {
+    e.preventDefault()
+    url = $(this).attr('href')
+    if (!confirm('Do you want to change the status to Paid?'))
+      return;
+    window.location = $(this).attr('href')
+  });
+
+  $('.to_cancel').click(function (e) {
+    e.preventDefault()
+    url = $(this).attr('href')
+    if (!confirm('Do you want to cancel the Invoice?'))
+      return;
+    window.location = $(this).attr('href')
+  });
+
+  $('.to_send_mail').click(function (e) {
+    e.preventDefault()
+    url = $(this).attr('href')
+    if (!confirm('Do you want to send an email of the Invoice?'))
+      return;
+    window.location = $(this).attr('href')
+  });
+
+  $('.to_re_send_mail').click(function (e) {
+    e.preventDefault()
+    url = $(this).attr('href')
+    if (!confirm('Do you want to re send an email of the Invoice?'))
       return;
     window.location = $(this).attr('href')
   });

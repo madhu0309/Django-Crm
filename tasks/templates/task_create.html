@@ -146,15 +146,26 @@
   // });
   $(document).ready(function () {
     $("#id_contacts").select2();
+    {% if request.GET.view_account %}
     $("#id_account option[value=" + '{{request.GET.view_account}}' + "]").attr('selected', true);
+    {% endif %}
     $("#id_assigned_to").select2();
     $("#id_teams").select2();
-    var date = new Date();
-    var today = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+    {% if task_obj %}
     $('#id_due_date').datetimepicker({
       'format': 'YYYY-MM-DD',
       minDate: today
     })
+    {% else %}
+    $('#id_due_date').datetimepicker({
+      'format': 'YYYY-MM-DD',
+      minDate: today
+    })
+    var date = new Date();
+    var today = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    {% endif %}
+
 
   });
 

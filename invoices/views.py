@@ -2,6 +2,7 @@ import io
 import os
 
 import pdfkit
+from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sites.shortcuts import get_current_site
@@ -57,6 +58,8 @@ def invoices_list(request):
         user_ids = list(invoices.values_list('created_by', flat=True))
         user_ids.append(request.user.id)
         context['created_by_users'] = users.filter(is_active=True, id__in=user_ids)
+        today = datetime.today().date()
+        context['today'] = today
         return render(request, 'invoices_list.html', context)
 
     if request.method == 'POST':
@@ -95,6 +98,8 @@ def invoices_list(request):
         user_ids.append(request.user.id)
         context['created_by_users'] = users.filter(is_active=True, id__in=user_ids)
         context['invoices'] = invoices.distinct().order_by('id')
+        today = datetime.today().date()
+        context['today'] = today
         return render(request, 'invoices_list.html', context)
 
 
