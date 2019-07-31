@@ -414,10 +414,19 @@
                                   {{ invoice.created_on_arrow }}</td>
                                 <td scope="row" class="text-center">{{ invoice.invoice_number }}</td>
                                 <td scope="row" class="text-center">
-                                  {% if invoice.name %}
-                                  {{invoice.name}}
+                                  {% if invoice.updated_by %}
+                                  {% if invoice.updated_by.profile_pic %}
+                                  {% thumbnail invoice.updated_by.profile_pic "40x40" crop="center" as im %}
+                                  <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"
+                                    title="{{ invoice.updated_by }}" style="border-radius: 50%" />
+                                  {% endthumbnail %}
                                   {% else %}
-                                  -
+                                  <img src="{% static 'images/user.png' %}" alt="Micro profile pic"
+                                    style="width: 40px;height: 40px;border-radius: 50%;" title="{{ invoice.updated_by }}" />
+                                  {% endif %}
+                                  {% else %}
+                                  <img src="{% static 'images/user.png' %}" alt="Micro profile pic"
+                                    style="width: 40px;height: 40px;border-radius: 50%;" title="{{ invoice.updated_by }}" />
                                   {% endif %}
                                 </td>
                                 <td scope="row" class="text-center">{{ invoice.status }}</td>
@@ -427,12 +436,58 @@
                               {% endfor %}
                             </tbody>
                           </table>
-                          <div class="text-center row marl mt-5">
+                          <div class="text-center row marl
+                          {% if invoice_history|length > 0 %}
+                          mt-5
+                          {% endif %}
+                          ">
                             {% show_pages %}
                           </div>
                         </div>
                         {% ifequal invoice_history|length 0 %}
                         <h6 class="text-center">No Invoice History Records Found</h6>
+                        <!-- <div class="table-responsive">
+                          <table class="table table-bordered table-striped table-condensed">
+                            <thead>
+                              <tr>
+                                <th width="5%" style="text-align:center;">S.No</th>
+                                <th width="20%" style="text-align:center;">Date</th>
+                                <th width="20%" style="text-align:center;">Invoice Number</th>
+                                <th width="20%" style="text-align:center;">Name</th>
+                                <th width="10%" style="text-align:center;">Status </th>
+                                <th width="40%" style="text-align:center;">Description </th>
+                                <th width="25%" style="text-align:center;">Amount </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr id="opp_details{{opportunity.id}}" class="text-center">
+                                <td scope="row" class="text-center">1</td>
+                                <td scope="row" class="text-center" title="{{invoice.created_on}}">
+                                  {{ invoice.created_on_arrow }}</td>
+                                <td scope="row" class="text-center">{{ invoice.invoice_number }}</td>
+                                <td scope="row" class="text-center">
+                                  {% if invoice.created_by %}
+                                  {% if invoice.created_by.profile_pic %}
+                                  {% thumbnail invoice.created_by.profile_pic "40x40" crop="center" as im %}
+                                  <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"
+                                    title="{{ invoice.created_by }}" style="border-radius: 50%" />
+                                  {% endthumbnail %}
+                                  {% else %}
+                                  <img src="{% static 'images/user.png' %}" alt="Micro profile pic"
+                                    style="width: 40px;height: 40px;border-radius: 50%;" title="{{ invoice.created_by }}" />
+                                  {% endif %}
+                                  {% else %}
+                                  <img src="{% static 'images/user.png' %}" alt="Micro profile pic"
+                                    style="width: 40px;height: 40px;border-radius: 50%;" title="{{ invoice.created_by }}" />
+                                  {% endif %}
+                                </td>
+                                <td scope="row" class="text-center">{{ invoice.status }}</td>
+                                <td scope="row" class="text-center">Invoice Created.</td>
+                                <td scope="row" class="text-center">{{ invoice.total_amount }}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div> -->
                         {% endifequal %}
                       </div>
                     </div>
