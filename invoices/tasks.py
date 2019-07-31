@@ -91,6 +91,9 @@ def create_invoice_history(original_invoice_id, updated_by_user_id, changed_fiel
         changed_data = ', '.join(changed_data) + ' has changed.'
     else:
         changed_data = None
+
+    if original_invoice.invoice_history.count() == 0:
+        changed_data = 'Invoice Created.'
     if original_invoice:
         invoice_history = InvoiceHistory()
         invoice_history.invoice = original_invoice

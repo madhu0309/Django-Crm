@@ -142,6 +142,7 @@ def invoices_create(request):
                     if user_id not in assinged_to_users_ids:
                         invoice_obj.assigned_to.add(user_id)
 
+            create_invoice_history(invoice_obj.id, request.user.id, [])
             kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
             send_email.delay(invoice_obj.id, **kwargs)
             if request.POST.get('from_account'):
@@ -212,8 +213,8 @@ def invoice_edit(request, invoice_id):
             form_changed_data.remove('to_address')
             form_changed_data = form_changed_data + ['from_' + field for field in from_address_form.changed_data]
             form_changed_data = form_changed_data + ['to_' + field for field in to_address_form.changed_data]
-            if form_changed_data:
-                create_invoice_history(invoice_obj.id, request.user.id, form_changed_data)
+            # if form_changed_data:
+            #     create_invoice_history(invoice_obj.id, request.user.id, form_changed_data)
             from_address_obj = from_address_form.save()
             to_address_obj = to_address_form.save()
             invoice_obj = form.save(commit=False)
