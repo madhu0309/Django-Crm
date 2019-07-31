@@ -84,7 +84,9 @@ class HomeView(SalesAccessRequiredMixin, LoginRequiredMixin, TemplateView):
         if self.request.user.role == "ADMIN" or self.request.user.is_superuser:
             pass
         else:
-            accounts = accounts.filter(created_by=self.request.user.id)
+            accounts = accounts.filter(
+                Q(assigned_to__id__in=[self.request.user.id]) |
+                Q(created_by=self.request.user.id))
             contacts = contacts.filter(
                 Q(assigned_to__id__in=[self.request.user.id]) |
                 Q(created_by=self.request.user.id))
@@ -373,7 +375,11 @@ class UpdateUserView(LoginRequiredMixin, UpdateView):
                 self.request.user.is_superuser):
             if self.request.is_ajax():
                 data = {'success_url': reverse_lazy(
-                    'common:view_user', args=(user.id,)), 'error': False}
+                    'common:users_list'), 'error': False}
+                if self.request.user.id == user.id:
+                    data = {'success_url': reverse_lazy(
+                        'common:profile'), 'error': False}
+                    return JsonResponse(data)
                 return JsonResponse(data)
         if self.request.is_ajax():
             data = {'success_url': reverse_lazy(

@@ -234,7 +234,10 @@ class AccountDetailView(SalesAccessRequiredMixin, LoginRequiredMixin, DetailView
         if self.request.user.is_superuser or self.request.user.role == 'ADMIN':
             users_mention = list(User.objects.filter(is_active=True).values('username'))
         elif self.request.user != account_record.created_by:
-            users_mention = [{'username': account_record.created_by.username}]
+            if account_record.created_by:
+                users_mention = [{'username': account_record.created_by.username}]
+            else:
+                users_mention = []
         else:
             users_mention = []
 
@@ -267,12 +270,12 @@ class AccountUpdateView(SalesAccessRequiredMixin, LoginRequiredMixin, UpdateView
     template_name = "create_account.html"
 
     def dispatch(self, request, *args, **kwargs):
-        if self.request.user.role == 'ADMIN' or self.request.user.is_superuser:
-            self.users = User.objects.filter(is_active=True).order_by('email')
-        elif request.user.google.all():
-            self.users = []
-        else:
-            self.users = User.objects.filter(role='ADMIN').order_by('email')
+        self.users = User.objects.filter(is_active=True).order_by('email')
+        # if self.request.user.role == 'ADMIN' or self.request.user.is_superuser:
+        # elif request.user.google.all():
+        #     self.users = []
+        # else:
+        #     self.users = User.objects.filter(role='ADMIN').order_by('email')
         return super(AccountUpdateView, self).dispatch(
             request, *args, **kwargs)
 
@@ -355,9 +358,12 @@ class AccountUpdateView(SalesAccessRequiredMixin, LoginRequiredMixin, UpdateView
         context = super(AccountUpdateView, self).get_context_data(**kwargs)
         context["account_obj"] = self.object
         if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
-            if self.request.user != context['account_obj'].created_by:
+            if ((self.request.user != context['account_obj'].created_by ) and
+                (self.request.user not in context['account_obj'].assigned_to.all())):
                 raise PermissionDenied
         context["account_form"] = context["form"]
+        if self.request.user.role != "ADMIN" and not self.request.user.is_superuser:
+            self.users = self.users.filter(Q(role='ADMIN') | Q(id__in=[self.request.user.id,]))
         context["users"] = self.users
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES

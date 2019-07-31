@@ -66,12 +66,12 @@ def task_create(request):
         if request.user.role == 'ADMIN' or request.user.is_superuser:
             users = User.objects.filter(is_active=True).order_by('email')
             accounts = Account.objects.filter(status="open")
-        elif request.user.google.all():
-            users = []
-            accounts = Account.objects.filter(created_by=request_user).filter(status="open")
+        # elif request.user.google.all():
+        #     users = []
+        #     accounts = Account.objects.filter(created_by=request.user).filter(status="open")
         else:
             users = User.objects.filter(role='ADMIN').order_by('email')
-            accounts = Account.objects.filter(created_by=request_user).filter(status="open")
+            accounts = Account.objects.filter(Q(created_by=request.user) | Q(assigned_to__in=[request.user])).filter(status="open")
         form = TaskForm(request_user=request.user)
         return render(request, 'task_create.html', {'form': form, 'users': users, 'accounts':accounts})
 
@@ -168,7 +168,6 @@ def task_edit(request, task_id):
             kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
             send_email.delay(task.id, **kwargs)
             success_url = reverse('tasks:tasks_list')
-            import pdb; pdb.set_trace()
             if request.POST.get('from_account'):
                 success_url = reverse('accounts:view_account', args=(request.POST.get('from_account'),))
             return JsonResponse({'error': False, 'success_url': success_url})
