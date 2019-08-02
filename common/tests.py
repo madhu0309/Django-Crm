@@ -1093,15 +1093,16 @@ class TestViewFunctions(ObjectsCreation, TestCase):
         response = self.client.post(reverse('common:login'), data)
         self.assertEqual(302, response.status_code)
 
+        self.client.logout()
         self.user_marketing = User.objects.create(
             first_name="johnDoeCommonMarketing",
             username='johnDoeCommonMarketing',
             email='johnDoeCommonMarketing@user.com',
             role="USER",
-            has_marketing_access=True)
+            has_marketing_access=True, is_active=True)
         self.user_marketing.set_password('password')
-
-        data = {'email' : 'johnDoeCommonMarketing@user.com', 'password' : 'password'}
+        self.user_marketing.save()
+        data = {'email': 'johnDoeCommonMarketing@user.com', 'password': 'password'}
         response = self.client.post(reverse('common:login'), data)
         self.assertEqual(302, response.status_code)
 
@@ -1109,7 +1110,11 @@ class TestViewFunctions(ObjectsCreation, TestCase):
         self.user_marketing.save()
         data = {'email' : 'johnDoeCommonMarketing@user.com', 'password' : 'password'}
         response = self.client.post(reverse('common:login'), data)
-        self.assertEqual(302, response.status_code)
+        self.assertEqual(200, response.status_code)
+
+        data = {'email' : 'invalid@account.com', 'password' : 'password'}
+        response = self.client.post(reverse('common:login'), data)
+        self.assertEqual(200, response.status_code)
 
     def test_user_list(self):
         self.client.login(username='johndoe@admin.com', password='password')
@@ -1124,6 +1129,37 @@ class TestViewFunctions(ObjectsCreation, TestCase):
             'first_name': 'john',
             'last_name': 'dev',
             'username': 'john@developer.com',
+            'password': 'password',
             'role': 'USER', 'teams':[self.team_dev.id,],
-            'has_sales_access':True})
+            'has_sales_access':'on'}, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        # response = self.client.post('/users/create/', {
+        #     'email': 'jane@developer.com',
+        #     'first_name': 'jane',
+        #     'last_name': 'dev',
+        #     'username': 'jane@developer.com',
+        #     'password': 'password',
+        #     'role': 'USER', 'teams':[self.team_dev.id,],
+        #     'has_sales_access':'on'})
+        # self.assertEqual(response.status_code, 302)
+        # response = self.client.post('/users/create/', {
+        #     'email': 'jane.com',
+        #     'first_name': 'jane',
+        #     'last_name': 'dev',
+        #     'username': 'jane@developer.com',
+        #     'password': 'password',
+        #     'role': 'USER',
+        #     'has_sales_access':'on'})
+        # self.assertEqual(response.status_code, 200)
+        user_id = User.objects.filter(email='john@developer.com').first().id
+        user_edit_url = reverse('common:edit_user', args=(user_id,))
+        self.team_test = Teams.objects.create(name='test team')
+        response = self.client.post(user_edit_url, {
+            'email': 'john@developer.com',
+            'first_name': 'john',
+            'last_name': 'dev',
+            'username': 'john@developer.com',
+            'password': 'password',
+            'role': 'USER', 'teams':[self.team_test.id,],
+            'has_sales_access':'on'}, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(response.status_code, 200)
