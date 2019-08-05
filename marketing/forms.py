@@ -8,7 +8,7 @@ import xlrd
 from django import forms
 
 from common.models import User
-from marketing.models import Campaign, Contact, ContactList, EmailTemplate, Tag
+from marketing.models import Campaign, Contact, ContactList, EmailTemplate, Tag, ContactEmailCampaign
 
 email_regex = '^[_a-zA-Z0-9-]+(\.[_a-zA-Z0-9-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*(\.[a-zA-Z]{2,4})$'
 
@@ -112,9 +112,10 @@ def get_validated_rows(wb, sheet_name, validated_rows, invalid_rows):
 
     # this condition will check if the both fields in required_headers exist
     if not len(set(sheet_headers).intersection(required_headers)) == 2:
+        missing_headers = set(required_headers) - set(sheet_headers)
         missing_headers_str = ', '.join(missing_headers)
-        message = 'Missing headers: %s' % (missing_headers_str)
-        return {"error": True, "message": message}
+        message = 'Missing headers: {}'.format(missing_headers_str)
+        return {"error": True, "message": message}, message
     else:
         data = []
         for row in wb_sheet.rows:
@@ -144,6 +145,8 @@ def xlsx_doc_validate(document):
     for sheet_name in sheets:
         valid_data, invalid_data = get_validated_rows(
             wb, sheet_name, validated_rows, invalid_rows)
+        if type(valid_data) == dict:
+            return valid_data
         validated_rows = validated_rows + valid_data
         invalid_rows = invalid_rows + invalid_data
     return {"error": False, "validated_rows": validated_rows, "invalid_rows": invalid_rows}
@@ -156,9 +159,10 @@ def get_validated_rows_xls(wb, sheet_name, validated_rows, invalid_rows):
 
     # this condition will check if the both fields in required_headers exist
     if not len(set(sheet_headers).intersection(required_headers)) == 2:
+        missing_headers = set(required_headers) - set(sheet_headers)
         missing_headers_str = ', '.join(missing_headers)
-        message = 'Missing headers: %s' % (missing_headers_str)
-        return {"error": True, "message": message}
+        message = 'Missing headers: {}'.format(missing_headers_str)
+        return {"error": True, "message": message}, message
     else:
         no_of_rows = wb_sheet.nrows
         data = []
@@ -188,9 +192,12 @@ def xls_doc_validate(document):
     for sheet_name in sheets:
         valid_data, invalid_data = get_validated_rows_xls(
             wb, sheet_name, validated_rows, invalid_rows)
+        # if the data is valid data we'll get a list or else a dict
+        if type(valid_data) == dict:
+            return valid_data
         validated_rows = validated_rows + valid_data
         invalid_rows = invalid_rows + invalid_data
-    return {"error": False, "validated_rows": validated_rows, "invalid_rows": invalid_rows}
+        return {"error": False, "validated_rows": validated_rows, "invalid_rows": invalid_rows}
 
 def import_document_validator(document):
     try:
@@ -441,3 +448,27 @@ class SendCampaignForm(forms.ModelForm):
         if Campaign.objects.filter(title__iexact=title).exclude(id=self.instance.id).exists():
             raise forms.ValidationError('Campaign with this title already exists.')
         return title
+
+
+class EmailCampaignForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        self.obj_instance = kwargs.get('instance', None)
+        super(EmailCampaignForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs = {"class": "form-control"}
+
+        self.fields['name'].required = True
+        self.fields['email'].required = True
+        self.fields['last_name'].required = False
+
+    class Meta:
+        model = ContactEmailCampaign
+        fields = ["name", "email", "last_name",]
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if ContactEmailCampaign.objects.filter(email=email).exclude(id=self.instance.id).exists():
+            raise forms.ValidationError(
+                'Contact with this Email already exists.')
+        return email
