@@ -1163,3 +1163,44 @@ class TestViewFunctions(ObjectsCreation, TestCase):
             'role': 'USER', 'teams':[self.team_test.id,],
             'has_sales_access':'on'}, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(response.status_code, 200)
+
+
+    def test_admin_profile_edit(self):
+        self.client.login(username='johndoe@admin.com', password='password')
+        user_edit_url = reverse('common:edit_user', args=(self.user_admin.id,))
+        response = self.client.post(user_edit_url, {
+        'email': 'johndoe@admin.com',
+        'first_name': 'john',
+        'username': 'johndoeAdmin',
+        'role': 'ADMIN'}, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+
+    def test_doc_create(self):
+        self.client.login(username='janeDoeCommon@user.com', password='password')
+        response = self.client.post(reverse('common:create_doc'), {})
+        self.assertEqual(response.status_code, 200)
+
+        self.team_test = Teams.objects.create(name='test team 1')
+        self.team_test.users.add(self.user1.id, self.user2.id)
+
+        upload_file = open('static/images/user.png', 'rb')
+        shared_user = User.objects.filter(email='johndoe@admin.com').first()
+        data = {
+            'title':"new doc", 'document_file': SimpleUploadedFile(upload_file.name, upload_file.read()),
+            'teams':[self.team_test.id, ],
+            'shared_to': [shared_user.id, ]
+        }
+        response = self.client.post(reverse('common:create_doc'), data, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+
+        upload_file = open('static/images/user.png', 'rb')
+        data = {
+            'title':"another new doc", 'document_file': SimpleUploadedFile(upload_file.name, upload_file.read()),
+            'teams':[self.team_test.id, ],
+            'shared_to': [shared_user.id, ]
+        }
+        response = self.client.post(reverse('common:edit_doc', args=(self.document.id,)), data, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(reverse('common:download_document', args=(self.document.id,)))
+        self.assertEqual(200, response.status_code)
