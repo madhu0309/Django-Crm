@@ -545,3 +545,114 @@ class test_account_views_list(AccountCreateTest, TestCase):
             'teams': [self.team_account.id,]},
             HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(200, response.status_code)
+
+        self.account_edit = Account.objects.create(
+            name="account edit", email="johndoe@example.com", phone="123456789",
+            billing_address_line="", billing_street="street name",
+            billing_city="city name",
+            billing_state="state", billing_postcode="1234",
+            billing_country="US",
+            website="www.example.como", created_by=self.user, status="open",
+            industry="SOFTWARE", description="Testing")
+        self.account_by_user = Account.objects.create(
+            name="account edit", email="johndoe@example.com", phone="123456789",
+            billing_address_line="", billing_street="street name",
+            billing_city="city name",
+            billing_state="state", billing_postcode="1234",
+            billing_country="US",
+            website="www.example.como", created_by=self.user, status="open",
+            industry="SOFTWARE", description="Testing")
+        upload_file = open('static/images/user.png', 'rb')
+        response = self.client.post(reverse('accounts:edit_account', args=(self.account_edit.id,)), {
+            'name': "account", 'email': "johndoe@example.com",
+            'phone': "+91-123-456-7894",
+            'billing_address_line': "address line",
+            'billing_street': "billing street",
+            'billing_city': "billing city",
+            'billing_state': "state",
+            'billing_postcode': "1234",
+            'billing_country': "IN",
+            'website': "www.example.com",
+            'industry': "SOFTWARE", 'description': "Testing",
+            'contacts':[self.contact_user1.id,],
+            'tags': self.tag_name.name + ', another tag edit',
+            'assigned_to' : [self.user.id, ],
+            'teams': [self.team_account.id,],
+            'savenewform': 'true',
+            'account_attachment': SimpleUploadedFile(
+                 upload_file.name, upload_file.read())})
+        self.assertEqual(response.status_code, 302)
+        response = self.client.post(reverse('accounts:edit_account', args=(self.account_edit.id,)), {
+            'name': "account", 'email': "johndoe@example.com",
+            'phone': "+91-123-456-7894",
+            'billing_address_line': "address line",
+            'billing_street': "billing street",
+            'billing_city': "billing city",
+            'billing_state': "state",
+            'billing_postcode': "1234",
+            'billing_country': "IN",
+            'website': "www.example.com",
+            'industry': "SOFTWARE", 'description': "Testing",
+            'contacts':[self.contact_user1.id,],
+            'tags': self.tag_name.name + ', another tag edit',
+            'teams': [self.team_account.id,],
+            'savenewform': 'true',},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(reverse('accounts:edit_account', args=(self.account_edit.id,)), {
+            'name': "account", 'email': "johndoe@example.com",
+            'phone': "+91-123-456   ",
+            'billing_address_line': "address line",
+            'billing_street': "billing street",
+            'billing_city': "billing city",
+            'billing_state': "state",
+            'billing_postcode': "1234",
+            'billing_country': "IN",
+            'website': "www.example.com",
+            'industry': "SOFTWARE", 'description': "Testing",
+            'contacts':[self.contact_user1.id,],
+            'tags': self.tag_name.name + ', another tag edit',
+            'teams': [self.team_account.id,],
+            'savenewform': 'true',},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+
+        self.client.logout()
+        self.client.login(email='janeAccount@example.com', password='password')
+        response = self.client.get(reverse('accounts:edit_account', args=(self.account_by_user.id,)), {})
+        self.assertEqual(403, response.status_code)
+        self.account_by_user1 = Account.objects.create(
+            name="account edit", email="johndoe@example.com", phone="123456789",
+            billing_address_line="", billing_street="street name",
+            billing_city="city name",
+            billing_state="state", billing_postcode="1234",
+            billing_country="US",
+            website="www.example.como", created_by=self.user1, status="open",
+            industry="SOFTWARE", description="Testing")
+        response = self.client.get(reverse('accounts:edit_account', args=(self.account_by_user1.id,)), {})
+        self.assertEqual(200, response.status_code)
+        response = self.client.get(reverse('accounts:remove_account', args=(self.account_by_user.id,)), {})
+        self.assertEqual(403, response.status_code)
+
+        response = self.client.post(reverse('accounts:add_comment'), {'accountid':self.account_by_user.id})
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.post(reverse('accounts:edit_comment'), {'commentid':self.comment.id})
+        self.assertEqual(200, response.status_code)
+
+        self.client.logout()
+        self.client.login(email='johnAccount@example.com', password='password')
+
+        response = self.client.post(reverse('accounts:edit_comment'), {'commentid':self.comment.id, 'comment':''})
+        self.assertEqual(200, response.status_code)
+
+        self.client.logout()
+        self.client.login(email='janeAccount@example.com', password='password')
+        response = self.client.post(reverse('accounts:remove_comment'), {'comment_id':self.comment.id, 'comment':''})
+        self.assertEqual(200, response.status_code)
+
+        self.client.logout()
+        self.client.login(email='johnAccount@example.com', password='password')
+
+        response = self.client.post(reverse('accounts:add_attachment'), {'accountid':self.account.id, 'comment':''})
+        self.assertEqual(200, response.status_code)

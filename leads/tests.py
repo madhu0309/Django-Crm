@@ -1,13 +1,15 @@
-from django.test import TestCase, Client
-from cases.models import Case
-from leads.models import Lead
-from common.models import User, Comment, Attachments, APISettings
-from accounts.models import Account, Tags
-from leads.tasks import *
-from leads.forms import *
-from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client, TestCase
+from django.urls import reverse
 from django.utils.encoding import force_text
+
+from accounts.models import Account, Tags
+from cases.models import Case
+from common.models import APISettings, Attachments, Comment, User
+from leads.forms import *
+from leads.models import Lead
+from leads.tasks import *
+from teams.models import Teams
 
 
 class TestLeadModel(object):
@@ -536,25 +538,57 @@ class TestCommentAddResponse(TestLeadModel, TestCase):
         self.assertJSONEqual(force_text(response.content), {"error": ["This field is required."]})
 
 
-# # class TestAddAttachmentView(TestLeadModel, TestCase):
+    def test_file_upload_for_leads(self):
+        self.client.logout()
+        self.client.login(email='johnLead@example.com', password="password")
 
-# #     def test_convert_lead_view(self):
-# #         response = self.client.post(reverse('leads:add_attachment'),{})
-# #         self.assertEqual(response.status_code, 200)
-# #         self.assertJSONEqual(
-# #             str(response.content, encoding='utf8'),
-# #             {'status': 'success'}
-# #         )
+        file_content = [
+            'title,first name,last name,website,phone,email,address\n',
+            'lead1,john,doe,www.example.com,911234567890,user1@email.com,address for lead1\n',
+            'lead2,jane,doe,www.website.com,911234567891,user2@email.com,address for lead2\n',
+            'lead3,joe,doe,www.test.com,911234567892,user3@email.com,address for lead3\n',
+            'lead4,john,doe,www.sample.com,911234567893,user4@email.com,address for lead4\n',
+        ]
+        file_content = bytes(''.join(file_content), 'utf-8')
+        data = {'leads_file': SimpleUploadedFile('file name', file_content)}
+        response = self.client.post(reverse('leads:upload_lead_csv_file'), data)
+        self.assertEqual(201, response.status_code)
 
+        file_content_missing_headers = [
+            ',first name,last name,website,phone,,address\n',
+            'lead1,john,doe,www.example.com,911234567890,user1@email.com,address for lead1\n',
+            'lead2,jane,doe,www.website.com,911234567891,user2@email.com,address for lead2\n',
+            'lead3,joe,doe,www.test.com,911234567892,user3@email.com,address for lead3\n',
+            'lead4,john,doe,www.sample.com,911234567893,user4@email.com,address for lead4\n',
+        ]
+        file_content_missing_headers = bytes(''.join(file_content_missing_headers), 'utf-8')
+        data = {'leads_file': SimpleUploadedFile('file name', file_content_missing_headers)}
+        response = self.client.post(reverse('leads:upload_lead_csv_file'), data)
 
-# # class TestAddLeadViewFormError(TestLeadModel, TestCase):
+        file_content_missing_headers = [
+            ',first name,last name,website,phone,,address\n',
+            'lead1,john,doe,www.example.com,911234567890,user1@email,address for lead1\n',
+            'lead2,jane,doe,www.website.com,911234567891,user2@email.com,address for lead2\n',
+            'lead3,joe,doe,www.test.com,911234567892,user3@email.com,address for lead3\n',
+            'lead4,john,doe,www.sample.com,911234567893,user4@email,address for lead4\n',
+        ]
+        file_content_missing_headers = bytes(''.join(file_content_missing_headers), 'utf-8')
+        data = {'leads_file': SimpleUploadedFile('file name', file_content_missing_headers)}
+        response = self.client.post(reverse('leads:upload_lead_csv_file'), data)
 
-# #     def test_add_lead_view_form_error(self):
-# #         response = self.client.post(reverse('leads:add_lead'),{})
-# #         # self.assertEqual(response.status_code, 200)
-# #         print(response.json())
-# #         print(dir(response))
-# #         self.assertJSONEqual(
-# #             str(response.json(), encoding='utf8'),
-# #             {'status': 'success'}
-# #         )
+        response = self.client.post(reverse('leads:list') + '?tag=0', {'city': 'city'})
+        self.assertEqual(response.status_code, 200)
+
+        self.teams_leads = Teams.objects.create(name='teams leads')
+        self.teams_leads.users.add(self.user1)
+        response = self.client.post(reverse('leads:add_lead'), {'title': 'new lead title', 'teams': [self.teams_leads.id, ],
+            'savenewform':'true'})
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(reverse('leads:add_lead'), {'title': ''})
+        self.assertEqual(response.status_code, 200)
+
+        self.client.logout()
+        self.client.login(email='janeLead3@example.com', password="password")
+
+        response = self.client.get(reverse('leads:view_lead', args=(self.lead_1.id,)))
+        self.assertEqual(response.status_code, 403)
