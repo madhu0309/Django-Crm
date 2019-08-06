@@ -8,7 +8,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'mwx@&97%!$fx_*zgj(2ygi^(s=oh5j(cqb$=+-mkd9scbt!0v0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.getenv('DEBUG_STATUS', True)
 
 ALLOWED_HOSTS = ['*']
 
@@ -257,7 +257,7 @@ MANDRILL_API_KEY = os.getenv('MANDRILL_API_KEY', '')
 
 ADMIN_EMAIL = "admin@micropyramid.com"
 
-URL_FOR_LINKS = "http://djangocrm.com"
+URL_FOR_LINKS = "http://demo.django-crm.io"
 
 try:
     from .dev_settings import *
