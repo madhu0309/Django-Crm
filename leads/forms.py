@@ -154,12 +154,12 @@ class LeadListForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(LeadListForm, self).__init__(*args, **kwargs)
         self.fields['leads_file'].widget.attrs.update({
-            "accept": ".csv,.xls,.xlsx,.xlsm,.xlsb,.xml",
+            "accept": ".csv",
         })
         self.fields['leads_file'].required = True
         if self.data.get('leads_file'):
             self.fields['leads_file'].widget.attrs.update({
-                "accept": ".csv,.xls,.xlsx,.xlsm,.xlsb,.xml",
+                "accept": ".csv",
             })
 
     def clean_leads_file(self):

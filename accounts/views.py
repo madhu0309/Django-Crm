@@ -1,28 +1,34 @@
+import pytz
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
-from django.views.generic import (
-    CreateView, UpdateView, DetailView, TemplateView, View, DeleteView, FormView)
-from accounts.forms import AccountForm, AccountCommentForm, \
-    AccountAttachmentForm, EmailForm
-from accounts.models import Account, Tags, Email
-from common.models import User, Comment, Attachments
-from common.utils import INDCHOICES, COUNTRIES, \
-    CURRENCY_CODES, CASE_TYPE, PRIORITY_CHOICE, STATUS_CHOICE
-from contacts.models import Contact
-from opportunity.models import Opportunity, STAGES, SOURCES
-from cases.models import Case
-from django.urls import reverse_lazy, reverse
-from leads.models import Lead
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
-from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
+from django.views.generic import (CreateView, DeleteView, DetailView, FormView,
+                                  TemplateView, UpdateView, View)
+
+from accounts.forms import (AccountAttachmentForm, AccountCommentForm,
+                            AccountForm, EmailForm)
+from accounts.models import Account, Email, Tags
 from accounts.tasks import send_email, send_email_to_assigned_user
+from cases.models import Case
+from common.access_decorators_mixins import (MarketingAccessRequiredMixin,
+                                             SalesAccessRequiredMixin,
+                                             marketing_access_required,
+                                             sales_access_required)
+from common.models import Attachments, Comment, User
 from common.tasks import send_email_user_mentions
-from django.contrib.sites.shortcuts import get_current_site
-from common.access_decorators_mixins import (
-    sales_access_required, marketing_access_required, SalesAccessRequiredMixin, MarketingAccessRequiredMixin)
+from common.utils import (CASE_TYPE, COUNTRIES, CURRENCY_CODES, INDCHOICES,
+                          PRIORITY_CHOICE, STATUS_CHOICE)
+from contacts.models import Contact
+from leads.models import Lead
+from opportunity.models import SOURCES, STAGES, Opportunity
 from teams.models import Teams
+
 
 class AccountsListView(SalesAccessRequiredMixin, LoginRequiredMixin, TemplateView):
     model = Account
@@ -553,16 +559,18 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
 
 @login_required
 def create_mail(request, account_id):
-
+    account = get_object_or_404(Account, pk=account_id)
     if request.method == 'GET':
-        account = get_object_or_404(Account, pk=account_id)
         contacts_list = list(account.contacts.all().values('email'))
-        email_form = EmailForm()
+        TIMEZONE_CHOICES = [(tz, tz) for tz in pytz.common_timezones]
+        email_form = EmailForm(account=account)
         return render(request, 'create_mail_accounts.html', {'account_id': account_id,
-            'contacts_list': contacts_list, 'email_form': email_form})
+            'contacts_list': contacts_list, 'email_form': email_form,
+            "timezones": TIMEZONE_CHOICES, "settings_timezone": settings.TIME_ZONE})
 
     if request.method == 'POST':
-        form = EmailForm(request.POST)
+        form = EmailForm(request.POST, account=account)
+        import pdb; pdb.set_trace()
         if form.is_valid():
             send_email.delay(form.data.get('message_subject'), form.data.get('message_body'),
                 from_email=account_id, recipients=form.data.get('recipients').split(','))
@@ -571,13 +579,11 @@ def create_mail(request, account_id):
         else:
             return JsonResponse({'error': True, 'errors': form.errors})
 
-
 # @login_required
-# def get_account_details(request, account_id):
-#     from django.core import serializers
-#     import json
-#     fields = ['name', 'email', 'phone', 'industry', 'billing_address_line', 'billing_street', 'billing_city',
-#         'billing_state', 'billing_postcode', 'billing_country', 'website', 'description',
-#         'created_by__email', 'created_on', 'tags__name', 'status', 'contacts__email', 'assigned_to__email']
-#     data = serializers.serialize('json', Account.objects.filter(id=account_id), fields=fields)
-#     return JsonResponse({'data': json.loads(data)[0]})
+# @sales_access_required
+# def create_mail(request, pk):
+#     account_obj = get_object_or_404(Account, pk=pk)
+#     if request.method == 'GET':
+#         context = {}
+#         context['account_obj'] = account_obj
+#         return render(request, 'create_email_for_contacts.html')

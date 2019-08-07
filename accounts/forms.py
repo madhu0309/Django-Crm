@@ -97,9 +97,40 @@ class EmailForm(forms.Form):
     recipients = forms.CharField(max_length=500)
     message_subject = forms.CharField(max_length=500)
     message_body = forms.CharField(widget=forms.Textarea)
+    timezone = forms.CharField(max_length=200)
+    scheduled_date_time = forms.DateTimeField()
+    scheduled_later = forms.CharField(max_length=20)
 
     def __init__(self, *args, **kwargs):
+        self.account_obj = kwargs.pop('account', False)
         super(EmailForm, self).__init__(*args, **kwargs)
         self.fields['message_subject'].widget.attrs['class'] = 'form-control'
         self.fields['message_subject'].widget.attrs['required'] = True
         self.fields['message_subject'].widget.attrs['placeholder'] = 'Email Subject'
+
+        self.fields['scheduled_date_time'].required = False
+        self.fields['scheduled_later'].required = False
+        # self.fields['recipients'].queryset = account_obj.contacts.all()
+        # self.fields['recipients'].choices = account_obj.contacts.all().values('id', 'email')
+
+    def clean_recipients(self):
+        recipients = self.cleaned_data.get('recipients')
+        recipients = recipients.split(',')
+        contacts = list(self.account_obj.contacts.all().values_list('email'))
+        for recipient in recipients:
+            if recipient not in contacts:
+                raise forms.ValidationError('{} is not a valid contact'.format(recipient))
+
+        return recipients
+
+    def clean_scheduled_date_time(self):
+        scheduled_date_time = self.cleaned_data.get('scheduled_date_time')
+        if self.data.get('scheduled_later') not in ['', None, False, 'false']:
+            if scheduled_date_time in ['', None]:
+                raise forms.ValidationError('This Field is required.')
+
+        if self.data.get('scheduled_later') == 'true':
+            if scheduled_date_time in ['', None]:
+                raise forms.ValidationError('This Field is required.')
+
+        return scheduled_date_time

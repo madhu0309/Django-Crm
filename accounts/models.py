@@ -128,10 +128,14 @@ class Email(models.Model):
     message_subject = models.TextField(null=True)
     message_body = models.TextField(null=True)
 
+    # scheduled_date_time = models.DateTimeField(null=True)
+    # scheduled_later = models.BooleanField(default=False)
+    # is_sent = models.BooleanField(default=False)
+
     def __str__(self):
         return self.message_body
 
-    def save(self, *args, **kwargs):
-        # prevent user from sending messages to themselves
-        if self.sender.email != self.recipient.email:
-            super(Email, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     # prevent user from sending messages to themselves
+    #     if self.sender.email != self.recipient.email:
+    #         super(Email, self).save(*args, **kwargs)
