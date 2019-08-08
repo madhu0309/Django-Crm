@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (CreateView, DeleteView, DetailView, FormView,
@@ -93,6 +93,10 @@ class AccountsListView(SalesAccessRequiredMixin, LoginRequiredMixin, TemplateVie
         if self.request.POST.get('tab_status'):
             tab_status = self.request.POST.get('tab_status')
         context['tab_status'] = tab_status
+        TIMEZONE_CHOICES = [(tz, tz) for tz in pytz.common_timezones]
+        context["timezones"] = TIMEZONE_CHOICES
+        context["settings_timezone"] = settings.TIME_ZONE
+
         return context
 
     def get(self, request, *args, **kwargs):
@@ -558,8 +562,8 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
         return JsonResponse(data)
 
 @login_required
-def create_mail(request, account_id):
-    account = get_object_or_404(Account, pk=account_id)
+def create_mail(request):
+    # account = get_object_or_404(Account, pk=account_id)
     if request.method == 'GET':
         contacts_list = list(account.contacts.all().values('email'))
         TIMEZONE_CHOICES = [(tz, tz) for tz in pytz.common_timezones]
@@ -569,14 +573,23 @@ def create_mail(request, account_id):
             "timezones": TIMEZONE_CHOICES, "settings_timezone": settings.TIME_ZONE})
 
     if request.method == 'POST':
-        form = EmailForm(request.POST, account=account)
-        if form.is_valid():
-            send_email.delay(form.data.get('message_subject'), form.data.get('message_body'),
-                from_email=account_id, recipients=form.data.get('recipients').split(','))
+        account = Account.objects.filter(id=request.POST.get('account_id')).first()
+        if account:
+            form = EmailForm(request.POST, account=account)
+            import pdb; pdb.set_trace()
+            if form.is_valid():
+                contacts = form.data.get('recipients').split(',')
+                for contact in contacts:
+                    pass
+                    # email_obj_id = form.save()
+                    # email_obj_id.craete
+                    # send_email.delay(email_obj_id)
 
-            return JsonResponse({'error': False})
+                return JsonResponse({'error': False})
+            else:
+                return JsonResponse({'error': True, 'errors': form.errors})
         else:
-            return JsonResponse({'error': True, 'errors': form.errors})
+            return JsonResponse({'error':True, 'message': "Account does not exist."})
 
 # @login_required
 # @sales_access_required
@@ -586,3 +599,16 @@ def create_mail(request, account_id):
 #         context = {}
 #         context['account_obj'] = account_obj
 #         return render(request, 'create_email_for_contacts.html')
+
+
+def get_contacts_for_account(request):
+    account_id = request.POST.get('account_id')
+    if account_id:
+        account_obj = Account.objects.filter(pk=account_id).first()
+        if account_obj:
+            if account_obj.contacts.all():
+                data = list(account_obj.contacts.values('email'))
+                import json
+                return HttpResponse(json.dumps(data))
+        return JsonResponse([])
+    return JsonResponse([])

@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 import pytz
 from celery.task import task
@@ -61,7 +61,7 @@ def send_email(email_obj_id):
                 res = msg.send()
                 if res:
                     email_obj.is_sent = True
-                    email_obj.sent_at = datetime.datetime.now()
+                    email_obj.sent_at = datetime.now()
                     email_obj.save()
             except Exception as e:
                 print(e)

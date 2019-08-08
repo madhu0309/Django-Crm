@@ -10,6 +10,16 @@
 <link rel="stylesheet"
   href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css" />
 {% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'accounts:list' %}">Accounts</a></li>
+      <li class="breadcrumb-item active">Create Mail</li>
+    </ol>
+  </nav>
+{% endblock breadcrumb %}
+
 {% block content %}
 <!-- main_container starts here -->
 <div class="main_container">
@@ -251,7 +261,7 @@
         ['code-block', 'link']
       ]
     },
-    placeholder: 'Compose an epic...',
+    placeholder: 'Compose mail...',
     theme: 'snow' // or 'bubble'
   });
 

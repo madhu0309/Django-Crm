@@ -118,7 +118,7 @@ class Account(models.Model):
 
 
 class Email(models.Model):
-    sender = models.ForeignKey(
+    from_account = models.ForeignKey(
         Account, related_name='sent_email', on_delete=models.SET_NULL, null=True)
 
     recipient = models.ForeignKey(
@@ -132,6 +132,10 @@ class Email(models.Model):
     scheduled_later = models.BooleanField(default=False)
     is_sent = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True)
+
+    from_email = models.EmailField()
+    rendered_message_body = models.TextField(null=True)
+
 
     def __str__(self):
         return self.message_body

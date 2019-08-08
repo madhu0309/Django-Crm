@@ -103,6 +103,8 @@ class EmailForm(forms.Form):
 
     class Meta:
         model = Email
+        fields = ['recipients', 'message_subject', 'from_email',
+            'message_body', 'timezone', 'scheduled_date_time', 'scheduled_later']
 
     def __init__(self, *args, **kwargs):
         self.account_obj = kwargs.pop('account', False)
@@ -113,13 +115,11 @@ class EmailForm(forms.Form):
 
         self.fields['scheduled_date_time'].required = False
         self.fields['scheduled_later'].required = False
-        # self.fields['recipients'].queryset = account_obj.contacts.all()
-        # self.fields['recipients'].choices = account_obj.contacts.all().values('id', 'email')
 
     def clean_recipients(self):
         recipients = self.cleaned_data.get('recipients')
         recipients = recipients.split(',')
-        contacts = list(self.account_obj.contacts.all().values_list('email'))
+        contacts = list(self.account_obj.contacts.all().values_list('email', flat=True))
         for recipient in recipients:
             if recipient not in contacts:
                 raise forms.ValidationError('{} is not a valid contact'.format(recipient))
