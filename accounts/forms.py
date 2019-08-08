@@ -1,5 +1,5 @@
 from django import forms
-from .models import Account
+from .models import Account, Email
 from common.models import Comment, Attachments, User
 from leads.models import Lead
 from contacts.models import Contact
@@ -100,6 +100,9 @@ class EmailForm(forms.Form):
     timezone = forms.CharField(max_length=200)
     scheduled_date_time = forms.DateTimeField()
     scheduled_later = forms.CharField(max_length=20)
+
+    class Meta:
+        model = Email
 
     def __init__(self, *args, **kwargs):
         self.account_obj = kwargs.pop('account', False)

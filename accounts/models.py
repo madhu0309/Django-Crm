@@ -124,13 +124,14 @@ class Email(models.Model):
     recipient = models.ForeignKey(
         Contact, related_name='recieved_email', on_delete=models.SET_NULL, null=True)
 
-    sent_at = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(null=True)
     message_subject = models.TextField(null=True)
     message_body = models.TextField(null=True)
-
-    # scheduled_date_time = models.DateTimeField(null=True)
-    # scheduled_later = models.BooleanField(default=False)
-    # is_sent = models.BooleanField(default=False)
+    timezone = models.CharField(max_length=100, default='UTC')
+    scheduled_date_time = models.DateTimeField(null=True)
+    scheduled_later = models.BooleanField(default=False)
+    is_sent = models.BooleanField(default=False)
+    created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.message_body

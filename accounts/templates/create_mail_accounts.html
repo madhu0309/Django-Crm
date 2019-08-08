@@ -49,7 +49,8 @@
                       <div class="row">
                         <div class="col-md-4">
                           <div class="form-group">
-                            <label><input type="checkbox" name="scheduled_later" value="true" class="scheduled_later"> Schedule Later</label>
+                            <label><input type="checkbox" name="scheduled_later" value="true" class="scheduled_later">
+                              Schedule Later</label>
                             <span id="id_schedule_later"></span>
                           </div>
                         </div>
@@ -98,6 +99,26 @@
                             <div id="justText"></div>
                             <div id="justHtml"></div>
                         </div> -->
+                    <div class="col-md-12">
+                      <div class="heading">Personalization tags</div>
+                      <p class="desc">The following tags can be used on both Plain text or HTML. Add these tags to
+                        customize the email template, these tags will be replaced with the associated contact details
+                        while the mails are sent.</p>
+                      <ul>
+                        <li>
+                          <strong>Name: </strong>
+                          <code>{% templatetag openvariable %} name {% templatetag closevariable %}</code>
+                        </li>
+                        <li>
+                          <strong>Email: </strong>
+                          <code>{% templatetag openvariable %} email {% templatetag closevariable %}</code>
+                        </li>
+                        <!-- <li>
+                                      <strong>Two digit day of the month (eg. 01 to 31):</strong>
+                                      <code>[currentdaynumber]</code>
+                                    </li> -->
+                      </ul>
+                    </div>
                     <div class="col-md-12 text-center">
                       <button type="submit" class="primary_btn mar_btm save_btn">Send</button>
                       <a href="{% url 'accounts:create_mail' account_id %}" class="primary_btn">Cancel</a>
@@ -146,7 +167,7 @@
       else {
         $('.timezone-div').hide();
       }
-        if ($(this).is(":checked")) {
+      if ($(this).is(":checked")) {
         $('.timezone-div').show();
       } else {
         $('.timezone-div').hide();

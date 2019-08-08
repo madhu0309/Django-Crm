@@ -570,7 +570,6 @@ def create_mail(request, account_id):
 
     if request.method == 'POST':
         form = EmailForm(request.POST, account=account)
-        import pdb; pdb.set_trace()
         if form.is_valid():
             send_email.delay(form.data.get('message_subject'), form.data.get('message_body'),
                 from_email=account_id, recipients=form.data.get('recipients').split(','))
