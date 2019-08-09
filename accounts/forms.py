@@ -93,38 +93,48 @@ class AccountAttachmentForm(forms.ModelForm):
         fields = ('attachment', 'account')
 
 
-class EmailForm(forms.Form):
-    recipients = forms.CharField(max_length=500)
-    message_subject = forms.CharField(max_length=500)
-    message_body = forms.CharField(widget=forms.Textarea)
-    timezone = forms.CharField(max_length=200)
-    scheduled_date_time = forms.DateTimeField()
-    scheduled_later = forms.CharField(max_length=20)
+class EmailForm(forms.ModelForm):
+    recipients = forms.CharField()
+    # message_subject = forms.CharField(max_length=500)
+    # message_body = forms.CharField(widget=forms.Textarea)
+    # timezone = forms.CharField(max_length=200)
+    # scheduled_date_time = forms.DateTimeField()
+    # scheduled_later = forms.CharField(max_length=20)
+
+    def __init__(self, *args, **kwargs):
+        self.account_obj = kwargs.pop('account', False)
+        super(EmailForm, self).__init__(*args, **kwargs)
+        # self.fields['message_subject'].widget.attrs['class'] = 'form-control'
+        # self.fields['message_subject'].widget.attrs['required'] = True
+        # self.fields['message_subject'].widget.attrs['placeholder'] = 'Email Subject'
+
+        # self.fields['recipient'].required = False
+        self.fields['from_email'].required = True
+        self.fields['message_subject'].required = True
+        self.fields['message_body'].required = True
+
+        self.fields['scheduled_date_time'].required = False
+        self.fields['scheduled_later'].required = False
+        self.fields['recipients'].required = True
+        self.fields['recipients'].query = self.account_obj.contacts.all()
+        # self.fields['recipients'].choices = list((contact.get('id'), contact.get('email'))
+        #     for contact in self.account_obj.contacts.values('id', 'email'))
 
     class Meta:
         model = Email
         fields = ['recipients', 'message_subject', 'from_email',
             'message_body', 'timezone', 'scheduled_date_time', 'scheduled_later']
 
-    def __init__(self, *args, **kwargs):
-        self.account_obj = kwargs.pop('account', False)
-        super(EmailForm, self).__init__(*args, **kwargs)
-        self.fields['message_subject'].widget.attrs['class'] = 'form-control'
-        self.fields['message_subject'].widget.attrs['required'] = True
-        self.fields['message_subject'].widget.attrs['placeholder'] = 'Email Subject'
-
-        self.fields['scheduled_date_time'].required = False
-        self.fields['scheduled_later'].required = False
-
-    def clean_recipients(self):
-        recipients = self.cleaned_data.get('recipients')
-        recipients = recipients.split(',')
-        contacts = list(self.account_obj.contacts.all().values_list('email', flat=True))
-        for recipient in recipients:
-            if recipient not in contacts:
-                raise forms.ValidationError('{} is not a valid contact'.format(recipient))
-
-        return recipients
+    # def clean_recipients(self):
+    #     recipients = self.cleaned_data.get('recipients')
+    #     recipients = recipients.split(',')
+    #     if len(recipients) == 0:
+    #         raise forms.ValidationError('This field is required.')
+    #     contacts = list(self.account_obj.contacts.values_list('id', flat=True))
+    #     for recipient in recipients:
+    #         if int(recipient) not in contacts:
+    #             raise forms.ValidationError('{} is not a valid choice.'.format(recipient))
+    #     return recipients
 
     def clean_scheduled_date_time(self):
         scheduled_date_time = self.cleaned_data.get('scheduled_date_time')
@@ -137,3 +147,18 @@ class EmailForm(forms.Form):
                 raise forms.ValidationError('This Field is required.')
 
         return scheduled_date_time
+
+
+    def clean_message_body(self):
+        message_body = self.cleaned_data.get('message_body')
+        count = 0
+        for i in message_body:
+            if i == "{":
+                count += 1
+            elif i == "}":
+                count -= 1
+            if count < 0:
+                raise forms.ValidationError('Brackets do not match, Enter valid tags.')
+        if count != 0:
+            raise forms.ValidationError('Brackets do not match, Enter valid tags.')
+        return message_body

@@ -686,8 +686,9 @@
                                     <option value="">email</option>
                                   </select> -->
                           <input class="form-control" type="text" placeholder="From Email" name="from_email" id="set_from_email">
+                        <span id="id_from_email"></span>
                         </div>
-                        <span id="id_recipients"></span>
+                        <span id="id_recipientsa"></span>
                       </div>
                       <div class="col-md-12">
                         <div class="form-group">
@@ -946,7 +947,7 @@
         contactOptions = [];
         contactOptions = res;
         $('#_id_recipients').selectize({
-          valueField: 'email',
+          valueField: 'id',
           labelField: 'name',
           searchField: ['name', 'email'],
           // options: [
@@ -979,6 +980,7 @@
   $("#send_email_to_contacts").on('hidden.bs.modal', function () {
     $('#_id_recipients')[0].selectize.destroy()
     $('p.failure').remove();
+    $('#_id_recipients').val('')
 
   })
 

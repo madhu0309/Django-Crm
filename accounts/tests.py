@@ -401,7 +401,7 @@ class test_account_forms(AccountCreateTest, TestCase):
         response = self.client.get(reverse('accounts:new_account'))
         self.assertEqual(200, response.status_code)
 
-        response = self.client.get(reverse('accounts:create_mail', args=(self.account.id,)))
+        response = self.client.get(reverse('accounts:create_mail') + '?account_id={}'.format(self.account.id))
         self.assertEqual(200, response.status_code)
 
 class test_account_models(AccountCreateTest, TestCase):

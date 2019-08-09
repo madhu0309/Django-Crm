@@ -205,7 +205,7 @@ class CreateAccountView(SalesAccessRequiredMixin, LoginRequiredMixin, CreateView
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
         # context["contact_count"] = Contact.objects.count()
-        if self.request.user.role == 'ADMIN':
+        if self.request.user.role == 'ADMIN' or self.request.user.is_superuser:
             context["leads"] = Lead.objects.exclude(
                 status__in=['converted', 'closed'])
             context["contacts"] = Contact.objects.all()
@@ -269,6 +269,7 @@ class AccountDetailView(SalesAccessRequiredMixin, LoginRequiredMixin, DetailView
             'comment_permission': comment_permission,
             'tasks':account_record.accounts_tasks.all(),
             'invoices':account_record.accounts_invoices.all(),
+            'emails':account_record.sent_email.all(),
             'users_mention': users_mention,
         })
         return context
@@ -563,12 +564,12 @@ class DeleteAttachmentsView(LoginRequiredMixin, View):
 
 @login_required
 def create_mail(request):
-    # account = get_object_or_404(Account, pk=account_id)
     if request.method == 'GET':
+        account = get_object_or_404(Account, pk=request.GET.get('account_id'))
         contacts_list = list(account.contacts.all().values('email'))
         TIMEZONE_CHOICES = [(tz, tz) for tz in pytz.common_timezones]
         email_form = EmailForm(account=account)
-        return render(request, 'create_mail_accounts.html', {'account_id': account_id,
+        return render(request, 'create_mail_accounts.html', {'account_id': request.GET.get('account_id'),
             'contacts_list': contacts_list, 'email_form': email_form,
             "timezones": TIMEZONE_CHOICES, "settings_timezone": settings.TIME_ZONE})
 
@@ -576,14 +577,22 @@ def create_mail(request):
         account = Account.objects.filter(id=request.POST.get('account_id')).first()
         if account:
             form = EmailForm(request.POST, account=account)
-            import pdb; pdb.set_trace()
             if form.is_valid():
                 contacts = form.data.get('recipients').split(',')
-                for contact in contacts:
-                    pass
-                    # email_obj_id = form.save()
-                    # email_obj_id.craete
-                    # send_email.delay(email_obj_id)
+                email_obj = Email.objects.create(
+                    from_account=account,
+                    message_body=form.cleaned_data.get('message_body'),
+                    message_subject=form.cleaned_data.get('message_subject'),
+                    from_email=form.cleaned_data.get('from_email'),
+                    timezone=form.cleaned_data.get('timezone'),
+                )
+                email_obj.recipients.add(*contacts)
+                if request.POST.get('scheduled_later') != 'true':
+                    send_email.delay(email_obj.id)
+                else:
+                    email_obj.scheduled_later = True
+                    email_obj.scheduled_date_time = form.cleaned_data.get('scheduled_date_time')
+                    email_obj.save()
 
                 return JsonResponse({'error': False})
             else:
@@ -607,8 +616,21 @@ def get_contacts_for_account(request):
         account_obj = Account.objects.filter(pk=account_id).first()
         if account_obj:
             if account_obj.contacts.all():
-                data = list(account_obj.contacts.values('email'))
+                data = list(account_obj.contacts.values('id', 'email'))
                 import json
                 return HttpResponse(json.dumps(data))
         return JsonResponse([])
     return JsonResponse([])
+
+
+def get_email_data_for_account(request):
+    email_obj = Email.objects.filter(id=request.POST.get('email_account_id')).first()
+    if email_obj:
+        ctx  = {}
+        ctx['subject'] = email_obj.message_subject
+        ctx['body'] = email_obj.message_body
+        ctx['contacts'] = email_obj.recipients.values('email')
+        import pdb; pdb.set_trace()
+        return JsonResponse(ctx)
+    else:
+        return JsonResponse({'error': True, 'data' : 'No emails found.'})
