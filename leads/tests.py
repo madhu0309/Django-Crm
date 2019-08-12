@@ -627,8 +627,6 @@ class TestCommentAddResponse(TestLeadModel, TestCase):
         response = self.client.get(reverse('leads:view_lead', args=(self.lead_1.id,)))
         self.assertEqual(response.status_code, 403)
 
-        # import pdb; pdb.set_trace()
-
         response = self.client.get(reverse('leads:view_lead', args=(self.lead1.id,)))
         self.assertEqual(response.status_code, 200)
 
@@ -636,7 +634,6 @@ class TestCommentAddResponse(TestLeadModel, TestCase):
         self.client.login(email='janeLead2@example.com', password="password")
         self.lead_user = Lead.objects.create(title="jane doe lead 2", created_by=self.user2)
         response = self.client.get(reverse('leads:view_lead', args=(self.lead_user.id,)))
-        # import pdb; pdb.set_trace()
         self.assertEqual(response.status_code, 200)
 
         self.client.logout()

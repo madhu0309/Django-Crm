@@ -22,7 +22,7 @@ def send_email(email_obj_id):
         from_email = email_obj.from_email
         contacts = email_obj.recipients.all()
         for contact_obj in contacts:
-            if EmailLog.objects.filter(email=email_obj, contact=contact_obj, is_sent=False):
+            if not EmailLog.objects.filter(email=email_obj, contact=contact_obj, is_sent=True).exists():
                 html = email_obj.message_body
                 context_data = {
                     'email': contact_obj.email if contact_obj.email else '',

@@ -629,8 +629,9 @@ def get_email_data_for_account(request):
         ctx  = {}
         ctx['subject'] = email_obj.message_subject
         ctx['body'] = email_obj.message_body
-        ctx['contacts'] = email_obj.recipients.values('email')
-        import pdb; pdb.set_trace()
+        ctx['created_on'] = email_obj.created_on
+        ctx['contacts'] = list(email_obj.recipients.values('email'))
+        ctx['error'] = False
         return JsonResponse(ctx)
     else:
         return JsonResponse({'error': True, 'data' : 'No emails found.'})
