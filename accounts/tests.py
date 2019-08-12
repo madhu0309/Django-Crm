@@ -1,11 +1,13 @@
-from django.test import TestCase
-from cases.models import Case
-from accounts.models import Account, Tags
-from common.models import User, Comment, Attachments, Address
-from django.urls import reverse
-from leads.models import Lead
-from contacts.models import Contact
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase
+from django.urls import reverse
+from django.utils import timezone
+
+from accounts.models import Account, Tags, Email
+from cases.models import Case
+from common.models import Address, Attachments, Comment, User
+from contacts.models import Contact
+from leads.models import Lead
 from teams.models import Teams
 
 
@@ -404,6 +406,74 @@ class test_account_forms(AccountCreateTest, TestCase):
         response = self.client.get(reverse('accounts:create_mail') + '?account_id={}'.format(self.account.id))
         self.assertEqual(200, response.status_code)
 
+        data = {
+            'account_id': self.account.id,
+            'message_body': 'message body {{email}}',
+            'message_subject':'message subject',
+            'recipients':[self.contact.id, self.contact_user1.id],
+            'scheduled_date_time': timezone.now(),
+        }
+
+        response = self.client.post(reverse('accounts:create_mail'), data)
+        self.assertEqual(200, response.status_code)
+
+        data = {
+            'account_id': self.account.id,
+            'message_body': 'message body {{email}',
+            'message_subject':'message subject',
+            'recipients':[self.contact.id, self.contact_user1.id],
+            'scheduled_date_time': '',
+            'scheduled_later': 'true',
+        }
+
+        response = self.client.post(reverse('accounts:create_mail'), data)
+        self.assertEqual(200, response.status_code)
+
+        data = {
+            'account_id': self.account.id,
+            'message_body': 'message body {{email}}}',
+            'message_subject':'message subject',
+            'recipients':[self.contact.id, self.contact_user1.id],
+            'scheduled_date_time': timezone.now().strftime('%Y-%m-%d %H:%M'),
+        }
+
+        response = self.client.post(reverse('accounts:create_mail'), data)
+        self.assertEqual(200, response.status_code)
+
+        data = {
+            'account_id': self.account.id,
+            'message_body': 'message body {{email}}',
+            'message_subject':'message subject',
+            'recipients':[self.contact.id, self.contact_user1.id],
+            'scheduled_date_time': timezone.now().strftime('%Y-%m-%d %H:%M'),
+            'scheduled_later':'true',
+        }
+        response = self.client.post(reverse('accounts:create_mail'), data)
+        self.assertEqual(200, response.status_code)
+
+        data = {
+            'account_id': self.account.id,
+            'message_body': 'message body {{email}}',
+            'message_subject':'message subject',
+            'recipients':[self.contact.id, self.contact_user1.id],
+            'from_email': 'jane@doe.com',
+            'timezone':'UTC',
+        }
+        response = self.client.post(reverse('accounts:create_mail'), data)
+        self.assertEqual(200, response.status_code)
+
+        data = {
+            'account_id': 0,
+            'message_body': 'message body {{email}}',
+            'message_subject':'message subject',
+            'recipients':[self.contact.id, self.contact_user1.id],
+            'from_email': 'jane@doe.com',
+            'timezone':'UTC',
+        }
+        response = self.client.post(reverse('accounts:create_mail'), data)
+        self.assertEqual(200, response.status_code)
+
+
 class test_account_models(AccountCreateTest, TestCase):
 
     def test_account_model(self):
@@ -656,3 +726,36 @@ class test_account_views_list(AccountCreateTest, TestCase):
 
         response = self.client.post(reverse('accounts:add_attachment'), {'accountid':self.account.id, 'comment':''})
         self.assertEqual(200, response.status_code)
+
+        email_str = Email.objects.create(message_subject='message subject', message_body='message body')
+        self.assertEqual(str(email_str), 'message subject')
+
+        response = self.client.post(reverse('accounts:get_contacts_for_account'), {
+            'account_id':self.account.id
+        })
+        self.assertEqual(200, response.status_code)
+
+        self.account.contacts.add(self.contact.id, self.contact_user1.id)
+
+        response = self.client.post(reverse('accounts:get_contacts_for_account'), {
+            'account_id':self.account.id
+        })
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.get(reverse('accounts:get_contacts_for_account'), {
+            'account_id':self.account.id
+        })
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.post(reverse('accounts:get_email_data_for_account'), {
+            'email_account_id':email_str.id
+        })
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.get(reverse('accounts:get_email_data_for_account'), {
+            'email_account_id':email_str.id
+        })
+        self.assertEqual(200, response.status_code)
+
+
+

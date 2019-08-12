@@ -619,8 +619,8 @@ def get_contacts_for_account(request):
                 data = list(account_obj.contacts.values('id', 'email'))
                 import json
                 return HttpResponse(json.dumps(data))
-        return JsonResponse([])
-    return JsonResponse([])
+        return JsonResponse({})
+    return JsonResponse({})
 
 
 def get_email_data_for_account(request):

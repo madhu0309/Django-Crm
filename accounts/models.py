@@ -132,7 +132,7 @@ class Email(models.Model):
 
 
     def __str__(self):
-        return self.message_body
+        return self.message_subject
 
 
 
