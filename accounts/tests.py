@@ -51,21 +51,11 @@ class AccountCreateTest(object):
         )
         self.client.login(email='johnAccount@example.com', password='password')
         self.lead = Lead.objects.create(title="LeadCreation",
-                                        first_name="john lead",
-                                        last_name="doe",
-                                        email="johnLead@example.com",
-                                        address_line="",
-                                        street="street name",
-                                        city="city name",
-                                        state="state",
-                                        postcode="5079",
-                                        country="IN",
-                                        website="www.example.com",
-                                        status="assigned",
-                                        source="Call",
-                                        opportunity_amount="700",
-                                        description="lead description",
-                                        created_by=self.user)
+            first_name="john lead",last_name="doe",email="johnLead@example.com",
+            address_line="",street="street name",city="city name",
+            state="state",postcode="5079",country="IN",
+            website="www.example.com",status="assigned",source="Call",
+            opportunity_amount="700",description="lead description",created_by=self.user)
         self.lead.assigned_to.add(self.user)
         self.address = Address.objects.create(
             street="street number",
@@ -348,25 +338,25 @@ class TestCreateLeadPostView(AccountCreateTest, TestCase):
         upload_file = open('static/images/user.png', 'rb')
         response = self.client.post(reverse(
             'accounts:new_account'), {"name": "janeLead",
-                                      "email": "janeLead@example.com",
-                                      "phone": "+911234567891",
-                                      "billing_address_line": "address line",
-                                      "billing_street": "street name",
-                                      "billing_city": "city name",
-                                      "billing_state": "usa",
-                                      "billing_postcode": "1234",
-                                      "billing_country": "IN",
-                                      "website": "www.example.com",
-                                      "created_by": self.user,
-                                      "status": "open",
-                                      "industry": "SOFTWARE",
-                                      "description": "Test description",
-                                      "lead": str(self.lead.id),
-                                      'contacts': str(self.contact.id),
-                                      'tags': 'tag1',
-                                      'account_attachment': SimpleUploadedFile(
-                                          upload_file.name, upload_file.read())
-                                      },
+            "email": "janeLead@example.com",
+            "phone": "+911234567891",
+            "billing_address_line": "address line",
+            "billing_street": "street name",
+            "billing_city": "city name",
+            "billing_state": "usa",
+            "billing_postcode": "1234",
+            "billing_country": "IN",
+            "website": "www.example.com",
+            "created_by": self.user,
+            "status": "open",
+            "industry": "SOFTWARE",
+            "description": "Test description",
+            "lead": str(self.lead.id),
+            'contacts': str(self.contact.id),
+            'tags': 'tag1',
+            'account_attachment': SimpleUploadedFile(
+            upload_file.name, upload_file.read())
+            },
             HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(response.status_code, 200)
 
@@ -469,6 +459,19 @@ class test_account_forms(AccountCreateTest, TestCase):
             'recipients':[self.contact.id, self.contact_user1.id],
             'from_email': 'jane@doe.com',
             'timezone':'UTC',
+        }
+        response = self.client.post(reverse('accounts:create_mail'), data)
+        self.assertEqual(200, response.status_code)
+
+        data = {
+            'account_id': self.account.id,
+            'message_body': 'message body {{email}}',
+            'message_subject':'message subject',
+            'recipients':[self.contact.id, self.contact_user1.id],
+            'from_email': 'jane@doe.com',
+            'timezone':'UTC',
+            'scheduled_later': 'true',
+            'scheduled_date_time': timezone.now().strftime('%Y-%m-%d %H:%M'),
         }
         response = self.client.post(reverse('accounts:create_mail'), data)
         self.assertEqual(200, response.status_code)
@@ -758,4 +761,43 @@ class test_account_views_list(AccountCreateTest, TestCase):
         self.assertEqual(200, response.status_code)
 
 
+class TestAccountUserMentions(AccountCreateTest, TestCase):
 
+    def test_account_views(self):
+        self.user_created_by = User.objects.create(
+            first_name="jane",
+            username='janeAccountCreatedBy',
+            email='janeAccountCreatedBy@example.com',
+            role="USER",
+            has_sales_access=True)
+        self.user_created_by.set_password('password')
+        self.user_created_by.save()
+
+        self.user_assigned_to = User.objects.create(
+            first_name="jane",
+            username='janeAccountUserAssigned',
+            email='janeAccountUserAssigned@example.com',
+            role="USER",
+            has_sales_access=True)
+        self.user_assigned_to.set_password('password')
+        self.user_assigned_to.save()
+
+        self.account = Account.objects.create(
+            name="john doe acc created by", email="johndoe@example.com", phone="123456789",
+            billing_address_line="", billing_street="street name",
+            billing_city="city name",
+            billing_state="state", billing_postcode="1234",
+            billing_country="US",
+            website="www.example.como", created_by=self.user_created_by, status="open",
+            industry="SOFTWARE", description="Testing")
+
+        self.account.assigned_to.add(self.user_assigned_to.id)
+        self.client.logout()
+        self.client.login(email='janeAccountCreatedBy@example.com', password='password')
+        response = self.client.get(reverse('accounts:view_account', args=(self.account.id,)))
+        self.assertEqual(200, response.status_code)
+
+        self.client.logout()
+        self.client.login(email='janeAccountUserAssigned@example.com', password='password')
+        response = self.client.get(reverse('accounts:view_account', args=(self.account.id,)))
+        self.assertEqual(200, response.status_code)

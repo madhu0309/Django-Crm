@@ -554,9 +554,73 @@ class TestCasesListViewForUser(CaseCreation, TestCase):
             {'case_id': self.case.id})
         self.assertEqual(403, response.status_code)
 
+        data = {
+            'comment':'comment update',
+            'caseid': self.case.id,
+            'commentid': self.comment.id
+        }
+
+        response = self.client.post(reverse('cases:edit_comment'), data)
+        self.assertEqual(200, response.status_code)
+
         response = self.client.post(reverse('cases:close_case') + '?view_account={}'.format(self.account.id),
             {'case_id': self.case.id})
         self.assertEqual(403, response.status_code)
+        data = {
+            'caseid': self.case.id,
+            'comment': ''
+        }
+        response = self.client.post(reverse('cases:add_comment'), data)
+        self.assertEqual(200, response.status_code)
+
+        self.client.logout()
+        self.client.login(email='johnDoeCase@example.com', password='password')
+        response = self.client.get(reverse('cases:select_contacts') + '?account={}'.format(self.account.id))
+        self.assertEqual(200, response.status_code)
+
+        data = {
+            'caseid': self.case.id,
+            'comment': ''
+        }
+        response = self.client.post(reverse('cases:add_comment'), data)
+        self.assertEqual(200, response.status_code)
+
+
+        data = {
+            'comment':'comment update',
+            'caseid': self.case.id,
+            'commentid': self.comment.id
+        }
+
+        response = self.client.post(reverse('cases:edit_comment'), data)
+        self.assertEqual(200, response.status_code)
+
+        data = {
+            'comment':'',
+            'caseid': self.case.id,
+            'commentid': self.comment.id
+        }
+
+        response = self.client.post(reverse('cases:edit_comment'), data)
+        self.assertEqual(200, response.status_code)
+
+        self.client.logout()
+        self.client.login(username='joedoeCase7@user.com', password='password')
+        data = {
+            'comment_id': self.comment.id
+        }
+        response = self.client.post(reverse('cases:remove_comment'), data)
+        self.assertEqual(200, response.status_code)
+
+
+        self.client.logout()
+        self.client.login(email='johnDoeCase@example.com', password='password')
+        data = {
+            'caseid': self.case.id,
+            'attachment':'',
+        }
+        response = self.client.post(reverse('cases:add_attachment'), data)
+        self.assertEqual(200, response.status_code)
 
 
     # def test_comment_add_error(self):
