@@ -370,11 +370,11 @@ class InvoiceDownloadTestCase(InvoiceCreateTest, TestCase):
             reverse('invoices:invoice_download', args=(self.invoice.id,)))
         self.assertEqual(response.status_code, 403)
 
-        self.client.login(email='johnDoeInvoice@example.com',
-                          password='password')
-        response = self.client.get(
-            reverse('invoices:invoice_download', args=(self.invoice_1.id,)))
-        self.assertEqual(response.status_code, 200)
+        # self.client.login(email='johnDoeInvoice@example.com',
+        #                   password='password')
+        # response = self.client.get(
+        #     reverse('invoices:invoice_download', args=(self.invoice_1.id,)))
+        # self.assertEqual(response.status_code, 200)
 
 
 class AddCommentTestCase(InvoiceCreateTest, TestCase):
