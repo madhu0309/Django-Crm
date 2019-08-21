@@ -33,13 +33,13 @@ from common.access_decorators_mixins import marketing_access_required, Marketing
 TIMEZONE_CHOICES = [(tz, tz) for tz in pytz.common_timezones]
 
 
-def get_exact_match(query, m2m_field, ids):
-    # query = tasks_list.annotate(count=Count(m2m_field))\
-    #             .filter(count=len(ids))
-    query = query
-    for _id in ids:
-        query = query.filter(**{m2m_field: _id})
-    return query
+# def get_exact_match(query, m2m_field, ids):
+#     # query = tasks_list.annotate(count=Count(m2m_field))\
+#     #             .filter(count=len(ids))
+#     query = query
+#     for _id in ids:
+#         query = query.filter(**{m2m_field: _id})
+#     return query
 
 
 @login_required(login_url='/login')
@@ -1058,7 +1058,14 @@ def download_failed_contacts(request, contact_list_id):
             'company name,email,first name,last name,city,state\n',
         ]
         for contact in failed_contacts:
-            data.append((', '.join(contact.values()) + '\n'))
+            data.append(
+                str(contact.get('company_name')) + ',' +
+                str(contact.get('email')) + ',' +
+                str(contact.get('name')) + ',' +
+                str(contact.get('last_name')) + ',' +
+                str(contact.get('city')) + ',' +
+                str(contact.get('state')) + '\n'
+            )
         response = HttpResponse(
             data, content_type='text/plain')
         response['Content-Disposition'] = 'attachment; filename={}'.format(

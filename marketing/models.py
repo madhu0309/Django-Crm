@@ -397,3 +397,6 @@ class ContactEmailCampaign(models.Model):
 
     def created_on_arrow(self):
         return arrow.get(self.created_on).humanize()
+
+    class Meta:
+        ordering = ('created_on',)

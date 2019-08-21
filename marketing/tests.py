@@ -1,14 +1,17 @@
 import os
 from datetime import datetime, timedelta
 
+import openpyxl
+import xlwt
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.shortcuts import reverse
 from django.test import Client, TestCase
 
 from common.models import User
 from marketing.models import (Campaign, CampaignLinkClick, CampaignLog,
-                              CampaignOpen, Contact, ContactList,
-                              EmailTemplate, FailedContact, Link, Tag)
+                              CampaignOpen, Contact, ContactEmailCampaign,
+                              ContactList, EmailTemplate, FailedContact, Link,
+                              Tag)
 from marketing.views import *
 
 
@@ -37,6 +40,9 @@ class TestMarketingModel(object):
         self.contact_list_user = ContactList.objects.create(
             name='contacts_list by user', created_by=self.user1)
 
+        self.contact_list_user_1 = ContactList.objects.create(
+            name='contacts_list by user 1', created_by=self.user1)
+
         self.contact = Contact.objects.create(
             name='john doe', email='johnDoe@email.com', created_by=self.user)
         self.contact_1 = Contact.objects.create(
@@ -50,7 +56,13 @@ class TestMarketingModel(object):
         self.contact_4 = Contact.objects.create(
             name='jill Doe', email='jilldoe@email.com')
         self.contact_4.contact_list.add(self.contact_list.id)
-
+        self.contact_5 = Contact.objects.create(
+            name='jack Doe', email='jack doe@email.com',
+            is_bounced=True)
+        self.contact_5.contact_list.add(self.contact_list.id)
+        self.contact_6 = Contact.objects.create(
+            name='contact 6', email='contact6@email.com')
+        self.contact_6.contact_list.add(self.contact_list.id)
         self.failed_contact = FailedContact.objects.create(
             name='jill Doe', email='jilldoe@email.com')
         self.failed_contact.contact_list.add(self.contact_list.id)
@@ -83,6 +95,10 @@ class TestMarketingModel(object):
             link=self.link,
             contact=self.contact,
             ip_address='127.0.0.1'
+        )
+
+        self.contact_email_campaign = ContactEmailCampaign.objects.create(
+            name='conta@admin', email='contactEmail@admin.com'
         )
 
 
@@ -765,4 +781,317 @@ class TestContactListDetail(TestMarketingModel, TestCase):
             reverse('marketing:delete_multiple_contacts'), data)
         self.assertEqual(response.status_code, 200)
 
+    def test_delete_all_contacts(self):
+        self.client.login(username='janeMarketing@example.com', password='password')
+        response = self.client.get(
+            reverse('marketing:delete_all_contacts', args=(self.contact_list.id,)))
+        self.assertEqual(response.status_code, 403)
 
+        self.client.login(username='john@example.com', password='password')
+        response = self.client.get(
+            reverse('marketing:delete_all_contacts', args=(self.contact_list.id,)))
+        self.assertEqual(response.status_code, 302)
+
+        self.client.login(username='john@example.com', password='password')
+        response = self.client.get(
+            reverse('marketing:delete_all_contacts', args=(self.contact_list.id,)
+            ) + '?bounced=true')
+        self.assertEqual(response.status_code, 302)
+
+    def test_download_failed_contacts(self):
+        self.client.login(username='janeMarketing@example.com', password='password')
+        response = self.client.get(
+            reverse('marketing:download_failed_contacts', args=(self.contact_list.id,)))
+        self.assertEqual(response.status_code, 403)
+
+        self.client.login(username='john@example.com', password='password')
+        response = self.client.get(
+            reverse('marketing:download_failed_contacts', args=(self.contact_list.id,)))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(
+            reverse('marketing:download_failed_contacts', args=(self.contact_list_user_1.id,)))
+        self.assertEqual(response.status_code, 200)
+
+    def test_list_all_email_for_campaigns(self):
+        self.client.login(username='john@example.com', password='password')
+        response = self.client.get(
+            reverse('marketing:list_all_emails_for_campaigns'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_add_email_for_campaigns(self):
+        self.client.login(username='john@example.com', password='password')
+        response = self.client.get(
+            reverse('marketing:add_email_for_campaigns'))
+        self.assertEqual(response.status_code, 200)
+
+        data = {}
+
+        response = self.client.post(
+            reverse('marketing:add_email_for_campaigns'), data)
+        self.assertEqual(response.status_code, 200)
+
+        data = {
+            'name':'admin name',
+            'email':'admin@email.com'
+        }
+
+        response = self.client.post(
+            reverse('marketing:add_email_for_campaigns'), data)
+        self.assertEqual(response.status_code, 200)
+
+    def test_edit_email_for_campaigns(self):
+        self.client.login(username='john@example.com', password='password')
+        response = self.client.get(
+            reverse('marketing:edit_email_for_campaigns', args=(self.contact_email_campaign.id,)))
+        self.assertEqual(response.status_code, 200)
+
+        data = {}
+
+        response = self.client.post(
+            reverse('marketing:edit_email_for_campaigns', args=(self.contact_email_campaign.id,)), data)
+        self.assertEqual(response.status_code, 200)
+
+        data = {
+            'name':'admin name',
+            'email':'adminContact@email.com'
+        }
+
+        response = self.client.post(
+            reverse('marketing:edit_email_for_campaigns', args=(self.contact_email_campaign.id,)), data)
+        self.assertEqual(response.status_code, 200)
+
+    def test_delete_email_for_campaigns(self):
+        self.client.login(username='john@example.com', password='password')
+        response = self.client.get(
+            reverse('marketing:delete_email_for_campaigns', args=(self.contact_email_campaign.id,)))
+        self.assertEqual(response.status_code, 302)
+
+
+class TestContactListFileUploadForXlsxAndXls(TestMarketingModel, TestCase):
+
+    def test_contact_list_file_upload_for_xlsx(self):
+        self.client.login(username='john@example.com', password='password')
+        response = self.client.get(
+            reverse('marketing:contact_list_new'))
+        self.assertEqual(response.status_code, 200)
+
+        file_headers = ['company name', 'email', 'first name', 'last name', 'city', 'state']
+        file_content = [
+            ['company_name_1', 'user1@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_2', 'user2@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_3', 'user3@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_4', 'user4@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+        ]
+        wb = openpyxl.workbook.Workbook()
+        dest_filename = 'marketing/test_1.xlsx'
+        ws1 = wb.active
+        ws1.title = 'test xlsx files'
+        ws1.append(file_headers)
+        for row in file_content:
+            ws1.append(row)
+        wb.save(filename=dest_filename)
+        with open(dest_filename, 'rb') as fp:
+            data = {
+                'name': 'sample_test xlsx', 'contacts_file': fp, 'tags':''
+            }
+            response = self.client.post(reverse('marketing:contact_list_new'), data)
+            self.assertEqual(response.status_code, 201)
+        os.remove(dest_filename)
+
+        # missing email header
+        file_headers = ['company name', 'first name', 'last name', 'city', 'state']
+        file_content = [
+            ['company_name_1', 'user1@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_2', 'user2@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_3', 'user3@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_4', 'user4@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+        ]
+
+        wb = openpyxl.workbook.Workbook()
+        dest_filename = 'marketing/test_1.xlsx'
+        ws1 = wb.active
+        ws1.title = 'test xlsx files'
+        ws1.append(file_headers)
+        for row in file_content:
+            ws1.append(row)
+        wb.save(filename=dest_filename)
+        with open(dest_filename, 'rb') as fp:
+            data = {
+                'name': 'sample_test xlsx', 'contacts_file': fp, 'tags':''
+            }
+            response = self.client.post(reverse('marketing:contact_list_new'), data)
+            self.assertEqual(response.status_code, 200)
+        os.remove(dest_filename)
+
+        # missing all headers
+        file_headers = []
+        file_content = [
+            ['company_name_1', 'user1@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_2', 'user2@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_3', 'user3@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_4', 'user4@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+        ]
+
+        wb = openpyxl.workbook.Workbook()
+        dest_filename = 'marketing/test_1.xlsx'
+        ws1 = wb.active
+        ws1.title = 'test xlsx files'
+        ws1.append(file_headers)
+        for row in file_content:
+            ws1.append(row)
+        wb.save(filename=dest_filename)
+        with open(dest_filename, 'rb') as fp:
+            data = {
+                'name': 'sample_test xlsx', 'contacts_file': fp, 'tags':''
+            }
+            response = self.client.post(reverse('marketing:contact_list_new'), data)
+            self.assertEqual(response.status_code, 200)
+        os.remove(dest_filename)
+
+        # invalid emails
+        file_headers = ['company name', 'email', 'first name', 'last name', 'city', 'state']
+        file_content = [
+            ['company_name_1', 'user1.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_3', 'user5@email', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+        ]
+        wb = openpyxl.workbook.Workbook()
+        dest_filename = 'marketing/test_1.xlsx'
+        ws1 = wb.active
+        ws1.title = 'test xlsx files'
+        ws1.append(file_headers)
+        for row in file_content:
+            ws1.append(row)
+        wb.save(filename=dest_filename)
+        with open(dest_filename, 'rb') as fp:
+            data = {
+                'name': 'sample_test xlsx', 'contacts_file': fp, 'tags':''
+            }
+            response = self.client.post(reverse('marketing:contact_list_new'), data)
+            self.assertEqual(response.status_code, 200)
+
+        os.remove(dest_filename)
+
+
+    def test_contact_list_file_upload_for_xls(self):
+        self.client.login(username='john@example.com', password='password')
+        response = self.client.get(
+            reverse('marketing:contact_list_new'))
+        self.assertEqual(response.status_code, 200)
+
+        file_headers = ['company name', 'email', 'first name', 'last name', 'city', 'state']
+        file_content = [
+            ['company_name_1', 'user1@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_2', 'user2@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_3', 'user3@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_4', 'user4@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+        ]
+
+        dest_filename = 'test_1.xls'
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet('test xls')
+        for count, row in enumerate(file_headers):
+            ws.write(0,count,row)
+
+        col_location = 1
+        for row in file_content:
+            for count_row_content, row_content in enumerate(row):
+                ws.write(col_location, count_row_content, row_content)
+            col_location = col_location + 1
+        wb.save(dest_filename)
+
+        with open(dest_filename, 'rb') as fp:
+            data = {
+                'name': 'sample_test xls', 'contacts_file': fp, 'tags':''
+            }
+            response = self.client.post(reverse('marketing:contact_list_new'), data)
+            self.assertEqual(response.status_code, 201)
+        os.remove(dest_filename)
+
+        # missing email headers
+        file_headers = ['company name', 'first name', 'last name', 'city', 'state']
+        file_content = [
+            ['company_name_1', 'user1@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_2', 'user2@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_3', 'user3@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_4', 'user4@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+        ]
+
+        dest_filename = 'test_1.xls'
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet('test xls')
+        for count, row in enumerate(file_headers):
+            ws.write(0,count,row)
+
+        col_location = 1
+        for row in file_content:
+            for count_row_content, row_content in enumerate(row):
+                ws.write(col_location, count_row_content, row_content)
+            col_location = col_location + 1
+        wb.save(dest_filename)
+
+        with open(dest_filename, 'rb') as fp:
+            data = {
+                'name': 'sample_test xls', 'contacts_file': fp, 'tags':''
+            }
+            response = self.client.post(reverse('marketing:contact_list_new'), data)
+            self.assertEqual(response.status_code, 200)
+        os.remove(dest_filename)
+
+        # missing headers
+        file_headers = []
+        file_content = [
+            ['company_name_1', 'user1@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_2', 'user2@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_3', 'user3@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_4', 'user4@email.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+        ]
+
+        dest_filename = 'test_1.xls'
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet('test xls')
+        for count, row in enumerate(file_headers):
+            ws.write(0,count,row)
+
+        col_location = 1
+        for row in file_content:
+            for count_row_content, row_content in enumerate(row):
+                ws.write(col_location, count_row_content, row_content)
+            col_location = col_location + 1
+        wb.save(dest_filename)
+
+        with open(dest_filename, 'rb') as fp:
+            data = {
+                'name': 'sample_test xls', 'contacts_file': fp, 'tags':''
+            }
+            response = self.client.post(reverse('marketing:contact_list_new'), data)
+            self.assertEqual(response.status_code, 200)
+        os.remove(dest_filename)
+
+        # invalid emails
+        file_headers = ['company name', 'email', 'first name', 'last name', 'city', 'state']
+        file_content = [
+            ['company_name_1', 'user5@email', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+            ['company_name_2', 'user6.com', 'first_name', 'last_name', 'Hyderabad', 'Telangana'],
+        ]
+
+        dest_filename = 'test_1.xls'
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet('test xls')
+        for count, row in enumerate(file_headers):
+            ws.write(0,count,row)
+
+        col_location = 1
+        for row in file_content:
+            for count_row_content, row_content in enumerate(row):
+                ws.write(col_location, count_row_content, row_content)
+            col_location = col_location + 1
+        wb.save(dest_filename)
+
+        with open(dest_filename, 'rb') as fp:
+            data = {
+                'name': 'sample_test xls', 'contacts_file': fp, 'tags':''
+            }
+            response = self.client.post(reverse('marketing:contact_list_new'), data)
+            self.assertEqual(response.status_code, 200)
+        os.remove(dest_filename)
