@@ -31,7 +31,8 @@ class TestMarketingModel(object):
 
         self.client.login(username='john@example.com', password='password')
 
-        self.tag_marketing = Tag.objects.create(name='tag marketing')
+        self.tag_marketing = Tag.objects.create(name='tag marketing', created_by=self.user)
+        self.tag_marketing_1 = Tag.objects.create(name='tag marketing _1')
 
         self.contact_list = ContactList.objects.create(
             name='contacts_list by admin', created_by=self.user)
@@ -82,6 +83,21 @@ class TestMarketingModel(object):
             from_email='from@email.com',
             from_name='from name',
         )
+
+        self.campaign_scheduled_later = Campaign.objects.create(
+            title='campaign object',
+            created_by=self.user,
+            email_template=self.email_template,
+            reply_to_email='django@crm.io',
+            subject='subject of the campaign',
+            from_email='from@email.com',
+            from_name='from name',
+            timezone='Asia/Kolkata',
+            status='Scheduled',
+            schedule_date_time=(datetime.now() + timedelta(days=2)).strftime('%Y-%m-%d %H:%M'),
+            html='<p><a href="http://example.com" target="_blank">links</a></p>'
+        )
+
         self.campaign.contact_lists.add(self.contact_list.id, self.contact_list_user.id)
         self.campaign.tags.add(self.tag_marketing.id)
 
@@ -99,6 +115,15 @@ class TestMarketingModel(object):
 
         self.contact_email_campaign = ContactEmailCampaign.objects.create(
             name='conta@admin', email='contactEmail@admin.com'
+        )
+
+        self.contact_email_campaign_1 = ContactEmailCampaign.objects.create(
+            name='another@admin', email='contactEmailAnother@admin.com'
+        )
+
+        self.campaign_log = CampaignLog.objects.create(
+            campaign=self.campaign,
+            contact=self.contact_1
         )
 
 
@@ -319,8 +344,6 @@ class TestContactsCSVFileUploadView(TestMarketingModel, TestCase):
             reverse('marketing:contact_list_new'), data)
         self.assertEqual(200, response.status_code)
 
-        # TODO: use openpyxl and xlrd to write file and upload
-
 
 class TestEditContactsCSVFileUploadView(TestMarketingModel, TestCase):
 
@@ -382,6 +405,16 @@ class TestEditContact(TestMarketingModel, TestCase):
         data = {
             'name': 'John DOE',
             'email': self.contact.email,
+            'from_url': self.contact_list.id,
+        }
+
+        response = self.client.post(
+            reverse('marketing:edit_contact', args=(self.contact.id,)), data)
+        self.assertEqual(response.status_code, 200)
+
+        data = {
+            'name': 'John DOE',
+            'email': self.contact_4.email,
             'from_url': self.contact_list.id,
         }
 
@@ -676,6 +709,26 @@ class TestContactListDetail(TestMarketingModel, TestCase):
             reverse('marketing:campaign_new'), data)
         self.assertEqual(response.status_code, 201)
 
+        data= { **data, 'title': 'wrong schedule date time',
+            'schedule_date_time': (datetime.now() - timedelta(days=10)).strftime('%Y-%m-%d %H:%M'),
+            'contact_list':self.contact_list_user_1.id,
+            'html':'{{}} {{'
+            }
+        self.client.login(username='john@example.com', password='password')
+        response = self.client.post(
+            reverse('marketing:campaign_new'), data)
+        self.assertEqual(response.status_code, 200)
+
+        data= { **data, 'title': 'wrong schedule date time',
+            'schedule_date_time': (datetime.now() - timedelta(days=10)).strftime('%Y-%m-%d %H:%M'),
+            'contact_list':self.contact_list_user_1.id,
+            'html':'}}'
+            }
+        self.client.login(username='john@example.com', password='password')
+        response = self.client.post(
+            reverse('marketing:campaign_new'), data)
+        self.assertEqual(response.status_code, 200)
+
     def test_campaign_detail(self):
         self.client.login(username='janeMarketing@example.com', password='password')
         response = self.client.get(
@@ -855,6 +908,15 @@ class TestContactListDetail(TestMarketingModel, TestCase):
         data = {
             'name':'admin name',
             'email':'adminContact@email.com'
+        }
+
+        response = self.client.post(
+            reverse('marketing:edit_email_for_campaigns', args=(self.contact_email_campaign.id,)), data)
+        self.assertEqual(response.status_code, 200)
+
+        data = {
+            'name':'admin name',
+            'email': self.contact_email_campaign_1.email,
         }
 
         response = self.client.post(
@@ -1095,3 +1157,69 @@ class TestContactListFileUploadForXlsxAndXls(TestMarketingModel, TestCase):
             response = self.client.post(reverse('marketing:contact_list_new'), data)
             self.assertEqual(response.status_code, 200)
         os.remove(dest_filename)
+
+
+class TestCampaignLinkClick(TestMarketingModel, TestCase):
+
+    def test_campaign_link_click(self):
+        self.client.login(username='john@example.com', password='password')
+        response = self.client.get(
+            reverse('marketing:campaign_link_click', kwargs={
+                'link_id': self.link.id,
+                'email_id':self.contact_1.id,
+            }))
+        self.assertEqual(response.status_code, 302)
+
+        response = self.client.get(
+            reverse('marketing:campaign_link_click', kwargs={
+                'link_id': self.link.id,
+                'email_id':self.contact_1.id,
+            }))
+        self.assertEqual(response.status_code, 302)
+
+        response = self.client.get(
+            reverse('marketing:campaign_link_click', kwargs={
+                'link_id': self.link.id,
+                'email_id':self.contact_email_campaign.id,
+            }))
+        self.assertEqual(response.status_code, 302)
+
+    def test_campaign_open(self):
+        self.client.login(username='john@example.com', password='password')
+        response = self.client.get(
+            reverse('marketing:campaign_open', kwargs={
+                'campaign_log_id': self.campaign.id,
+                'email_id':self.contact_1.id,
+            }))
+        self.assertEqual(response.status_code, 200)
+
+        self.client.login(username='john@example.com', password='password')
+        response = self.client.get(
+            reverse('marketing:campaign_open', kwargs={
+                'campaign_log_id': self.campaign.id,
+                'email_id':self.contact_1.id,
+            }))
+        self.assertEqual(response.status_code, 200)
+
+
+class TestMarketingModelMethods(TestMarketingModel, TestCase):
+
+    def test_marketing_model_methods(self):
+        self.assertEqual(self.tag_marketing.created_by, self.user)
+        self.assertEqual(self.tag_marketing_1.created_by, None)
+        self.assertEqual(self.email_template.created_by_user, self.user)
+        self.assertEqual(self.contact_list.created_by_user, self.user)
+        self.assertTrue(self.tag_marketing in self.contact_list.tags_data)
+        self.assertEqual(self.contact_list.no_of_contacts, 4)
+        self.assertEqual(self.contact_list.no_of_campaigns, 1)
+        self.assertEqual(self.contact_list.unsubscribe_contacts, 0)
+        self.assertTrue(self.contact_list.created_on_arrow in ['just now', 'seconds ago'])
+        self.assertEqual(str(self.contact), self.contact.email)
+        self.assertEqual(str(self.failed_contact), self.failed_contact.email)
+        self.assertEqual(self.campaign.no_of_clicks, 0)
+        self.assertEqual(self.campaign.sent_on_format, self.campaign.created_on.strftime('%b %d, %Y %I:%M %p'))
+        self.assertEqual(self.contact_list.created_on_format, self.contact_list.created_on.strftime('%b %d, %Y %I:%M %p'))
+        self.assertTrue(self.campaign.sent_on_arrow in ['just now', 'seconds ago'])
+        # self.assertEqual(self.campaign_scheduled_later.sent_on_format,
+        #     datetime.strptime(self.campaign_scheduled_later.schedule_date_time, '%Y-%m-%d %H:%M'
+        #     ).strftime('%b %d, %Y %I:%M %p'))

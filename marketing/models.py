@@ -71,16 +71,16 @@ class ContactList(models.Model):
     def created_on_format(self):
         return self.created_on.strftime('%b %d, %Y %I:%M %p')
 
-    @property
-    def created_on_since(self):
-        now = datetime.now()
-        difference = now.replace(tzinfo=None) - \
-            self.created_on.replace(tzinfo=None)
+    # @property
+    # def created_on_since(self):
+    #     now = datetime.now()
+    #     difference = now.replace(tzinfo=None) - \
+    #         self.created_on.replace(tzinfo=None)
 
-        if difference <= timedelta(minutes=1):
-            return 'just now'
-        return '%(time)s ago' % {
-            'time': timesince(self.created_on).split(', ')[0]}
+    #     if difference <= timedelta(minutes=1):
+    #         return 'just now'
+    #     return '%(time)s ago' % {
+    #         'time': timesince(self.created_on).split(', ')[0]}
 
     @property
     def tags_data(self):
@@ -102,12 +102,12 @@ class ContactList(models.Model):
     def bounced_contacts(self):
         return self.contacts.filter(is_bounced=True).count()
 
-    @property
-    def no_of_clicks(self):
-        clicks = CampaignLog.objects.filter(
-            contact__contact_list__in=[self]).aggregate(Sum(
-                'no_of_clicks'))['no_of_clicks__sum']
-        return clicks
+    # @property
+    # def no_of_clicks(self):
+    #     clicks = CampaignLog.objects.filter(
+    #         contact__contact_list__in=[self]).aggregate(Sum(
+    #             'no_of_clicks'))['no_of_clicks__sum']
+    #     return clicks
 
     @property
     def created_on_arrow(self):
@@ -226,37 +226,37 @@ class Campaign(models.Model):
     class Meta:
         ordering = ('-created_on', )
 
-    @property
-    def no_of_unsubscribers(self):
-        unsubscribers = self.campaign_contacts.filter(
-            contact__is_unsubscribed=True).count()
-        return unsubscribers
+    # @property
+    # def no_of_unsubscribers(self):
+    #     unsubscribers = self.campaign_contacts.filter(
+    #         contact__is_unsubscribed=True).count()
+    #     return unsubscribers
 
-    @property
-    def no_of_bounces(self):
-        bounces = self.campaign_contacts.filter(
-            contact__is_bounced=True).count()
-        return bounces
+    # @property
+    # def no_of_bounces(self):
+    #     bounces = self.campaign_contacts.filter(
+    #         contact__is_bounced=True).count()
+    #     return bounces
 
     @property
     def no_of_clicks(self):
         clicks = self.marketing_links.aggregate(Sum('clicks'))['clicks__sum']
         return clicks
 
-    @property
-    def no_of_sent_emails(self):
-        contacts = self.campaign_contacts.count()
-        return contacts
+    # @property
+    # def no_of_sent_emails(self):
+    #     contacts = self.campaign_contacts.count()
+    #     return contacts
 
-    @property
-    def created_on_format(self):
-        return self.created_on.strftime('%b %d, %Y %I:%M %p')
+    # @property
+    # def created_on_format(self):
+    #     return self.created_on.strftime('%b %d, %Y %I:%M %p')
 
     @property
     def sent_on_format(self):
         if self.schedule_date_time:
             c_schedule_date_time = convert_to_custom_timezone(
-                self.schedule_date_time, self.timezone)
+                datetime.strptime(self.schedule_date_time, '%Y-%m-%d %H:%M'), self.timezone)
             return c_schedule_date_time.strftime('%b %d, %Y %I:%M %p')
         else:
             c_created_on = convert_to_custom_timezone(

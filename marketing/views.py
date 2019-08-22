@@ -951,7 +951,14 @@ def download_contacts_for_campaign(request, compaign_id):
             'company name,email,first name,last name,city,state\n',
         ]
         for contact in contacts:
-            data.append((', '.join(contact.values()) + '\n'))
+            data.append(
+                str(contact.get('company_name')) + ',' +
+                str(contact.get('email')) + ',' +
+                str(contact.get('name')) + ',' +
+                str(contact.get('last_name')) + ',' +
+                str(contact.get('city')) + ',' +
+                str(contact.get('state')) + '\n'
+            )
         response = HttpResponse(
             data, content_type='text/plain')
         response['Content-Disposition'] = 'attachment; filename={}'.format(
