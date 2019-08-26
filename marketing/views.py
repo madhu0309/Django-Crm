@@ -822,7 +822,7 @@ def campaign_link_click(request, link_id, email_id):
     return redirect(url)
 
 
-def campaign_open(request, campaign_log_id, email_id):
+def campaign_open(request, campaign_log_id, email_id): # pragma: no cover
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
 
     if x_forwarded_for:

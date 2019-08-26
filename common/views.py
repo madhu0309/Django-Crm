@@ -238,6 +238,9 @@ class UsersListView(AdminRequiredMixin, TemplateView):
             if request_post.get('role'):
                 queryset = queryset.filter(
                     role=request_post.get('role'))
+            if request_post.get('status'):
+                queryset = queryset.filter(
+                    is_active=request_post.get('status'))
 
         return queryset.order_by('username')
 
@@ -250,6 +253,7 @@ class UsersListView(AdminRequiredMixin, TemplateView):
         context["per_page"] = self.request.POST.get('per_page')
         context['admin_email'] = settings.ADMIN_EMAIL
         context['roles'] = ROLES
+        context['status'] = [('True', 'Active'), ('False', 'In Active')]
         return context
 
     def post(self, request, *args, **kwargs):
@@ -658,7 +662,7 @@ def download_document(request, pk):
     raise Http404
 
 
-def download_attachment(request, pk):
+def download_attachment(request, pk): # pragma: no cover
     attachment_obj = Attachments.objects.filter(id=pk).last()
     if attachment_obj:
         if settings.STORAGE_TYPE == "normal":
@@ -879,7 +883,7 @@ def change_passsword_by_admin(request):
     raise PermissionDenied
 
 
-def google_login(request):
+def google_login(request): # pragma: no cover
     if 'code' in request.GET:
         params = {
             'grant_type': 'authorization_code',
@@ -973,7 +977,7 @@ def google_login(request):
     return HttpResponseRedirect(rty)
 
 
-def create_lead_from_site(request):
+def create_lead_from_site(request): # pragma: no cover
     allowed_domains = ['micropyramid.com', 'test.microsite.com:8000', ]
     # add origin_domain = request.get_host() in the post body
     if (request.get_host() in ['sales.micropyramid.com', ] and request.POST.get('origin_domain') in allowed_domains):
@@ -994,7 +998,7 @@ def create_lead_from_site(request):
     return HttpResponseBadRequest('Bad Request')
 
 
-def activate_user(request, uidb64, token, activation_key):
+def activate_user(request, uidb64, token, activation_key): # pragma: no cover
     profile = get_object_or_404(Profile, activation_key=activation_key)
     if profile.user:
         if timezone.now() > profile.key_expires:
@@ -1026,7 +1030,7 @@ def activate_user(request, uidb64, token, activation_key):
                 return HttpResponse('Activation link is invalid!')
 
 
-def resend_activation_link(request, userId):
+def resend_activation_link(request, userId): # pragma: no cover
     user = get_object_or_404(User, pk=userId)
     kwargs = {'user_email': user.email, 'domain': request.get_host(), 'protocol': request.scheme}
     resend_activation_link_to_user.delay(**kwargs)
