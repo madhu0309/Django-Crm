@@ -1,53 +1,48 @@
-import os
-import json
-import requests
 import datetime
-from django.contrib.auth import logout, authenticate, login
-from django.db.models import Q
-from django.core.mail import EmailMessage
-from django.contrib.auth.hashers import check_password
-from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
-from django.http import (HttpResponseRedirect,
-                         JsonResponse, HttpResponse,
-                         Http404)
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import (
-    CreateView, UpdateView, DetailView, TemplateView, View, DeleteView)
-from common.models import (User, Document, Attachments,
-                           Comment,
-                           APISettings,
-                           Google, Profile)
-from common.forms import (
-    UserForm, LoginForm,
-    ChangePasswordForm, PasswordResetEmailForm,
-    DocumentForm, UserCommentForm,
-    APISettingsForm
-)
-from django.contrib.auth.views import PasswordResetView
-from django.contrib.auth.decorators import login_required
-from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse_lazy, reverse
-from django.conf import settings
-from opportunity.models import Opportunity
-from cases.models import Case
-from contacts.models import Contact
-from accounts.models import Account, Tags
-from leads.models import Lead
-from django.template.loader import render_to_string
-from django.core.exceptions import PermissionDenied
+import json
+import os
+
 import boto3
 import botocore
-
-from common.utils import ROLES
-from common.tasks import send_email_user_status, send_email_user_delete, send_email_to_new_user, resend_activation_link_to_user
-from teams.models import Teams
-from common.access_decorators_mixins import (
-    sales_access_required, marketing_access_required, SalesAccessRequiredMixin, MarketingAccessRequiredMixin)
-from common.token_generator import account_activation_token
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_text
-from django.utils import timezone
+import requests
+from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth.mixins import AccessMixin, LoginRequiredMixin
+from django.contrib.auth.views import PasswordResetView
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.exceptions import PermissionDenied
+from django.core.mail import EmailMessage
+from django.db.models import Q
+from django.http import (Http404, HttpResponse, HttpResponseRedirect,
+    JsonResponse)
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
+from django.urls import reverse, reverse_lazy
+from django.utils import timezone
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.views.generic import (CreateView, DeleteView, DetailView,
+    TemplateView, UpdateView, View)
+
+from accounts.models import Account, Tags
+from cases.models import Case
+from common.access_decorators_mixins import (MarketingAccessRequiredMixin,
+    SalesAccessRequiredMixin, marketing_access_required, sales_access_required)
+from common.forms import (APISettingsForm, ChangePasswordForm, DocumentForm,
+    LoginForm, PasswordResetEmailForm, UserCommentForm, UserForm)
+from common.models import (APISettings, Attachments, Comment, Document, Google,
+    Profile, User)
+from common.tasks import (resend_activation_link_to_user,
+    send_email_to_new_user, send_email_user_delete, send_email_user_status)
+from common.token_generator import account_activation_token
+from common.utils import ROLES
+from contacts.models import Contact
+from leads.models import Lead
+from opportunity.models import Opportunity
+from teams.models import Teams
 
 
 def handler404(request, exception):
@@ -992,7 +987,8 @@ def create_lead_from_site(request):
                 lead.assigned_to.add(*recipients)
                 from leads.tasks import send_email_to_assigned_user
                 send_email_to_assigned_user(
-                    recipients, lead.id, domain='sales.micropyramid.com')
+                    recipients, lead.id, domain='sales.micropyramid.com',
+                    source=request.POST.get('origin_domain'))
                 return HttpResponse('Lead Created')
     from django.http import HttpResponseBadRequest
     return HttpResponseBadRequest('Bad Request')
@@ -1003,7 +999,7 @@ def activate_user(request, uidb64, token, activation_key):
     if profile.user:
         if timezone.now() > profile.key_expires:
             resend_url = reverse('common:resend_activation_link', args=(profile.user.id,))
-            link_content = '<a href="{}">click here</a> to resend the activation link.'.format(
+            link_content = '<a href="{}">Click Here</a> to resend the activation link.'.format(
                 resend_url)
             message_content = 'Your activation link has expired, {}'.format(
                 link_content)
