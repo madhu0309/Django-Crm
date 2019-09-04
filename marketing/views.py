@@ -363,6 +363,7 @@ def contact_list_detail(request, pk):
     contacts_list_count = contact_list.contacts.filter(is_bounced=False).count()
     bounced_contacts_list = contact_list.contacts.filter(is_bounced=True)
     bounced_contacts_list_count = contact_list.contacts.filter(is_bounced=True).count()
+    duplicate_contacts = contact_list.duplicate_contact_contact_list.all()
     if request.POST:
         if request.POST.get('name'):
             contacts_list = contacts_list.filter(
@@ -395,6 +396,7 @@ def contact_list_detail(request, pk):
         "bounced_contacts_list":bounced_contacts_list,
         'bounced_contacts_list_count': bounced_contacts_list_count,
         'contacts_list_count': contacts_list_count,
+        'duplicate_contacts': duplicate_contacts,
         # these two are added for digg pagintor
         'paginator':paginator,'page_obj': bounced_contacts_list,}
     return render(request, 'marketing/lists/detail.html', data)
@@ -1020,12 +1022,22 @@ def delete_multiple_contacts(request):
                 if contact_obj.contact_list.count() == 1:
                     contact_obj.delete()
                 else:
-                    contact_list_obj = get_object_or_404(ContactList, pk=request.POST.get('from_contact'))
-                    contact_obj.contact_list.remove(contact_list_obj)
+                    if request.POST.get('duplicate_contacts', None) == 'true':
+                        contact_list_obj = get_object_or_404(ContactList, pk=request.POST.get('from_contact'))
+                        contact_obj.contact_list.remove(contact_list_obj)
+
+                        contact_list_duplicates = contact_list_obj.duplicate_contact_contact_list.all()
+                        contacts_list_ids = contacts_list.values_list('id', flat=True)
+                        contact_list_duplicates.filter(contacts__id__in=contacts_list_ids).delete()
+                    else:
+                        contact_list_obj = get_object_or_404(ContactList, pk=request.POST.get('from_contact'))
+                        contact_obj.contact_list.remove(contact_list_obj)
+
         return JsonResponse({'error':False, 'refresh': True})
     else:
         message = "You don't have permission to delete {}".format(', '.join(cannot_be_deleted))
         return JsonResponse({'error': True, 'message' : message })
+
 
 
 @login_required(login_url='/login')
@@ -1039,13 +1051,26 @@ def delete_all_contacts(request, contact_list_id):
         bounced = True
     else:
         bounced = False
-    contacts_objs = contacts_list_obj.contacts.filter(is_bounced=bounced)
-    if contacts_objs:
-        for contact_obj in contacts_objs:
-            if contact_obj.contact_list.count() > 1:
-                contact_obj.contact_list.remove(contacts_list_obj)
-            else:
-                contact_obj.delete()
+    if request.GET.get('duplicate_contacts', '') == 'true':
+        contact_list_duplicates = contacts_list_obj.duplicate_contact_contact_list.all()
+        if contact_list_duplicates:
+            for dup_contact_obj in contact_list_duplicates:
+                if dup_contact_obj.contacts.contact_list.count() > 1:
+                    contact = dup_contact_obj.contacts
+                    contact.contact_list.remove(contacts_list_obj)
+                    dup_contact_obj.delete()
+                    # dup_contact_obj.contacts.contact_list.remove(contacts_list_obj)
+                # else:
+                #     dup_contact_obj.contacts.delete()
+    else:
+        contacts_objs = contacts_list_obj.contacts.filter(is_bounced=bounced)
+        if contacts_objs:
+            for contact_obj in contacts_objs:
+                if contact_obj.contact_list.count() > 1:
+                    contact_obj.contact_list.remove(contacts_list_obj)
+                else:
+                    contact_obj.delete()
+
     # delete_multiple_contacts_tasks.delay(contact_list_id, bounced)
     redirect_to = reverse('marketing:contact_list_detail', args=(contact_list_id,))
     return HttpResponseRedirect(redirect_to)

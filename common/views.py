@@ -162,7 +162,6 @@ class LoginView(TemplateView):
                 if user.is_active:
                     user = authenticate(username=request.POST.get(
                         'email'), password=request.POST.get('password'))
-
                     if user is not None:
                         login(request, user)
                         if user.has_sales_access:

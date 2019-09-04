@@ -13,7 +13,7 @@ from django.template import Context, Template
 from common.utils import convert_to_custom_timezone
 from marketing.models import (Campaign, CampaignCompleted, CampaignLog,
                               Contact, ContactEmailCampaign, ContactList,
-                              FailedContact)
+                              FailedContact, DuplicateContacts)
 
 
 @task
@@ -48,6 +48,11 @@ def upload_csv_file(data, invalid_data, user, contact_lists):
             if each.get("state", None):
                 contact.state = each['state']
             contact.save()
+        else:
+            DuplicateContacts.objects.create(
+                contacts=contact,
+                contact_list=ContactList.objects.get(id=int(contact_lists[0]))
+            )
         for contact_list in contact_lists:
             contact.contact_list.add(
                 ContactList.objects.get(id=int(contact_list)))
