@@ -11,8 +11,9 @@ from django.shortcuts import reverse
 from django.template import Context, Template
 
 from common.utils import convert_to_custom_timezone
-from marketing.models import (Campaign, CampaignLog, Contact, ContactList,
-                              FailedContact, CampaignCompleted, ContactEmailCampaign)
+from marketing.models import (Campaign, CampaignCompleted, CampaignLog,
+                              Contact, ContactEmailCampaign, ContactList,
+                              FailedContact)
 
 
 @task
@@ -266,7 +267,7 @@ def send_campaign_email_to_admin_contact(campaign, domain='demo.django-crm.io', 
                 else:
                     from_email = campaign.created_by.email
                 reply_to_email = str(from_email) + ' <' + \
-                    str(message_id + '@' + domain_name + '') + '>'
+                    str(settings.EMAIL_HOST_USER + '@' + domain_name + '') + '>'
 
             # domain_url = settings.URL_FOR_LINKS
             domain_url = protocol + '://' + domain
