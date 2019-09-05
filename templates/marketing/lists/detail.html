@@ -146,12 +146,12 @@
                           <td> <a href="{% url 'marketing:contact_detail' contact.id %}">{{ contact.email }}</a> </td>
                           <td class="actions">
                             <a href="{% url 'marketing:edit_contact' contact.id %}?from_contact={{contact_list.id}}"
-                              class="btn btn-success edit edit_contact"
+                              class="btn btn-success edit edit_contact" title="Edit"
                               data-other-contacts-lists='{{contact.contact_list.all|length}}'><i
                                 class="fas fa-edit"></i></a>
                             <!-- <a href="/contacts/1/edit/" class="btn btn-info duplicate"><i class="fas fa-copy"></i></a> -->
                             <a href="{% url 'marketing:delete_contact' contact.id %}?from_contact={{contact_list.id}}"
-                              class="btn btn-danger delete remove_account"
+                              class="btn btn-danger delete remove_account" title="Delete"
                               data-other-contacts-lists='{{contact.contact_list.all|length}}'><i
                                 class="fas fa-trash"></i></a>
                           </td>
@@ -222,12 +222,12 @@
                           <td> <a href="{% url 'marketing:contact_detail' contact.id %}">{{ contact.email }}</a> </td>
                           <td class="actions">
                             <a href="{% url 'marketing:edit_contact' contact.id %}?from_contact={{contact_list.id}}"
-                              class="btn btn-success edit edit_contact"
+                              class="btn btn-success edit edit_contact" title="Edit"
                               data-other-contacts-lists='{{contact.contact_list.all|length}}'><i
                                 class="fas fa-edit"></i></a>
                             <!-- <a href="/contacts/1/edit/" class="btn btn-info duplicate"><i class="fas fa-copy"></i></a> -->
                             <a href="{% url 'marketing:delete_contact' contact.id %}?from_contact={{contact_list.id}}"
-                              class="btn btn-danger delete remove_account"
+                              class="btn btn-danger delete remove_account" title="Delete"
                               data-other-contacts-lists='{{contact.contact_list.all|length}}'><i
                                 class="fas fa-trash"></i></a>
                           </td>
@@ -323,12 +323,12 @@
                           <td> <a href="{% url 'marketing:contact_detail' contact.contacts.id %}">{{ contact.contacts.email }}</a> </td>
                           <td class="actions">
                             <a href="{% url 'marketing:edit_contact' contact.contacts.id %}?from_contact={{contact.contact_list.id}}"
-                              class="btn btn-success edit edit_contact"
+                              class="btn btn-success edit edit_contact" title="Edit"
                               data-other-contacts-lists='{{contact.contact_list.all|length}}'><i
                                 class="fas fa-edit"></i></a>
                             <!-- <a href="/contacts/1/edit/" class="btn btn-info duplicate"><i class="fas fa-copy"></i></a> -->
                             <a href="{% url 'marketing:delete_contact' contact.id %}?from_contact={{contact.contact_list.id}}"
-                              class="btn btn-danger delete remove_account"
+                              class="btn btn-danger delete remove_account" title="Delete"
                               data-other-contacts-lists='{{contact.contact_list.all|length}}'><i
                                 class="fas fa-trash"></i></a>
                           </td>

@@ -1132,7 +1132,7 @@ def add_email_for_campaigns(request):
             obj = form.save(commit=False)
             obj.created_by = request.user
             obj.save()
-            return JsonResponse({'error':False, 'success_url':reverse('marketing:list_all_emails_for_campaigns')})
+            return JsonResponse({'error':False, 'success_url':reverse('common:api_settings')})
         else:
             return JsonResponse({'error':True, 'errors':form.errors})
 
@@ -1152,7 +1152,7 @@ def edit_email_for_campaigns(request, pk):
         if form.is_valid():
             obj = form.save(commit=False)
             obj.save()
-            return JsonResponse({'error':False, 'success_url':reverse('marketing:list_all_emails_for_campaigns')})
+            return JsonResponse({'error':False, 'success_url':reverse('common:api_settings')})
         else:
             return JsonResponse({'error':True, 'errors':form.errors})
 
@@ -1164,4 +1164,4 @@ def delete_email_for_campaigns(request, pk):
     context = {}
     if request.method == 'GET':
         contact_obj.delete()
-        return HttpResponseRedirect(reverse('marketing:list_all_emails_for_campaigns'))
+        return HttpResponseRedirect(reverse('common:api_settings'))

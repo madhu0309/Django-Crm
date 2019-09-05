@@ -49,10 +49,12 @@ def upload_csv_file(data, invalid_data, user, contact_lists):
                 contact.state = each['state']
             contact.save()
         else:
-            DuplicateContacts.objects.create(
+            if not DuplicateContacts.objects.filter(
                 contacts=contact,
-                contact_list=ContactList.objects.get(id=int(contact_lists[0]))
-            )
+                contact_list=ContactList.objects.get(id=int(contact_lists[0]))).exists():
+                DuplicateContacts.objects.create(
+                    contacts=contact,
+                    contact_list=ContactList.objects.get(id=int(contact_lists[0])))
         for contact_list in contact_lists:
             contact.contact_list.add(
                 ContactList.objects.get(id=int(contact_list)))
