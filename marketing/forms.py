@@ -10,7 +10,7 @@ from django import forms
 from common.models import User
 from marketing.models import Campaign, Contact, ContactList, EmailTemplate, Tag, ContactEmailCampaign
 
-email_regex = '^[_a-zA-Z0-9-]+(\.[_a-zA-Z0-9-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*(\.[a-zA-Z]{2,4})$'
+email_regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
 
 
 def csv_doc_validate(document):
