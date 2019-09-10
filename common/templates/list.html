@@ -197,7 +197,7 @@
                                 class="fas fa-trash-alt"></i>Delete</a>
                             {% if user.email != admin_email and request.user != user %}
                             <a style="color:black;margin-bottom: -11px;" data-id="{{user.id}}" href=""
-                              class="fa-passwd-reset fa-stack"><i class="fa fa-undo fa-stack-2x"></i><i
+                              class="fa-passwd-reset fa-stack" title="Change Password"><i class="fa fa-undo fa-stack-2x"></i><i
                                 class="fa fa-lock fa-stack-1x"></i></a>{% endif %}
                           </td>
                         </tr>
@@ -277,7 +277,7 @@
                                 class="fas fa-trash-alt"></i>Delete</a>
                             {% if user.email != admin_email and request.user != user %}
                             <a style="color:black;margin-bottom: -11px;" data-id="{{user.id}}" href=""
-                              class="fa-passwd-reset fa-stack"><i class="fa fa-undo fa-stack-2x"></i><i
+                              class="fa-passwd-reset fa-stack" title="Change Password"><i class="fa fa-undo fa-stack-2x"></i><i
                                 class="fa fa-lock fa-stack-1x"></i></a>{% endif %}
                           </td>
                         </tr>

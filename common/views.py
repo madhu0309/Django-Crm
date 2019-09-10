@@ -43,6 +43,7 @@ from contacts.models import Contact
 from leads.models import Lead
 from opportunity.models import Opportunity
 from teams.models import Teams
+from marketing.models import ContactEmailCampaign
 
 
 def handler404(request, exception):
@@ -162,7 +163,6 @@ class LoginView(TemplateView):
                 if user.is_active:
                     user = authenticate(username=request.POST.get(
                         'email'), password=request.POST.get('password'))
-
                     if user is not None:
                         login(request, user)
                         if user.has_sales_access:
@@ -764,8 +764,41 @@ def remove_comment(request):
 
 def api_settings(request):
     api_settings = APISettings.objects.all()
-    data = {'settings': api_settings}
-    return render(request, 'settings/list.html', data)
+    contacts = ContactEmailCampaign.objects.all()
+    created_by_users = User.objects.filter(role='ADMIN')
+    assigned_users = User.objects.all()
+
+    context = {
+        'settings': api_settings,
+        'contacts': contacts,
+        'created_by_users':created_by_users,
+        'assigned_users':assigned_users,
+    }
+
+    if request.method == 'POST':
+        settings = api_settings
+        if request.POST.get('api_settings', None):
+            if request.POST.get('title', None):
+                settings = settings.filter(title__icontains=request.POST.get('title', None))
+            if request.POST.get('created_by', None):
+                settings = settings.filter(created_by_id=request.POST.get('created_by', None))
+            if request.POST.get('assigned_to', None):
+                settings = settings.filter(lead_assigned_to__id__in=request.POST.getlist('assigned_to', None))
+
+            context['settings']= settings.distinct()
+
+        if request.POST.get('filter_contacts', None):
+            contacts_filter = contacts
+            if request.POST.get('contact_name', None):
+                contacts_filter = contacts_filter.filter(name__icontains=request.POST.get('contact_name', None))
+            if request.POST.get('contact_created_by', None):
+                contacts_filter = contacts_filter.filter(created_by_id=request.POST.get('contact_created_by', None))
+            if request.POST.get('contact_email', None):
+                contacts_filter = contacts_filter.filter(email__icontains=request.POST.get('contact_email', None))
+
+            context['contacts']= contacts_filter.distinct()
+
+    return render(request, 'settings/list.html', context)
 
 
 def add_api_settings(request):

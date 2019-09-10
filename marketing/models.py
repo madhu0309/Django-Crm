@@ -256,7 +256,7 @@ class Campaign(models.Model):
     def sent_on_format(self):
         if self.schedule_date_time:
             c_schedule_date_time = convert_to_custom_timezone(
-                datetime.strptime(self.schedule_date_time, '%Y-%m-%d %H:%M'), self.timezone)
+                self.schedule_date_time, self.timezone)
             return c_schedule_date_time.strftime('%b %d, %Y %I:%M %p')
         else:
             c_created_on = convert_to_custom_timezone(
@@ -273,14 +273,16 @@ class Campaign(models.Model):
     def get_all_email_bounces_count(self):
         # return self.contact_lists.filter(contacts__is_bounced=True
         #                                  ).exclude(contacts__email=None).values_list('contacts__email').count()
-        email_count = CampaignLog.objects.filter(campaign=self,contact__is_bounced=True).count()
+        email_count = CampaignLog.objects.filter(
+            campaign=self, contact__is_bounced=True).count()
         return email_count
 
     @property
     def get_all_emails_unsubscribed_count(self):
         # return self.contact_lists.filter(contacts__is_unsubscribed=True
         #                                  ).exclude(contacts__email=None).values_list('contacts__email').count()
-        email_count = CampaignLog.objects.filter(campaign=self,contact__is_unsubscribed=True).count()
+        email_count = CampaignLog.objects.filter(
+            campaign=self, contact__is_unsubscribed=True).count()
         return email_count
 
     @property
@@ -383,6 +385,7 @@ class ContactUnsubscribedCampaign(models.Model):
         Contact, on_delete=models.Case, related_name='contact_is_unsubscribed')
     is_unsubscribed = models.BooleanField(default=False)
 
+
 class ContactEmailCampaign(models.Model):
     """
     send all campaign emails to this contact
@@ -400,3 +403,16 @@ class ContactEmailCampaign(models.Model):
 
     class Meta:
         ordering = ('created_on',)
+
+
+class DuplicateContacts(models.Model):
+    """
+    this model is used to store duplicate contacts
+    """
+    contacts = models.ForeignKey(
+        Contact, related_name='duplicate_contact', on_delete=models.SET_NULL, null=True)
+    contact_list = models.ForeignKey(
+        ContactList, related_name='duplicate_contact_contact_list', on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        ordering = ('id', )

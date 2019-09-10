@@ -131,7 +131,9 @@
                       <a href="#" class="purple box"><i class="fas fa-upload"></i></a> -->
                       <a href="{% url 'marketing:delete_contact' contact.id %}"
                         class="btn btn-danger delete remove_account"
-                        data-other-contacts-lists='{{contact.contact_list.all|length}}'><i
+                        data-other-contacts-lists='{{contact.contact_list.all|length}}'
+                        title="Delete"
+                        ><i
                           class="fas fa-trash-alt"></i></a>
                     </td>
                   </tr>
