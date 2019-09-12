@@ -30,7 +30,8 @@ from django.views.generic import (CreateView, DeleteView, DetailView,
 from accounts.models import Account, Tags
 from cases.models import Case
 from common.access_decorators_mixins import (MarketingAccessRequiredMixin,
-    SalesAccessRequiredMixin, marketing_access_required, sales_access_required)
+    SalesAccessRequiredMixin, marketing_access_required, sales_access_required,
+    admin_login_required)
 from common.forms import (APISettingsForm, ChangePasswordForm, DocumentForm,
     LoginForm, PasswordResetEmailForm, UserCommentForm, UserForm)
 from common.models import (APISettings, Attachments, Comment, Document, Google,
@@ -43,7 +44,7 @@ from contacts.models import Contact
 from leads.models import Lead
 from opportunity.models import Opportunity
 from teams.models import Teams
-from marketing.models import ContactEmailCampaign
+from marketing.models import ContactEmailCampaign, BlockedDomain, BlockedEmail 
 
 
 def handler404(request, exception):
@@ -761,31 +762,36 @@ def remove_comment(request):
         data = {'error': "You don't have permission to delete this comment."}
         return JsonResponse(data)
 
-
+@login_required
+@admin_login_required
 def api_settings(request):
-    api_settings = APISettings.objects.all()
+    # api_settings = APISettings.objects.all()
+    blocked_domains = BlockedDomain.objects.all()
+    blocked_emails = BlockedEmail.objects.all()
     contacts = ContactEmailCampaign.objects.all()
     created_by_users = User.objects.filter(role='ADMIN')
     assigned_users = User.objects.all()
 
     context = {
-        'settings': api_settings,
+        # 'settings': api_settings,
         'contacts': contacts,
-        'created_by_users':created_by_users,
-        'assigned_users':assigned_users,
+        'created_by_users': created_by_users,
+        'assigned_users': assigned_users,
+        'blocked_emails': blocked_emails,
+        'blocked_domains': blocked_domains,
     }
 
     if request.method == 'POST':
-        settings = api_settings
-        if request.POST.get('api_settings', None):
-            if request.POST.get('title', None):
-                settings = settings.filter(title__icontains=request.POST.get('title', None))
-            if request.POST.get('created_by', None):
-                settings = settings.filter(created_by_id=request.POST.get('created_by', None))
-            if request.POST.get('assigned_to', None):
-                settings = settings.filter(lead_assigned_to__id__in=request.POST.getlist('assigned_to', None))
+        # settings = api_settings
+        # if request.POST.get('api_settings', None):
+        #     if request.POST.get('title', None):
+        #         settings = settings.filter(title__icontains=request.POST.get('title', None))
+        #     if request.POST.get('created_by', None):
+        #         settings = settings.filter(created_by_id=request.POST.get('created_by', None))
+        #     if request.POST.get('assigned_to', None):
+        #         settings = settings.filter(lead_assigned_to__id__in=request.POST.getlist('assigned_to', None))
 
-            context['settings']= settings.distinct()
+        #     context['settings']= settings.distinct()
 
         if request.POST.get('filter_contacts', None):
             contacts_filter = contacts
@@ -797,6 +803,22 @@ def api_settings(request):
                 contacts_filter = contacts_filter.filter(email__icontains=request.POST.get('contact_email', None))
 
             context['contacts']= contacts_filter.distinct()
+
+        if request.POST.get('filter_blocked_domains', None):
+            if request.POST.get('domain', ''):
+                blocked_domains = blocked_domains.filter(domain__icontains=request.POST.get('domain', ''))
+            if request.POST.get('created_by', ''):
+                blocked_domains = blocked_domains.filter(created_by_id=request.POST.get('created_by', ''))
+
+            context['blocked_domains']= blocked_domains
+
+        if request.POST.get('filter_blocked_emails', None):
+            if request.POST.get('email', ''):
+                blocked_emails = blocked_emails.filter(email__icontains=request.POST.get('email', ''))
+            if request.POST.get('created_by', ''):
+                blocked_emails = blocked_emails.filter(created_by_id=request.POST.get('created_by', ''))
+
+            context['blocked_emails'] = blocked_emails
 
     return render(request, 'settings/list.html', context)
 

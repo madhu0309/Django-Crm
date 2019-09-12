@@ -334,6 +334,12 @@ if SENTRY_ENABLED and not DEBUG:
             },
         }
 
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'localhost:9200'
+    },
+}
+
 # Load the local settings file if it exists
 if os.path.isfile('crm/local_settings.py'):
     from .local_settings import *
