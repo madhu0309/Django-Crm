@@ -21,7 +21,7 @@ from common.utils import convert_to_custom_timezone
 from common.models import User
 from marketing.forms import (ContactForm, ContactListForm, EmailTemplateForm,
                              SendCampaignForm, EmailCampaignForm, BlockedDomainsForm,
-                             BlockedEmailForm)
+                             BlockedEmailForm, MarketingContactEmailSearchForm)
 from marketing.models import (Campaign, CampaignLinkClick, CampaignLog,
                               CampaignOpen, Contact, ContactList,
                               EmailTemplate, Link, Tag, FailedContact, ContactUnsubscribedCampaign,
@@ -30,6 +30,8 @@ from marketing.tasks import (run_campaign, upload_csv_file,
                             delete_multiple_contacts_tasks,
                             send_campaign_email_to_admin_contact)
 from common.access_decorators_mixins import marketing_access_required, MarketingAccessRequiredMixin, admin_login_required
+from haystack.generic_views import SearchView
+from haystack.query import SearchQuerySet
 
 TIMEZONE_CHOICES = [(tz, tz) for tz in pytz.common_timezones]
 
@@ -1275,3 +1277,25 @@ def delete_blocked_email(request, blocked_email_id):
     block_email_obj = get_object_or_404(BlockedEmail, pk=blocked_email_id)
     block_email_obj.delete()
     return redirect(reverse('common:api_settings') + '?blocked_emails')
+
+
+# class MarketingContactEmailSearch(SearchView):
+#     form_class = MarketingContactEmailSearchForm
+
+#     def get_query(self):
+#         import pdb; pdb.set_trace()
+#         if self.form.is_valid():
+#             return self.form.cleaned_data["email_domain"]
+
+#         return ""
+
+#     # def get_queryset(self):
+#     #     # queryset = super(MarketingContactEmailSearch, self).get_queryset()
+#     #     queryset = SearchQuerySet().models(Contact).filter(
+#     #         email__icontains=self.request.GET.get('email_domain', None))
+#     #     return queryset
+
+#     # def get_context_data(self, *args, **kwargs):
+#     #     context = super(MarketingContactEmailSearch, self).get_context_data(*args, **kwargs)
+#     #     import pdb; pdb.set_trace()
+#     #     return context
