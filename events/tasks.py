@@ -62,6 +62,22 @@ def send_email(event_id, recipients, domain='demo.django-crm.io', protocol='http
     #         msg.content_subtype = "html"
     #         msg.send()
 
+    # if recipients.count() > 0:
+    #     for recipient in recipients:
+    #         context['other_members'] = list(recipients.exclude(
+    #             id=recipient.id).values_list('email', flat=True))
+    #         if len(context['other_members']) > 0:
+    #             context['other_members'] = ', '.join(context['other_members'])
+    #         else:
+    #             context['other_members'] = ''
+    #         context['user'] = recipient.email
+    #         html_content = render_to_string(
+    #             'assigned_to_email_template_event.html', context=context)
+    #         msg = EmailMessage(
+    #             subject=subject, body=html_content, to=[recipient.email, ])
+    #         msg.content_subtype = "html"
+    #         msg.send()
+
         # might need to add contacts to TODO
         # recipients = event.contacts.all()
         # if recipients.count() > 0:
