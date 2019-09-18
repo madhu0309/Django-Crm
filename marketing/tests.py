@@ -774,7 +774,7 @@ class TestContactListDetail(TestMarketingModel, TestCase):
     def test_unsubscribe_from_campaign(self):
         response = self.client.get(
             reverse('marketing:unsubscribe_from_campaign', kwargs={'contact_id': self.contact.id,'campaign_id': self.campaign.id,}))
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
 
     def test_contact_detail(self):
         self.client.login(username='janeMarketing@example.com', password='password')

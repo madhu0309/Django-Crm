@@ -82,7 +82,7 @@
             {% if contact_list.failed_contacts.all %}
             <li class="nav-item">
               <a class="nav-link" id="failed-contacts" data-toggle="tab" href="#failed_contacts" role="tab"
-                aria-controls="close" aria-selected="false">Failed Contacts</a>
+                aria-controls="close" aria-selected="false">Failed Contacts ({{contact_list.failed_contacts.count}})</a>
             </li>
             {% endif %}
             {% if contact_list.duplicate_contact_contact_list.all %}
