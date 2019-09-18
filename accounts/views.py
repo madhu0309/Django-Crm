@@ -357,10 +357,9 @@ class AccountUpdateView(SalesAccessRequiredMixin, LoginRequiredMixin, UpdateView
                 if user_id not in assinged_to_users_ids:
                     account_object.assigned_to.add(user_id)
 
-        # previous_assigned_to_users
         assigned_to_list = list(account_object.assigned_to.all().values_list('id', flat=True))
         current_site = get_current_site(self.request)
-        recipients = assigned_to_list
+        recipients = list(set(assigned_to_list) - set(previous_assigned_to_users))
         send_email_to_assigned_user.delay(recipients, account_object.id, domain=current_site.domain,
             protocol=self.request.scheme)
 

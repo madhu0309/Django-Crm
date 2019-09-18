@@ -339,6 +339,7 @@ def update_lead(request, pk):
                 'id', flat=True)
             lead_obj = form.save(commit=False)
             lead_obj.save()
+            previous_assigned_to_users = list(lead_obj.assigned_to.all().values_list('id', flat=True))
             lead_obj.tags.clear()
             all_members_list = []
             if request.POST.get('tags', ''):
@@ -400,7 +401,8 @@ def update_lead(request, pk):
                 lead_obj.teams.clear()
 
             current_site = get_current_site(request)
-            recipients = list(lead_obj.assigned_to.all().values_list('id', flat=True))
+            assigned_to_list = list(lead_obj.assigned_to.all().values_list('id', flat=True))
+            recipients = list(set(assigned_to_list) - set(previous_assigned_to_users))
             send_email_to_assigned_user.delay(recipients, lead_obj.id, domain=current_site.domain,
                 protocol=request.scheme)
 

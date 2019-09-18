@@ -97,7 +97,8 @@ def task_create(request):
                 task.teams.add(*request.POST.getlist('teams'))
 
             kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
-            send_email.delay(task.id, **kwargs)
+            assigned_to_list = list(task.assigned_to.all().values_list('id', flat=True))
+            send_email.delay(task.id, assigned_to_list, **kwargs)
             success_url = reverse('tasks:tasks_list')
             if request.POST.get('from_account'):
                 success_url = reverse('accounts:view_account', args=(request.POST.get('from_account'),))
@@ -171,6 +172,7 @@ def task_edit(request, task_id):
                         request_user=request.user)
         if form.is_valid():
             task = form.save(commit=False)
+            previous_assigned_to_users = list(task_obj.assigned_to.all().values_list('id', flat=True))
             task.save()
             form.save_m2m()
             # task.assigned_to.clear()
@@ -191,7 +193,9 @@ def task_edit(request, task_id):
                 task.teams.clear()
 
             kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
-            send_email.delay(task.id, **kwargs)
+            assigned_to_list = list(task.assigned_to.all().values_list('id', flat=True))
+            recipients = list(set(assigned_to_list) - set(previous_assigned_to_users))
+            send_email.delay(task.id, recipients, **kwargs)
             success_url = reverse('tasks:tasks_list')
             if request.POST.get('from_account'):
                 success_url = reverse('accounts:view_account', args=(request.POST.get('from_account'),))
