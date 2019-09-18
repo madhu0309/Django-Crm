@@ -4,10 +4,3 @@
 {{ object.company_name }}
 {{ object.created_on_arrow }}
 {{ object.created_on }}
-
-{{ object.contact_list_count }}
-
-{% for contact_list in object.contact_list.all %}
-{{ contact_list.id }}
-{{ contact_list.name }}
-{% endfor %}

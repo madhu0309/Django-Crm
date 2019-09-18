@@ -92,6 +92,8 @@ def event_create(request):
     if request.method == 'GET':
         context = {}
         context["form"] = EventForm(request_user=request.user)
+        if request.user.role == 'ADMIN' or request.user.is_superuser:
+            context['teams'] = Teams.objects.all()
         return render(request, 'event_create.html', context)
 
     if request.method == 'POST':
@@ -113,6 +115,10 @@ def event_create(request):
                     for user_id in user_ids:
                         if user_id not in assinged_to_users_ids:
                             event.assigned_to.add(user_id)
+
+                if request.POST.getlist('teams', []):
+                    event.teams.add(*request.POST.getlist('teams'))
+
                 send_email.delay(
                     event.id, domain=request.get_host(), protocol=request.scheme)
 
@@ -144,6 +150,10 @@ def event_create(request):
                         for user_id in user_ids:
                             if user_id not in assinged_to_users_ids:
                                 event.assigned_to.add(user_id)
+
+                    if request.POST.getlist('teams', []):
+                        event.teams.add(*request.POST.getlist('teams'))
+
                     send_email.delay(
                         event.id, domain=request.get_host(), protocol=request.scheme)
 
@@ -193,6 +203,8 @@ def event_update(request, event_id):
         selected_recurring_days = [day.strftime(
             '%A') for day in selected_recurring_days]
         context['selected_recurring_days'] = selected_recurring_days
+        if request.user.role == 'ADMIN' or request.user.is_superuser:
+            context['teams'] = Teams.objects.all()
         return render(request, 'event_create.html', context)
 
     if request.method == 'POST':
@@ -215,6 +227,11 @@ def event_update(request, event_id):
                     for user_id in user_ids:
                         if user_id not in assinged_to_users_ids:
                             event.assigned_to.add(user_id)
+                if request.POST.getlist('teams', []):
+                    event.teams.clear()
+                    event.teams.add(*request.POST.getlist('teams'))
+                else:
+                    event.teams.clear()
                 send_email.delay(
                     event.id, domain=request.get_host(), protocol=request.scheme)
 
@@ -228,6 +245,11 @@ def event_update(request, event_id):
                     for user_id in user_ids:
                         if user_id not in assinged_to_users_ids:
                             event.assigned_to.add(user_id)
+                if request.POST.getlist('teams', []):
+                    event.teams.clear()
+                    event.teams.add(*request.POST.getlist('teams'))
+                else:
+                    event.teams.clear()
                 send_email.delay(
                     event.id, domain=request.get_host(), protocol=request.scheme)
 

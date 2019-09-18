@@ -73,7 +73,9 @@ def task_create(request):
             users = User.objects.filter(role='ADMIN').order_by('email')
             accounts = Account.objects.filter(Q(created_by=request.user) | Q(assigned_to__in=[request.user])).filter(status="open")
         form = TaskForm(request_user=request.user)
-        return render(request, 'task_create.html', {'form': form, 'users': users, 'accounts':accounts})
+        return render(request, 'task_create.html', {'form': form, 'users': users, 'accounts':accounts, 
+            "teams": Teams.objects.all(),
+        })
 
     if request.method == 'POST':
         form = TaskForm(request.POST, request_user=request.user)
@@ -90,6 +92,9 @@ def task_create(request):
                 for user_id in user_ids:
                     if user_id not in assinged_to_users_ids:
                         task.assigned_to.add(user_id)
+
+            if request.POST.getlist('teams', []):
+                task.teams.add(*request.POST.getlist('teams'))
 
             kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
             send_email.delay(task.id, **kwargs)
@@ -159,7 +164,7 @@ def task_edit(request, task_id):
         # form = TaskForm(request_user=request.user)
         form = TaskForm(instance=task_obj, request_user=request.user)
         return render(request, 'task_create.html', {'form': form, 'task_obj': task_obj,
-            'users': users, 'accounts':accounts})
+            'users': users, 'accounts':accounts, "teams": Teams.objects.all(),})
 
     if request.method == 'POST':
         form = TaskForm(request.POST, instance=task_obj,
@@ -178,6 +183,13 @@ def task_edit(request, task_id):
                 for user_id in user_ids:
                     if user_id not in assinged_to_users_ids:
                         task.assigned_to.add(user_id)
+
+            if request.POST.getlist('teams', []):
+                task.teams.clear()
+                task.teams.add(*request.POST.getlist('teams'))
+            else:
+                task.teams.clear()
+
             kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
             send_email.delay(task.id, **kwargs)
             success_url = reverse('tasks:tasks_list')

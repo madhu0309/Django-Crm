@@ -459,6 +459,9 @@ def document_create(request):
                     if user_id not in assinged_to_users_ids:
                         doc.shared_to.add(user_id)
 
+            if request.POST.getlist('teams', []):
+                doc.teams.add(*request.POST.getlist('teams'))
+
             data = {'success_url': reverse_lazy(
                 'common:doc_list'), 'error': False}
             return JsonResponse(data)
@@ -466,6 +469,7 @@ def document_create(request):
     context = {}
     context["doc_form"] = form
     context["users"] = users
+    context["teams"] = Teams.objects.all()
     context["sharedto_list"] = [
         int(i) for i in request.POST.getlist('assigned_to', []) if i]
     context["errors"] = form.errors
@@ -577,6 +581,12 @@ def document_update(request, pk):
                     if user_id not in assinged_to_users_ids:
                         doc.shared_to.add(user_id)
 
+            if request.POST.getlist('teams', []):
+                doc.teams.clear()
+                doc.teams.add(*request.POST.getlist('teams'))
+            else:
+                doc.teams.clear()
+
             data = {'success_url': reverse_lazy(
                 'common:doc_list'), 'error': False}
             return JsonResponse(data)
@@ -587,6 +597,7 @@ def document_update(request, pk):
     context["doc_file_name"] = context["doc_obj"].document_file.name.split(
         "/")[-1]
     context["users"] = users
+    context["teams"] = Teams.objects.all()
     context["sharedto_list"] = [
         int(i) for i in request.POST.getlist('shared_to', []) if i]
     context["errors"] = form.errors

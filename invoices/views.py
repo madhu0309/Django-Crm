@@ -117,6 +117,8 @@ def invoices_create(request):
         context["from_address_form"] = InvoiceAddressForm(
             prefix='from')
         context["to_address_form"] = InvoiceAddressForm(prefix='to')
+        if request.user.role == 'ADMIN' or request.user.is_superuser:
+            context['teams'] = Teams.objects.all()
 
         return render(request, 'invoice_create_1.html', context)
 
@@ -141,6 +143,9 @@ def invoices_create(request):
                 for user_id in user_ids:
                     if user_id not in assinged_to_users_ids:
                         invoice_obj.assigned_to.add(user_id)
+
+            if request.POST.getlist('teams', []):
+                invoice_obj.teams.add(*request.POST.getlist('teams'))
 
             create_invoice_history(invoice_obj.id, request.user.id, [])
             kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
@@ -203,6 +208,7 @@ def invoice_edit(request, invoice_id):
     if request.method == 'GET':
         context = {}
         context['invoice_obj'] = invoice_obj
+        context['teams'] = Teams.objects.all()
         context['form'] = InvoiceForm(
             instance=invoice_obj, request_user=request.user)
         context['from_address_form'] = InvoiceAddressForm(prefix='from',
@@ -243,6 +249,12 @@ def invoice_edit(request, invoice_id):
                 for user_id in user_ids:
                     if user_id not in assinged_to_users_ids:
                         invoice_obj.assigned_to.add(user_id)
+
+            if request.POST.getlist('teams', []):
+                invoice_obj.teams.clear()
+                invoice_obj.teams.add(*request.POST.getlist('teams'))
+            else:
+                invoice_obj.teams.clear()
 
             kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
             send_email.delay(invoice_obj.id, **kwargs)

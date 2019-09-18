@@ -140,6 +140,9 @@ def create_case(request):
                     if user_id not in assinged_to_users_ids:
                         case.assigned_to.add(user_id)
 
+            if request.POST.getlist('teams', []):
+                case.teams.add(*request.POST.getlist('teams'))
+
             current_site = get_current_site(request)
             recipients = list(case.assigned_to.all().values_list('id', flat=True))
             send_email_to_assigned_user.delay(recipients, case.id, domain=current_site.domain,
@@ -172,6 +175,7 @@ def create_case(request):
     context["case_types"] = CASE_TYPE
     context["case_priority"] = PRIORITY_CHOICE
     context["case_status"] = STATUS_CHOICE
+    context["teams"] = Teams.objects.all()
     context["assignedto_list"] = [
         int(i) for i in request.POST.getlist('assigned_to', []) if i]
     context["contacts_list"] = [
@@ -298,6 +302,12 @@ def update_case(request, pk):
                     if user_id not in assinged_to_users_ids:
                         case_obj.assigned_to.add(user_id)
 
+            if request.POST.getlist('teams', []):
+                case_obj.teams.clear()
+                case_obj.teams.add(*request.POST.getlist('teams'))
+            else:
+                case_obj.teams.clear()
+
             current_site = get_current_site(request)
             recipients = list(case_obj.assigned_to.all().values_list('id', flat=True))
             send_email_to_assigned_user.delay(recipients, case_obj.id, domain=current_site.domain,
@@ -342,6 +352,7 @@ def update_case(request, pk):
     context["case_types"] = CASE_TYPE
     context["case_priority"] = PRIORITY_CHOICE
     context["case_status"] = STATUS_CHOICE
+    context["teams"] = Teams.objects.all()
     context["assignedto_list"] = [
         int(i) for i in request.POST.getlist('assigned_to', []) if i]
     context["contacts_list"] = [
