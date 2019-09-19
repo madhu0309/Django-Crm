@@ -352,3 +352,11 @@ if os.path.isfile('crm/local_settings.py'):
     from .local_settings import *
 else:
     print("No local settings file found")
+
+
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+#         'LOCATION': '127.0.0.1:11211',
+#     }
+# }
