@@ -878,7 +878,7 @@ def unsubscribe_from_campaign(request, contact_id, campaign_id):
     if campaign_obj:
         ContactUnsubscribedCampaign.objects.create(
             campaigns=campaign_obj, contacts=contact_obj, is_unsubscribed=True)
-    return HttpResponseRedirect('/')
+    return render(request, 'unsubscribe_from_campaign_template.html')
 
 
 @login_required

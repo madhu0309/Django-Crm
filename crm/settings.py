@@ -240,7 +240,7 @@ CELERY_BEAT_SCHEDULE = {
         "task": "marketing.tasks.send_scheduled_campaigns",
         "schedule": crontab(hour='*/1')
     },
-    "runs-scheduled-emails-for-accounts-every-five-minutes": {
+    "runs-scheduled-emails-for-accounts-every-one-minute": {
         "task": "accounts.tasks.send_scheduled_emails",
         "schedule": crontab(minute='*/1')
     }
