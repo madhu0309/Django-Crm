@@ -1302,7 +1302,7 @@ def contacts_list_elastic_search(request):
         # contacts = Contact.objects.filter(created_by=request.user)
 
     users = User.objects.filter(
-        id__in=[_id for _id in contacts.values_list('created_by_id', flat=True)])
+        id__in=[_id for _id in contacts.values_list('created_by_id', flat=True) if _id != ''])
 
     if request.method == 'GET':
         context = {'contacts': contacts, 'users': users, 'contact_lists': contact_lists,

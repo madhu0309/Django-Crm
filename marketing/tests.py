@@ -280,34 +280,35 @@ class TestContactListsListPage(TestMarketingModel, TestCase):
 
 
 @override_settings(HAYSTACK_CONNECTIONS=TEST_INDEX )
-# class TestContactsListPage(TestMarketingModel, TestCase):
+class TestContactsListPage(TestMarketingModel, TestCase):
 
-#     def setUp(self):
-#         super(TestContactsListPage, self).setUp()
-#         connections.reload('default')
+    def setUp(self):
+        super(TestContactsListPage, self).setUp()
+        connections.reload('default')
+        # connections = ConnectionHandler(TEST_INDEX )
 
-#     def test_contacts_list_page(self):
-#         connections.reload('default')
-#         self.client.login(username='john@example.com', password='password')
-#         response = self.client.get(
-#             reverse('marketing:contacts_list'))
-#         self.assertEqual(response.status_code, 200)
+    def test_contacts_list_page(self):
+        connections.reload('default')
+        self.client.login(username='john@example.com', password='password')
+        response = self.client.get(
+            reverse('marketing:contacts_list'))
+        self.assertEqual(response.status_code, 200)
 
-#         self.client.login(
-#             username='janeMarketing@example.com', password='password')
-#         response = self.client.get(
-#             reverse('marketing:contacts_list'))
-#         self.assertEqual(response.status_code, 200)
+        self.client.login(
+            username='janeMarketing@example.com', password='password')
+        response = self.client.get(
+            reverse('marketing:contacts_list'))
+        self.assertEqual(response.status_code, 200)
 
-#         data = {
-#             'contact_name': 'name of contact',
-#             'created_by': self.user1.id,
-#             'contact_email': 'contact@email.com',
-#             'contact_list': self.contact_list.id,
-#         }
-#         response = self.client.post(
-#             reverse('marketing:contacts_list'), data)
-#         self.assertEqual(response.status_code, 200)
+        data = {
+            'contact_name': 'name of contact',
+            'created_by': self.user1.id,
+            'contact_email': 'contact@email.com',
+            'contact_list': self.contact_list.id,
+        }
+        response = self.client.post(
+            reverse('marketing:contacts_list'), data)
+        self.assertEqual(response.status_code, 200)
 
 
 class TestContactsCSVFileUploadView(TestMarketingModel, TestCase):
