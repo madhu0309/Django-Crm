@@ -120,21 +120,15 @@ class Account(models.Model):
 
     @property
     def get_team_users(self):
-        users = []
-        for team in self.teams.all():
-            for user in team.users.all():
-                users.append(user)
-        return list(set(users))
+        team_user_ids = list(self.teams.values_list('users__id', flat=True))
+        return User.objects.filter(id__in=team_user_ids)
 
     @property
     def get_team_and_assigned_users(self):
-        users = []
-        for team in self.teams.all():
-            for user in team.users.all():
-                users.append(user)
-        for user in self.assigned_to.all():
-            users.append(user)
-        return list(set(users))
+        team_user_ids = list(self.teams.values_list('users__id', flat=True))
+        assigned_user_ids = list(self.assigned_to.values_list('id', flat=True))
+        user_ids = team_user_ids + assigned_user_ids
+        return User.objects.filter(id__in=user_ids)
 
 
 class Email(models.Model):
