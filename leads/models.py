@@ -77,11 +77,30 @@ class Lead(models.Model):
     def created_on_arrow(self):
         return arrow.get(self.created_on).humanize()
 
-    def save(self, *args, **kwargs):
-        super(Lead, self).save(*args, **kwargs)
-        queryset = Lead.objects.all().exclude(status='converted').select_related('created_by'
-            ).prefetch_related('tags', 'assigned_to',)
-        open_leads = queryset.exclude(status='closed')
-        close_leads = queryset.filter(status='closed')
-        cache.set('admin_leads_open_queryset', open_leads, 60*60)
-        cache.set('admin_leads_close_queryset', close_leads, 60*60)
+    @property
+    def get_team_users(self):
+        users = []
+        for team in self.teams.all():
+            for user in team.users.all():
+                users.append(user)
+        return list(set(users))
+
+    @property
+    def get_team_and_assigned_users(self):
+        users = []
+        for team in self.teams.all():
+            for user in team.users.all():
+                users.append(user)
+        for user in self.assigned_to.all():
+            users.append(user)
+        return list(set(users))
+
+
+    # def save(self, *args, **kwargs):
+    #     super(Lead, self).save(*args, **kwargs)
+    #     queryset = Lead.objects.all().exclude(status='converted').select_related('created_by'
+    #         ).prefetch_related('tags', 'assigned_to',)
+    #     open_leads = queryset.exclude(status='closed')
+    #     close_leads = queryset.filter(status='closed')
+    #     cache.set('admin_leads_open_queryset', open_leads, 60*60)
+    #     cache.set('admin_leads_close_queryset', close_leads, 60*60)

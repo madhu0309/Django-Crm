@@ -302,6 +302,24 @@ class Document(models.Model):
         return self.title
 
     @property
+    def get_team_users(self):
+        users = []
+        for team in self.teams.all():
+            for user in team.users.all():
+                users.append(user)
+        return list(set(users))
+
+    @property
+    def get_team_and_assigned_users(self):
+        users = []
+        for team in self.teams.all():
+            for user in team.users.all():
+                users.append(user)
+        for user in self.shared_to.all():
+            users.append(user)
+        return list(set(users))
+
+    @property
     def created_on_arrow(self):
         return arrow.get(self.created_on).humanize()
 

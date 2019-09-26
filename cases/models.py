@@ -41,6 +41,24 @@ class Case(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def get_team_users(self):
+        users = []
+        for team in self.teams.all():
+            for user in team.users.all():
+                users.append(user)
+        return list(set(users))
+
+    @property
+    def get_team_and_assigned_users(self):
+        users = []
+        for team in self.teams.all():
+            for user in team.users.all():
+                users.append(user)
+        for user in self.assigned_to.all():
+            users.append(user)
+        return list(set(users))
+
     def get_meetings(self):
         content_type = ContentType.objects.get(app_label="cases", model="case")
         return Event.objects.filter(

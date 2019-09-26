@@ -118,6 +118,24 @@ class Account(models.Model):
         contacts = list(self.contacts.values_list('id', flat=True))
         return ','.join(str(contact) for contact in contacts)
 
+    @property
+    def get_team_users(self):
+        users = []
+        for team in self.teams.all():
+            for user in team.users.all():
+                users.append(user)
+        return list(set(users))
+
+    @property
+    def get_team_and_assigned_users(self):
+        users = []
+        for team in self.teams.all():
+            for user in team.users.all():
+                users.append(user)
+        for user in self.assigned_to.all():
+            users.append(user)
+        return list(set(users))
+
 
 class Email(models.Model):
     from_account = models.ForeignKey(
