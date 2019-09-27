@@ -36,6 +36,17 @@ from django.core.cache import cache
 
 
 @login_required
+def get_teams_and_users(request):
+    data = {}
+    teams = Teams.objects.all()
+    teams_data = [{'team': team.id, 'users': [user.id for user in team.users.all()]} for team in teams]
+    users = User.objects.all().values_list("id", flat=True)
+    data['teams'] = teams_data
+    data['users'] = list(users)
+    return JsonResponse(data)
+
+
+@login_required
 @sales_access_required
 def lead_list_view(request):
 
