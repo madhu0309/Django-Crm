@@ -592,16 +592,21 @@ def update_lead(request, pk):
     context = {}
     context["lead_obj"] = lead_record
     user_assgn_list = [
-        assigned_to.id for assigned_to in lead_record.assigned_to.all()]
+        assigned_to.id for assigned_to in lead_record.get_assigned_users_not_in_teams]
+
     if request.user == lead_record.created_by:
         user_assgn_list.append(request.user.id)
     if request.user.role != "ADMIN" and not request.user.is_superuser:
         if request.user.id not in user_assgn_list:
             raise PermissionDenied
-
+    team_ids = [user.id for user in lead_record.get_team_users]
+    all_user_ids = [user.id for user in users]
+    users_excluding_team_id = set(all_user_ids) - set(team_ids)
+    users_excluding_team = User.objects.filter(id__in=users_excluding_team_id)
     context["lead_form"] = form
     context["accounts"] = Account.objects.filter(status="open")
     context["users"] = users
+    context["users_excluding_team"] = users_excluding_team
     context["countries"] = COUNTRIES
     context["status"] = LEAD_STATUS
     context["source"] = LEAD_SOURCE
@@ -609,7 +614,6 @@ def update_lead(request, pk):
     context["teams"] = Teams.objects.all()
     context["assignedto_list"] = [
         int(i) for i in request.POST.getlist('assigned_to', []) if i]
-
     return render(request, template_name, context)
 
 

@@ -167,8 +167,8 @@
                   <label for="exampleInputEmail1">Assigned Users</label>
                   <select class="assigned_users form-control" name="assigned_to" multiple="multiple"
                     id="id_assigned_to">
-                    {% for user in users %}
-                    <option value="{{user.id}}" {% if user in lead_obj.assigned_to.all or user.id in assignedto_list %}
+                    {% for user in users_excluding_team %}
+                    <option value="{{user.id}}" {% if user in lead_obj.get_assigned_users_not_in_teams or user.id in assignedto_list %}
                       selected="" {% endif %}>{{user.email}}</option>
                     {% endfor %}
                   </select>
