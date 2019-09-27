@@ -52,7 +52,7 @@ def lead_list_view(request):
     if request.method == 'GET':
         context = {}
         if request.GET.get('tag', None):
-            queryset = queryset.filter(tags__in = self.request.GET.getlist('tag'))
+            queryset = queryset.filter(tags__in = request.GET.getlist('tag'))
 
         open_leads = queryset.exclude(status='closed')
         close_leads = queryset.filter(status='closed')
