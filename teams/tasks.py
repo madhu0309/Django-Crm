@@ -12,9 +12,7 @@ from teams.models import Teams
 
 @task
 def remove_users(removed_users_list, team_id):
-    print('removed_users_list:::', removed_users_list)
     users_list = User.objects.filter(id__in=removed_users_list)
-    print('users_list:', users_list)
     if users_list:
         team = Teams.objects.filter(id=team_id).first()
         if team:
