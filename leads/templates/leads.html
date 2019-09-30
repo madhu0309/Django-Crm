@@ -855,8 +855,8 @@
   $(".remove_tag").click(function () {
     // $(".tag_class_opp").css('cursor', 'pointer')
     url = "{% url 'leads:list' %}"
-    console.log($(this).attr('data-tag'))
-    console.log($(this).attr('data-lead'))
+    // console.log($(this).attr('data-tag'))
+    // console.log($(this).attr('data-lead'))
     const data = { 'tag': $(this).attr('data-tag'), 'lead': $(this).attr('data-lead') }
     const tagToRemove = $(this).attr('data-lead') + $(this).attr('data-tag')
     const lead = $(this).attr('data-lead')
@@ -942,12 +942,26 @@
     $("#open-tab").click()
   }
 
+  $.urlParam = function(name){
+  var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+  if (results==null){
+       return null;
+    }
+  else{
+        return results[1] || 0;
+      }
+    }
   $('.delete').click(function (e) {
     e.preventDefault()
     url = $(this).attr('href')
     if (!confirm('Are you sure you want to delete?'))
       return;
+    if($.urlParam('page')){
+    window.location = $(this).attr('href')+"?page="+$.urlParam('page');
+  }
+  else{
     window.location = $(this).attr('href')
+  }
   });
 
   $("a[rel='page']").click(function (e) {
