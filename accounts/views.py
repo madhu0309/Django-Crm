@@ -30,6 +30,17 @@ from opportunity.models import SOURCES, STAGES, Opportunity
 from teams.models import Teams
 
 
+@login_required
+def get_teams_and_users(request):
+    data = {}
+    teams = Teams.objects.all()
+    teams_data = [{'team': team.id, 'users': [user.id for user in team.users.all()]} for team in teams]
+    users = User.objects.all().values_list("id", flat=True)
+    data['teams'] = teams_data
+    data['users'] = list(users)
+    return JsonResponse(data)
+
+
 class AccountsListView(SalesAccessRequiredMixin, LoginRequiredMixin, TemplateView):
     model = Account
     context_object_name = "accounts_list"
