@@ -52,7 +52,6 @@ def remove_users(removed_users_list, team_id):
                     doc.shared_to.remove(user)
 
             # for tasks
-            for tasks
             tasks = team.tasks_teams.all()
             for task in tasks:
                 for user in users_list:
