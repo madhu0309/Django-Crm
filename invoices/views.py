@@ -48,11 +48,11 @@ def invoices_list(request):
     if request.method == 'GET':
         context = {}
         if request.user.role == 'ADMIN' or request.user.is_superuser:
-            invoices = Invoice.objects.all().distinct()
+            invoices = Invoice.objects.all().distinct().order_by('-created_on')
         else:
             invoices = Invoice.objects.filter(
-                Q(created_by=request.user) | Q(assigned_to=request.user)).distinct()
-        context['invoices'] = invoices.order_by('id')
+                Q(created_by=request.user) | Q(assigned_to=request.user)).distinct().order_by('-created_on')
+        context['invoices'] = invoices.order_by('-created_on')
         context['status'] = status
         context['users'] = users
         user_ids = list(invoices.values_list('created_by', flat=True))
@@ -66,7 +66,7 @@ def invoices_list(request):
         context = {}
         context['status'] = status
         context['users'] = users
-        invoices = Invoice.objects.filter()
+        invoices = Invoice.objects.filter().order_by('-created_on')
         if request.user.role == 'ADMIN' or request.user.is_superuser:
             invoices = invoices
         else:
@@ -97,7 +97,7 @@ def invoices_list(request):
         user_ids = list(invoices.values_list('created_by', flat=True))
         user_ids.append(request.user.id)
         context['created_by_users'] = users.filter(is_active=True, id__in=user_ids)
-        context['invoices'] = invoices.distinct().order_by('id')
+        context['invoices'] = invoices.distinct().order_by('-created_on')
         today = datetime.today().date()
         context['today'] = today
         return render(request, 'invoices_list.html', context)

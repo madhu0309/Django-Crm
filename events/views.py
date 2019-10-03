@@ -43,7 +43,7 @@ def events_list(request):
         else:
             events = Event.objects.filter(
                 Q(created_by=request.user) | Q(assigned_to=request.user)).distinct()
-        context['events'] = events.order_by('id')
+        context['events'] = events.order_by('-created_on')
         # context['status'] = status
         context['users'] = users
         user_ids = list(events.values_list('created_by', flat=True))
@@ -79,7 +79,7 @@ def events_list(request):
             events = events.filter(
                 date_of_meeting=request.POST.get('date_of_meeting'))
 
-        context['events'] = events.distinct().order_by('id')
+        context['events'] = events.distinct().order_by('-created_on')
         user_ids = list(events.values_list('created_by', flat=True))
         user_ids.append(request.user.id)
         context['created_by_users'] = users.filter(is_active=True, id__in=user_ids)

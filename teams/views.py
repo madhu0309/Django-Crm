@@ -20,7 +20,7 @@ from teams.tasks import update_team_users
 def teams_list(request):
     context = {}
     if request.user.role == 'ADMIN' or request.user.is_superuser:
-        queryset = Teams.objects.all()
+        queryset = Teams.objects.all().order_by('-created_on')
         users = User.objects.all()
         context['teams'] = queryset
         context['users'] = users
