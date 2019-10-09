@@ -337,7 +337,8 @@ if SENTRY_ENABLED and not DEBUG:
 
 HAYSTACK_CONNECTIONS = {
     'default': {
-        'ENGINE': 'haystack.backends.elasticsearch2_backend.Elasticsearch2SearchEngine',
+        # 'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'ENGINE': 'marketing.search_backends.CustomElasticsearchSearchEngine',
         'URL': 'http://127.0.0.1:9200/',
         'INDEX_NAME': 'haystack',
     },
@@ -346,6 +347,41 @@ HAYSTACK_CONNECTIONS = {
 HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 
 HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10
+
+ELASTICSEARCH_INDEX_SETTINGS = {
+    "settings": {
+        "analysis": {
+            "analyzer": {
+                "ngram_analyzer": {
+                    "type": "custom",
+                    "tokenizer": "custom_ngram_tokenizer",
+                    "filter": ["asciifolding", "lowercase"]
+                },
+                "edgengram_analyzer": {
+                    "type": "custom",
+                    "tokenizer": "custom_edgengram_tokenizer",
+                    "filter": ["asciifolding", "lowercase"]
+                }
+            },
+            "tokenizer": {
+                "custom_ngram_tokenizer": {
+                    "type": "nGram",
+                    "min_gram": 3,
+                    "max_gram": 12,
+                    "token_chars": ["letter", "digit"]
+                },
+                "custom_edgengram_tokenizer": {
+                    "type": "edgeNGram",
+                    "min_gram": 2,
+                    "max_gram": 12,
+                    "token_chars": ["letter", "digit"]
+                }
+            }
+        }
+    }
+}
+
+HAYSTACK_DEFAULT_OPERATOR = 'AND'
 
 # Load the local settings file if it exists
 if os.path.isfile('crm/local_settings.py'):

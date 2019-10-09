@@ -49,7 +49,7 @@ class MarketingContactIndex(indexes.SearchIndex, indexes.Indexable):
         return obj.is_bounced
 
     def prepare_contact_lists_count(self, obj):
-        return obj.contact_list.count()
+        return int(obj.contact_list.count())
 
     def index_queryset(self, using=None):
         return self.get_model().objects.all()
@@ -62,7 +62,7 @@ class MarketingFailedContactIndex(indexes.SearchIndex, indexes.Indexable):
 
     id = indexes.CharField(model_attr='id')
     email = indexes.EdgeNgramField(model_attr='email')
-    email_domain = indexes.EdgeNgramField()
+    email = indexes.EdgeNgramField()
     name = indexes.CharField(model_attr='name')
     company_name = indexes.CharField()
     created_on = indexes.CharField(model_attr='created_on')
@@ -100,7 +100,7 @@ class MarketingFailedContactIndex(indexes.SearchIndex, indexes.Indexable):
         return obj.created_by.id if obj.created_by else ''
 
     def prepare_contact_lists_count(self, obj):
-        return obj.contact_list.count()
+        return int(obj.contact_list.count())
 
     def index_queryset(self, using=None):
         return self.get_model().objects.all()
