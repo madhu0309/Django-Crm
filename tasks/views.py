@@ -29,15 +29,15 @@ def tasks_list(request):
     if request.method == 'GET':
 
         if request.user.role == 'ADMIN' or request.user.is_superuser:
-            tasks = Task.objects.all().distinct()
+            tasks = Task.objects.all().distinct().order_by('-created_on')
         else:
             tasks = Task.objects.filter(
-                Q(created_by=request.user) | Q(assigned_to=request.user)).distinct()
+                Q(created_by=request.user) | Q(assigned_to=request.user)).distinct().order_by('-created_on')
         today = datetime.today().date()
         return render(request, 'tasks_tasks_list.html', {'tasks': tasks, 'today': today, 'status_choices': STATUS_CHOICES, 'priority_choices': PRIORITY_CHOICES})
 
     if request.method == 'POST':
-        tasks = Task.objects.filter()
+        tasks = Task.objects.filter().order_by('-created_on')
         if request.user.role == 'ADMIN' or request.user.is_superuser:
             tasks = tasks
         else:

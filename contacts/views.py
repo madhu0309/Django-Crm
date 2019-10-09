@@ -30,7 +30,7 @@ class ContactsListView(SalesAccessRequiredMixin, LoginRequiredMixin, TemplateVie
     template_name = "contacts.html"
 
     def get_queryset(self):
-        queryset = self.model.objects.all()
+        queryset = self.model.objects.all().order_by('-created_on')
         if (self.request.user.role != "ADMIN" and not
                 self.request.user.is_superuser):
             queryset = queryset.filter(
