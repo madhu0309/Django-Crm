@@ -642,6 +642,8 @@ class DeleteLeadView(SalesAccessRequiredMixin, LoginRequiredMixin, View):
         ):
             self.object.delete()
             # update_leads_cache.delay()
+            if request.GET.get('page'):
+                return HttpResponseRedirect(reverse('leads:list') + '?page='+request.GET.get('page'))
             return redirect("leads:list")
         raise PermissionDenied
 

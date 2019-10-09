@@ -8,11 +8,11 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.views.generic import (CreateView, DeleteView, DetailView, FormView,
-    TemplateView, UpdateView, View)
+                                  TemplateView, UpdateView, View)
 
 from accounts.models import Account
 from common.access_decorators_mixins import (MarketingAccessRequiredMixin,
-    SalesAccessRequiredMixin, marketing_access_required, sales_access_required)
+                                             SalesAccessRequiredMixin, marketing_access_required, sales_access_required)
 from common.models import Attachments, Comment, User
 from common.tasks import send_email_user_mentions
 from contacts.models import Contact
@@ -21,6 +21,18 @@ from tasks.forms import TaskAttachmentForm, TaskCommentForm, TaskForm
 from tasks.models import Task
 from tasks.utils import *
 from teams.models import Teams
+
+
+@login_required
+def get_teams_and_users(request):
+    data = {}
+    teams = Teams.objects.all()
+    teams_data = [{'team': team.id, 'users': [
+        user.id for user in team.users.all()]} for team in teams]
+    users = User.objects.all().values_list("id", flat=True)
+    data['teams'] = teams_data
+    data['users'] = list(users)
+    return JsonResponse(data)
 
 
 @login_required
@@ -71,11 +83,12 @@ def task_create(request):
         #     accounts = Account.objects.filter(created_by=request.user).filter(status="open")
         else:
             users = User.objects.filter(role='ADMIN').order_by('email')
-            accounts = Account.objects.filter(Q(created_by=request.user) | Q(assigned_to__in=[request.user])).filter(status="open")
+            accounts = Account.objects.filter(Q(created_by=request.user) | Q(
+                assigned_to__in=[request.user])).filter(status="open")
         form = TaskForm(request_user=request.user)
-        return render(request, 'task_create.html', {'form': form, 'users': users, 'accounts':accounts, 
-            "teams": Teams.objects.all(),
-        })
+        return render(request, 'task_create.html', {'form': form, 'users': users, 'accounts': accounts,
+                                                    "teams": Teams.objects.all(),
+                                                    })
 
     if request.method == 'POST':
         form = TaskForm(request.POST, request_user=request.user)
@@ -87,7 +100,8 @@ def task_create(request):
             task.contacts.add(*request.POST.getlist('contacts'))
 
             if request.POST.getlist('teams', []):
-                user_ids = Teams.objects.filter(id__in=request.POST.getlist('teams')).values_list('users', flat=True)
+                user_ids = Teams.objects.filter(id__in=request.POST.getlist(
+                    'teams')).values_list('users', flat=True)
                 assinged_to_users_ids = task.assigned_to.all().values_list('id', flat=True)
                 for user_id in user_ids:
                     if user_id not in assinged_to_users_ids:
@@ -97,11 +111,13 @@ def task_create(request):
                 task.teams.add(*request.POST.getlist('teams'))
 
             kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
-            assigned_to_list = list(task.assigned_to.all().values_list('id', flat=True))
+            assigned_to_list = list(
+                task.assigned_to.all().values_list('id', flat=True))
             send_email.delay(task.id, assigned_to_list, **kwargs)
             success_url = reverse('tasks:tasks_list')
             if request.POST.get('from_account'):
-                success_url = reverse('accounts:view_account', args=(request.POST.get('from_account'),))
+                success_url = reverse('accounts:view_account', args=(
+                    request.POST.get('from_account'),))
             return JsonResponse({'error': False, 'success_url': success_url})
         else:
             return JsonResponse({'error': True, 'errors': form.errors})
@@ -114,7 +130,8 @@ def task_detail(request, task_id):
     task = get_object_or_404(Task, pk=task_id)
 
     user_assigned_account = False
-    user_assigned_accounts = set(request.user.account_assigned_users.values_list('id', flat=True))
+    user_assigned_accounts = set(
+        request.user.account_assigned_users.values_list('id', flat=True))
     if task.account:
         task_accounts = set([task.account.id])
     else:
@@ -136,7 +153,8 @@ def task_detail(request, task_id):
         attachments = task.tasks_attachment.all()
         comments = task.tasks_comments.all()
         if request.user.is_superuser or request.user.role == 'ADMIN':
-            users_mention = list(User.objects.filter(is_active=True).values('username'))
+            users_mention = list(User.objects.filter(
+                is_active=True).values('username'))
         elif request.user != task.created_by:
             users_mention = [{'username': task.created_by.username}]
         else:
@@ -165,14 +183,15 @@ def task_edit(request, task_id):
         # form = TaskForm(request_user=request.user)
         form = TaskForm(instance=task_obj, request_user=request.user)
         return render(request, 'task_create.html', {'form': form, 'task_obj': task_obj,
-            'users': users, 'accounts':accounts, "teams": Teams.objects.all(),})
+                                                    'users': users, 'accounts': accounts, "teams": Teams.objects.all(), })
 
     if request.method == 'POST':
         form = TaskForm(request.POST, instance=task_obj,
                         request_user=request.user)
         if form.is_valid():
             task = form.save(commit=False)
-            previous_assigned_to_users = list(task_obj.assigned_to.all().values_list('id', flat=True))
+            previous_assigned_to_users = list(
+                task_obj.assigned_to.all().values_list('id', flat=True))
             task.save()
             form.save_m2m()
             # task.assigned_to.clear()
@@ -180,7 +199,8 @@ def task_edit(request, task_id):
             # task.assigned_to.add(*request.POST.getlist('assigned_to'))
             # task.contacts.add(*request.POST.getlist('contacts'))
             if request.POST.getlist('teams', []):
-                user_ids = Teams.objects.filter(id__in=request.POST.getlist('teams')).values_list('users', flat=True)
+                user_ids = Teams.objects.filter(id__in=request.POST.getlist(
+                    'teams')).values_list('users', flat=True)
                 assinged_to_users_ids = task.assigned_to.all().values_list('id', flat=True)
                 for user_id in user_ids:
                     if user_id not in assinged_to_users_ids:
@@ -193,12 +213,15 @@ def task_edit(request, task_id):
                 task.teams.clear()
 
             kwargs = {'domain': request.get_host(), 'protocol': request.scheme}
-            assigned_to_list = list(task.assigned_to.all().values_list('id', flat=True))
-            recipients = list(set(assigned_to_list) - set(previous_assigned_to_users))
+            assigned_to_list = list(
+                task.assigned_to.all().values_list('id', flat=True))
+            recipients = list(set(assigned_to_list) -
+                              set(previous_assigned_to_users))
             send_email.delay(task.id, recipients, **kwargs)
             success_url = reverse('tasks:tasks_list')
             if request.POST.get('from_account'):
-                success_url = reverse('accounts:view_account', args=(request.POST.get('from_account'),))
+                success_url = reverse('accounts:view_account', args=(
+                    request.POST.get('from_account'),))
             return JsonResponse({'error': False, 'success_url': success_url})
         else:
             return JsonResponse({'error': True, 'errors': form.errors})
