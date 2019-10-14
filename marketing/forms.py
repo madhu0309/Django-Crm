@@ -523,7 +523,6 @@ class MarketingContactEmailSearchForm(SearchForm):
 
         # Check to see if a start_date was chosen.
         if self.cleaned_data['email_domain']:
-            # import pdb; pdb.set_trace()
             sqs = sqs.filter(email__icontains=self.cleaned_data.get('email_domain'))
 
         return sqs

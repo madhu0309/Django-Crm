@@ -12,6 +12,7 @@ from teams.models import Teams
 
 @task
 def remove_users(removed_users_list, team_id):
+    removed_users_list = [i for i in removed_users_list if i.isdigit()]
     users_list = User.objects.filter(id__in=removed_users_list)
     if users_list:
         team = Teams.objects.filter(id=team_id).first()
@@ -120,7 +121,7 @@ def update_team_users(team_id):
         # for documents
         docs = team.document_teams.all()
         for doc in docs:
-            doc_assigned_to_users = doc.assigned_to.all()
+            doc_assigned_to_users = doc.shared_to.all()
             for team_member in teams_members:
                 if team_member not in doc_assigned_to_users:
                     doc.shared_to.add(team_member)

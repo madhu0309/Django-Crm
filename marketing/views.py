@@ -1353,7 +1353,6 @@ def contacts_list_elastic_search(request):
 #     form_class = MarketingContactEmailSearchForm
 
 #     def get_query(self):
-#         import pdb; pdb.set_trace()
 #         if self.form.is_valid():
 #             return self.form.cleaned_data["email_domain"]
 
@@ -1367,5 +1366,4 @@ def contacts_list_elastic_search(request):
 
 #     # def get_context_data(self, *args, **kwargs):
 #     #     context = super(MarketingContactEmailSearch, self).get_context_data(*args, **kwargs)
-#     #     import pdb; pdb.set_trace()
 #     #     return context

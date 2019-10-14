@@ -125,7 +125,7 @@ def create_lead_from_file(validated_rows, invalid_rows, user_id, source):
                     lead.description = row.get('description', '')
                     lead.status = row.get('status', '')
                     lead.account_name = row.get('account_name', '')[:255]
-                    lead.created_from_site = True
+                    lead.created_from_site = False
                     lead.created_by = user
                     lead.save()
                 except e:
