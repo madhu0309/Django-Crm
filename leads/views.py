@@ -620,6 +620,7 @@ def update_lead(request, pk):
     context["users_excluding_team"] = users_excluding_team
     context["countries"] = COUNTRIES
     context["status"] = LEAD_STATUS
+    context["source"] = LEAD_SOURCE
     context["error"] = error
     context["teams"] = Teams.objects.all()
     context["assignedto_list"] = [
