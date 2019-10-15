@@ -93,10 +93,10 @@ def dashboard(request):
 def contact_lists(request):
     tags = Tag.objects.all()
     if (request.user.role == "ADMIN"):
-        queryset = ContactList.objects.all()
+        queryset = ContactList.objects.all().order_by('-created_on')
     else:
         queryset = ContactList.objects.filter(
-            Q(created_by=request.user) | Q(visible_to=request.user))
+            Q(created_by=request.user) | Q(visible_to=request.user)).order_by('-created_on')
 
     users = User.objects.filter(
         id__in=queryset.values_list('created_by_id', flat=True))
@@ -445,10 +445,10 @@ def failed_contact_list_download_delete(request, pk):
 def email_template_list(request):
     # users = User.objects.all()
     if (request.user.role == 'ADMIN' or request.user.is_superuser):
-        queryset = EmailTemplate.objects.all()
+        queryset = EmailTemplate.objects.all().order_by('-created_on')
     else:
         queryset = EmailTemplate.objects.filter(
-            created_by=request.user)
+            created_by=request.user).order_by('-created_on')
     users = User.objects.filter(
         id__in=queryset.values_list('created_by_id', flat=True))
     if request.method == 'POST':
