@@ -94,10 +94,10 @@ def lead_list_view(request):
 
         request_post = request.POST
         if request_post:
-            if request_post.get('name'):
+            if request_post.get('title'):
                 queryset = queryset.filter(
-                    Q(first_name__icontains=request_post.get('name')) or
-                    Q(last_name__icontains=request_post.get('name')))
+                    Q(title__icontains=request_post.get('title')))
+                    # or Q(last_name__icontains=request_post.get('name')))
             if request_post.get('city'):
                 queryset = queryset.filter(
                     city__icontains=request_post.get('city'))
