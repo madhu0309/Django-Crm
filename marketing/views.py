@@ -21,7 +21,7 @@ from common.utils import convert_to_custom_timezone
 from common.models import User
 from marketing.forms import (ContactForm, ContactListForm, EmailTemplateForm,
                              SendCampaignForm, EmailCampaignForm, BlockedDomainsForm,
-                             BlockedEmailForm, MarketingContactEmailSearchForm)
+                             BlockedEmailForm)
 from marketing.models import (Campaign, CampaignLinkClick, CampaignLog,
                               CampaignOpen, Contact, ContactList,
                               EmailTemplate, Link, Tag, FailedContact, ContactUnsubscribedCampaign,
@@ -31,8 +31,8 @@ from marketing.tasks import (run_campaign, upload_csv_file,
                             send_campaign_email_to_admin_contact,
                             update_elastic_search_index)
 from common.access_decorators_mixins import marketing_access_required, MarketingAccessRequiredMixin, admin_login_required
-from haystack.generic_views import SearchView
-from haystack.query import SearchQuerySet
+# from haystack.generic_views import SearchView
+# from haystack.query import SearchQuerySet
 
 TIMEZONE_CHOICES = [(tz, tz) for tz in pytz.common_timezones]
 
@@ -1286,22 +1286,22 @@ def delete_blocked_email(request, blocked_email_id):
 @marketing_access_required
 def contacts_list_elastic_search(request):
     if (request.user.role == "ADMIN"):
-        # contacts = Contact.objects.filter(is_bounced=False)
-        contacts = SearchQuerySet().filter(is_bounced='false').models(Contact)
-        bounced_contacts = SearchQuerySet().filter(is_bounced='true').models(Contact)
-        failed_contacts = SearchQuerySet().models(FailedContact).filter()
-        # bounced_contacts = Contact.objects.filter(is_bounced=True)
-        # failed_contacts = FailedContact.objects.all()
+        contacts = Contact.objects.filter(is_bounced=False)
+        # contacts = SearchQuerySet().filter(is_bounced='false').models(Contact)
+        # bounced_contacts = SearchQuerySet().filter(is_bounced='true').models(Contact)
+        # failed_contacts = SearchQuerySet().models(FailedContact).filter()
+        bounced_contacts = Contact.objects.filter(is_bounced=True)
+        failed_contacts = FailedContact.objects.all()
         contact_lists = ContactList.objects.all()
     else:
         contact_ids = request.user.marketing_contactlist.all().values_list('contacts',
             flat=True)
-        contacts = SearchQuerySet().filter(is_bounced='false', id__in=contact_ids).models(Contact)
-        bounced_contacts = SearchQuerySet().filter(is_bounced='true', id__in=contact_ids).models(Contact)
-        failed_contacts = SearchQuerySet().models(FailedContact).filter(created_by_id=str(request.user.id))
-        # contacts = Contact.objects.filter(id__in=contact_ids).exclude(is_bounced=True)
-        # bounced_contacts = Contact.objects.filter(id__in=contact_ids, is_bounced=True)
-        # failed_contacts = FailedContact.objects.filter(created_by=request.user)
+        # contacts = SearchQuerySet().filter(is_bounced='false', id__in=contact_ids).models(Contact)
+        # bounced_contacts = SearchQuerySet().filter(is_bounced='true', id__in=contact_ids).models(Contact)
+        # failed_contacts = SearchQuerySet().models(FailedContact).filter(created_by_id=str(request.user.id))
+        contacts = Contact.objects.filter(id__in=contact_ids).exclude(is_bounced=True)
+        bounced_contacts = Contact.objects.filter(id__in=contact_ids, is_bounced=True)
+        failed_contacts = FailedContact.objects.filter(created_by=request.user)
         contact_lists = ContactList.objects.filter(created_by=request.user)
         # contacts = Contact.objects.filter(created_by=request.user)
 
@@ -1328,10 +1328,10 @@ def contacts_list_elastic_search(request):
             bounced_contacts = bounced_contacts.filter(email__icontains=data.get('email'))
             failed_contacts = failed_contacts.filter(email__icontains=data.get('email'))
 
-        if data.get('domain_name'):
-            contacts = contacts.filter(email_domain__icontains=data.get('domain_name'))
-            bounced_contacts = bounced_contacts.filter(email_domain__icontains=data.get('domain_name'))
-            failed_contacts = failed_contacts.filter(email_domain__icontains=data.get('domain_name'))
+        # if data.get('domain_name'):
+        #     contacts = contacts.filter(email_domain__icontains=data.get('domain_name'))
+        #     bounced_contacts = bounced_contacts.filter(email_domain__icontains=data.get('domain_name'))
+        #     failed_contacts = failed_contacts.filter(email_domain__icontains=data.get('domain_name'))
 
         if data.get('created_by'):
             contacts = contacts.filter(created_by_id=data.get('created_by'))
@@ -1339,9 +1339,9 @@ def contacts_list_elastic_search(request):
             failed_contacts = failed_contacts.filter(created_by_id=data.get('created_by'))
 
         if data.get('contact_list'):
-            contacts = contacts.filter(contact_lists_id=data.get('contact_list'))
-            bounced_contacts = bounced_contacts.filter(contact_lists_id=data.get('contact_list'))
-            failed_contacts = failed_contacts.filter(contact_lists_id=data.get('contact_list'))
+            contacts = contacts.filter(contact_list__id=data.get('contact_list'))
+            bounced_contacts = bounced_contacts.filter(contact_list__id=data.get('contact_list'))
+            failed_contacts = failed_contacts.filter(contact_list__id=data.get('contact_list'))
 
         context = {'contacts': contacts, 'users': users, 'contact_lists': contact_lists,
             'bounced_contacts': bounced_contacts, 'failed_contacts': failed_contacts,
