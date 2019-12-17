@@ -40,7 +40,7 @@ def get_teams_and_users(request):
 def tasks_list(request):
     if request.method == 'GET':
 
-        if request.user.role == 'ADMIN' or request.user.is_superuser:
+        if request.user.role == 'ADMIN' or request.user.is_superuser :
             tasks = Task.objects.all().distinct().order_by('-created_on')
         else:
             tasks = Task.objects.filter(
@@ -170,7 +170,7 @@ def task_edit(request, task_id):
     task_obj = get_object_or_404(Task, pk=task_id)
     accounts = Account.objects.filter(status="open")
 
-    if not (request.user.role == 'ADMIN' or request.user.is_superuser or task_obj.created_by == request.user):
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or task_obj.created_by == request.user or request.user in task_obj.assigned_to.all()):
         raise PermissionDenied
 
     if request.method == 'GET':
