@@ -468,6 +468,8 @@
 <script type="text/javascript">
   var queryParams = (window.location.search).replace('?', '').split('&').map(param => param.split('=')).reduce((values, [key, value]) => { values[key] = value; return values; }, {})
 
+
+
   if (queryParams.hasOwnProperty('contacts')) {
     $('#open-tab').trigger('click')
   }
@@ -494,6 +496,16 @@
   if (tab_clicked_emails.length > 1) {
     $('#emails-tab').trigger('click')
   }
+  // Javascript to enable link to tab
+  var url = document.location.toString();
+  if (url.match('#')) {
+    $('.nav-tabs a[href="#' + url.split('#')[1] + '"]').tab('show');
+  }
+
+  // Change hash for page-reload
+  $('.nav-tabs a').on('shown.bs.tab', function (e) {
+    window.location.hash = e.target.hash;
+  })
 
   $('.contacts_delete').click(function (e) {
     e.preventDefault()
