@@ -75,7 +75,7 @@ def lead_list_view(request):
         context["source"] = LEAD_SOURCE
 
         context["users"] = User.objects.filter(
-            is_active=True).order_by('email').values('id', 'email')
+            is_active=True).order_by('username').values('id', 'username')
 
         tag_ids = list(set(queryset.values_list('tags', flat=True,)))
         context["tags"] = Tags.objects.filter(id__in=tag_ids)
@@ -126,7 +126,6 @@ def lead_list_view(request):
 
         context["users"] = User.objects.filter(
             is_active=True).order_by('email').values('id', 'email')
-
         tag_ids = list(set(queryset.values_list('tags', flat=True,)))
         context["tags"] = Tags.objects.filter(id__in=tag_ids)
 

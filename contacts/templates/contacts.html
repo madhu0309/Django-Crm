@@ -48,7 +48,7 @@
                     <select class="assigned_users form-control" name="assigned_to" multiple="multiple">
                       {% for user in users %}
                       <option value="{{user.id}}" {% if user.id in assignedto_list %} selected="" {% endif %}>
-                        {{user.email}}</option>
+                        {{user.username}}</option>
                       {% endfor %}
                     </select>
                   </div>
