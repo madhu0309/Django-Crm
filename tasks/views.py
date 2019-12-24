@@ -40,7 +40,7 @@ def get_teams_and_users(request):
 def tasks_list(request):
     if request.method == 'GET':
 
-        if request.user.role == 'ADMIN' or request.user.is_superuser :
+        if request.user.role == 'ADMIN' or request.user.is_superuser:
             tasks = Task.objects.all().distinct().order_by('-created_on')
         else:
             tasks = Task.objects.filter(
@@ -126,8 +126,13 @@ def task_create(request):
 @login_required
 @sales_access_required
 def task_detail(request, task_id):
-
     task = get_object_or_404(Task, pk=task_id)
+
+    delete_task = (request.user == task.created_by) or (
+        request.user.role == 'ADMIN')
+
+    edit_or_view = (
+        delete_task or request.user.has_sales_access or request.user in task.assigned_to.all())
 
     user_assigned_account = False
     user_assigned_accounts = set(
@@ -161,7 +166,8 @@ def task_detail(request, task_id):
             users_mention = list(task.assigned_to.all().values('username'))
         return render(request, 'task_detail.html',
                       {'task': task, 'users_mention': users_mention,
-                       'attachments': attachments, 'comments': comments})
+                       'attachments': attachments, 'comments': comments,
+                       'delete_task': delete_task, 'edit_or_view': edit_or_view})
 
 
 @login_required
