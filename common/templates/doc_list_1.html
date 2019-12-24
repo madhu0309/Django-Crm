@@ -81,7 +81,7 @@
                     <select class="assigned_users form-control" name="shared_to" multiple="multiple">
                       {% for user in users %}
                       <option value="{{user.id}}" {% if user.id in sharedto_list %} selected="" {% endif %}>
-                        {{user.username}}</option>
+                        {% if user.username %}{{user.username}}{% else %}{{user.email}}{% endif %}</option>
                       {% endfor %}
                     </select>
                   </div>
