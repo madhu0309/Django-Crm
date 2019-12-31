@@ -9,6 +9,7 @@
   .opacity_block {
     opacity: 0.2;
   }
+
   label {
     font-weight: 600;
     color: black;
@@ -160,6 +161,12 @@
               <div class="created_information">
                 Created by <b>{{ account_record.created_by }}</b> created on
                 <b title="{{ account_record.created_on }}">{{ account_record.created_on_arrow }}</b>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="updated_information">
+                &emsp;Updated by <b>{{ account_record.updated_by }}</b> updated on
+                <b title="{{ account_record.updated_on }}">{{ account_record.updated_on_arrow }}</b>
               </div>
             </div>
             <div class="col-md-12 " style="padding:0">

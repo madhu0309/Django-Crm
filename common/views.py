@@ -453,7 +453,7 @@ class PasswordResetView(PasswordResetView):
 def document_create(request):
     template_name = "doc_create.html"
     users = []
-    if request.user.role == 'ADMIN' or request.user.is_superuser:
+    if request.user.role == 'ADMIN' or request.user.is_superuser or request.user.role == 'USER':
         users = User.objects.filter(is_active=True).order_by('email')
     else:
         users = User.objects.filter(role='ADMIN').order_by('email')
@@ -570,9 +570,9 @@ class DocumentDeleteView(LoginRequiredMixin, DeleteView):
 def document_update(request, pk):
     template_name = "doc_create.html"
     users = []
-    if request.user.role == 'ADMIN' or request.user.is_superuser:
+    if request.user.role == 'ADMIN' or request.user.is_superuser or request.user in Document.objects.get(id=pk).shared_to.all():
         users = User.objects.filter(is_active=True).order_by('email')
-    else:
+    else:    
         users = User.objects.filter(role='ADMIN').order_by('email')
     document = Document.objects.filter(id=pk).first()
     form = DocumentForm(users=users, instance=document)
@@ -582,8 +582,10 @@ def document_update(request, pk):
                             instance=document, users=users)
         if form.is_valid():
             doc = form.save(commit=False)
+            doc.updated_by = request.user
+            #doc.updated_on = datetime.datetime.now()
             doc.save()
-
+    
             doc.shared_to.clear()
             if request.POST.getlist('shared_to'):
                 doc.shared_to.add(*request.POST.getlist('shared_to'))
@@ -624,14 +626,16 @@ class DocumentDetailView(SalesAccessRequiredMixin, LoginRequiredMixin, DetailVie
     template_name = "doc_detail.html"
 
     def dispatch(self, request, *args, **kwargs):
+        #import pdb;pdb.set_trace()
         if not request.user.role == 'ADMIN':
-            if (not request.user ==
-                    Document.objects.get(id=kwargs['pk']).created_by):
-                raise PermissionDenied
-
+            if not request.user == Document.objects.get(id=kwargs['pk']).created_by:
+                if not request.user in Document.objects.get(id=kwargs['pk']).shared_to.all():
+            #or (not(request.user in Document.objects.get(id=kwargs['pk']).shared_to.all()):
+                    raise PermissionDenied
+        #import pdb;pdb.set_trace()
         return super(DocumentDetailView, self).dispatch(
             request, *args, **kwargs)
-
+    
     def get_context_data(self, **kwargs):
         context = super(DocumentDetailView, self).get_context_data(**kwargs)
         # documents = Document.objects.all()
@@ -641,6 +645,7 @@ class DocumentDetailView(SalesAccessRequiredMixin, LoginRequiredMixin, DetailVie
         })
         return context
 
+    
 
 def download_document(request, pk):
     # doc_obj = Document.objects.filter(id=pk).last()

@@ -270,6 +270,7 @@ def update_case(request, pk):
             assigned_to_ids = case_object.assigned_to.all().values_list(
                 'id', flat=True)
             case_obj = form.save(commit=False)
+            case_obj.updated_by = request.user
             case_obj.contacts.clear()
             case_obj.save()
             previous_assigned_to_users = list(case_obj.assigned_to.all().values_list('id', flat=True))

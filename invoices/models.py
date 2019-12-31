@@ -43,6 +43,10 @@ class Invoice(models.Model):
     created_by = models.ForeignKey(
         User, related_name='invoice_created_by',
         on_delete=models.SET_NULL, null=True)
+    updated_on = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        User, related_name='invoice_updated_by',
+        on_delete=models.SET_NULL, null=True)
 
     amount_due = models.DecimalField(
         blank=True, null=True, max_digits=12, decimal_places=2)
@@ -53,7 +57,8 @@ class Invoice(models.Model):
                               max_length=15, default="Draft")
     details = models.TextField(_('Details'), null=True, blank=True)
     due_date = models.DateField(blank=True, null=True)
-    accounts = models.ManyToManyField(Account, related_name='accounts_invoices')
+    accounts = models.ManyToManyField(
+        Account, related_name='accounts_invoices')
     teams = models.ManyToManyField(Teams, related_name='invoices_teams')
 
     class Meta:
@@ -102,6 +107,10 @@ class Invoice(models.Model):
     @property
     def created_on_arrow(self):
         return arrow.get(self.created_on).humanize()
+
+    @property
+    def updated_on_arrow(self):
+        return arrow.get(self.updated_on).humanize()
 
     @property
     def get_team_users(self):

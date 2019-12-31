@@ -474,6 +474,7 @@ def update_lead(request, pk):
             assigned_to_ids = lead_record.assigned_to.all().values_list(
                 'id', flat=True)
             lead_obj = form.save(commit=False)
+            lead_obj.updated_by = request.user
             lead_obj.save()
             previous_assigned_to_users = list(lead_obj.assigned_to.all().values_list('id', flat=True))
             lead_obj.tags.clear()

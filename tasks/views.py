@@ -190,6 +190,7 @@ def task_edit(request, task_id):
                         request_user=request.user)
         if form.is_valid():
             task = form.save(commit=False)
+            task.updated_by = request.user
             previous_assigned_to_users = list(
                 task_obj.assigned_to.all().values_list('id', flat=True))
             task.save()

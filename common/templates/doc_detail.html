@@ -47,7 +47,21 @@
               <div class="filter_col col-md-12">
                 <div class="form-group">
                   <label class="contact_field_label" for="id_created_on" data-name="created_on">Created On</label>
-                  <div class="contact_field" id="created_on" data-name="created_on" title="{{ doc_obj.created_on }}">{{ doc_obj.created_on_arrow }}</div>
+                  <div class="contact_field" id="created_on" data-name="created_on" title="{{ doc_obj.created_on }}">
+                    {{ doc_obj.created_on_arrow }}</div>
+                </div>
+              </div>
+              <div class="filter_col col-md-12">
+                <div class="form-group">
+                  <label class="contact_field_label" for="id_updated_by" data-name="updated_by">Updated By</label>
+                  <div class="contact_field" id="updated_by" data-name="updated_by">{{ doc_obj.updated_by }}</div>
+                </div>
+              </div>
+              <div class="filter_col col-md-12">
+                <div class="form-group">
+                  <label class="contact_field_label" for="id_updated_on" data-name="updated_on">Updated_On</label>
+                  <div class="contact_field" id="updated_on" data-name="updated_on" title="{{ doc_obj.updated_on }}">
+                    {{ doc_obj.updated_on_arrow }}</div>
                 </div>
               </div>
               {% with document_users=document.shared_to.all %}

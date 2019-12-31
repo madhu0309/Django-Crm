@@ -317,6 +317,7 @@ def update_opportunity(request, pk):
             assigned_to_ids = opportunity_object.assigned_to.all().values_list(
                 'id', flat=True)
             opportunity_obj = form.save(commit=False)
+            opportunity_obj.updated_by = request.user
             if request.POST.get('stage') in ['CLOSED WON', 'CLOSED LOST']:
                 opportunity_obj.closed_by = request.user
             previous_assigned_to_users = list(

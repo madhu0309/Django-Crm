@@ -12,6 +12,7 @@ from common.utils import (COUNTRIES, LEAD_SOURCE, LEAD_STATUS,
 from contacts.models import Contact
 from teams.models import Teams
 
+
 class Lead(models.Model):
     title = models.CharField(
         pgettext_lazy("Treatment Pronouns for the customer",
@@ -51,6 +52,10 @@ class Lead(models.Model):
         User, related_name='lead_created_by',
         on_delete=models.SET_NULL, null=True)
     created_on = models.DateTimeField(_("Created on"), auto_now_add=True)
+    updated_by = models.ForeignKey(
+        User, related_name='lead_updated_by',
+        on_delete=models.SET_NULL, null=True)
+    updated_on = models.DateTimeField(_("Updated on"), auto_now=True)
     is_active = models.BooleanField(default=False)
     enquery_type = models.CharField(max_length=255, blank=True, null=True)
     tags = models.ManyToManyField(Tags, blank=True)
@@ -78,6 +83,10 @@ class Lead(models.Model):
         return arrow.get(self.created_on).humanize()
 
     @property
+    def updated_on_arrow(self):
+        return arrow.get(self.updated_on).humanize()
+
+    @property
     def get_team_users(self):
         team_user_ids = list(self.teams.values_list('users__id', flat=True))
         return User.objects.filter(id__in=team_user_ids)
@@ -95,7 +104,6 @@ class Lead(models.Model):
         assigned_user_ids = list(self.assigned_to.values_list('id', flat=True))
         user_ids = set(assigned_user_ids) - set(team_user_ids)
         return User.objects.filter(id__in=list(user_ids))
-
 
     # def save(self, *args, **kwargs):
     #     super(Lead, self).save(*args, **kwargs)

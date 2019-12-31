@@ -39,6 +39,10 @@ class Opportunity(models.Model):
         User, related_name='opportunity_created_by',
         on_delete=models.SET_NULL, null=True)
     created_on = models.DateTimeField(_("Created on"), auto_now_add=True)
+    updated_by = models.ForeignKey(
+        User, related_name='opportunity_updated_by',
+        on_delete=models.SET_NULL, null=True)
+    updated_on = models.DateTimeField(_("Updated on"), auto_now=True)
     is_active = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tags, blank=True)
     teams = models.ManyToManyField(Teams, related_name='oppurtunity_teams')
@@ -52,6 +56,10 @@ class Opportunity(models.Model):
     @property
     def created_on_arrow(self):
         return arrow.get(self.created_on).humanize()
+
+    @property
+    def updated_on_arrow(self):
+        return arrow.get(self.updated_on).humanize()
 
     @property
     def get_team_users(self):

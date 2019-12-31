@@ -57,6 +57,10 @@ class Account(models.Model):
         User, related_name='account_created_by',
         on_delete=models.SET_NULL, null=True)
     created_on = models.DateTimeField(_("Created on"), auto_now_add=True)
+    updated_by = models.ForeignKey(
+        User, related_name='account_updated_by',
+        on_delete=models.SET_NULL, null=True)
+    updated_on = models.DateTimeField(_("Updated on"), auto_now=True)
     is_active = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tags, blank=True)
     status = models.CharField(
@@ -114,6 +118,10 @@ class Account(models.Model):
         return arrow.get(self.created_on).humanize()
 
     @property
+    def updated_on_arrow(self):
+        return arrow.get(self.updated_on).humanize()
+
+    @property
     def contact_values(self):
         contacts = list(self.contacts.values_list('id', flat=True))
         return ','.join(str(contact) for contact in contacts)
@@ -151,15 +159,15 @@ class Email(models.Model):
     from_email = models.EmailField()
     rendered_message_body = models.TextField(null=True)
 
-
     def __str__(self):
         return self.message_subject
-
 
 
 class EmailLog(models.Model):
     """ this model is used to track if the email is sent or not """
 
-    email = models.ForeignKey(Email, related_name='email_log', on_delete=models.SET_NULL, null=True)
-    contact = models.ForeignKey(Contact, related_name='contact_email_log', on_delete=models.SET_NULL, null=True)
+    email = models.ForeignKey(
+        Email, related_name='email_log', on_delete=models.SET_NULL, null=True)
+    contact = models.ForeignKey(
+        Contact, related_name='contact_email_log', on_delete=models.SET_NULL, null=True)
     is_sent = models.BooleanField(default=False)

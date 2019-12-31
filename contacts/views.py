@@ -285,6 +285,7 @@ class UpdateContactView(SalesAccessRequiredMixin, LoginRequiredMixin, UpdateView
         if form.is_valid() and address_form.is_valid():
             addres_obj = address_form.save()
             contact_obj = form.save(commit=False)
+            contact_obj.updated_by = self.request.user
             contact_obj.address = addres_obj
             contact_obj.save()
             return self.form_valid(form)

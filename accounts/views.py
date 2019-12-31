@@ -323,6 +323,7 @@ class AccountUpdateView(SalesAccessRequiredMixin, LoginRequiredMixin, UpdateView
     def form_valid(self, form):
         # Save Account
         account_object = form.save(commit=False)
+        account_object.updated_by = self.request.user
         account_object.save()
         previous_assigned_to_users = list(account_object.assigned_to.all().values_list('id', flat=True))
         account_object.tags.clear()

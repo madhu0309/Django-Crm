@@ -250,7 +250,7 @@ def invoice_edit(request, invoice_id):
             from_address_obj = from_address_form.save()
             to_address_obj = to_address_form.save()
             invoice_obj = form.save(commit=False)
-            invoice_obj.created_by = request.user
+            invoice_obj.updated_by = request.user
             invoice_obj.from_address = from_address_obj
             invoice_obj.to_address = to_address_obj
             invoice_obj.save()

@@ -70,7 +70,6 @@ class User(AbstractBaseUser, PermissionsMixin):
             is_active=True).order_by('email').values('id', 'email')
         cache.set('lead_form_users', lead_users, 60*60)
 
-
     class Meta:
         ordering = ['-is_active']
 
@@ -266,11 +265,16 @@ class Document(models.Model):
         User, related_name='document_uploaded',
         on_delete=models.SET_NULL, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
+    updated_by = models.ForeignKey(
+        User, related_name='document_updated',
+        on_delete=models.SET_NULL, null=True)
+    updated_on = models.DateTimeField(
+        auto_now=True, blank=True, null=True)
     status = models.CharField(
         choices=DOCUMENT_STATUS_CHOICE, max_length=64, default='active')
     shared_to = models.ManyToManyField(User, related_name='document_shared_to')
-    teams = models.ManyToManyField('teams.Teams', related_name='document_teams')
-
+    teams = models.ManyToManyField(
+        'teams.Teams', related_name='document_teams')
 
     class Meta:
         ordering = ('-created_on',)
@@ -323,6 +327,10 @@ class Document(models.Model):
     @property
     def created_on_arrow(self):
         return arrow.get(self.created_on).humanize()
+
+    @property
+    def updated_on_arrow(self):
+        return arrow.get(self.updated_on).humanize()
 
 
 def generate_key():

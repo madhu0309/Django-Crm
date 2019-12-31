@@ -39,8 +39,11 @@ class Task(models.Model):
 
     created_by = models.ForeignKey(
         User, related_name='task_created', blank=True, null=True, on_delete=models.SET_NULL)
-    teams = models.ManyToManyField(Teams, related_name='tasks_teams')
+    updated_by = models.ForeignKey(
+        User, related_name='task_updated', blank=True, null=True, on_delete=models.SET_NULL)
+    updated_on = models.DateTimeField(_("Updated on"), auto_now=True)
 
+    teams = models.ManyToManyField(Teams, related_name='tasks_teams')
 
     def __str__(self):
         return self.title
@@ -48,6 +51,10 @@ class Task(models.Model):
     @property
     def created_on_arrow(self):
         return arrow.get(self.created_on).humanize()
+
+    @property
+    def updated_on_arrow(self):
+        return arrow.get(self.updated_on).humanize()
 
     @property
     def get_team_users(self):

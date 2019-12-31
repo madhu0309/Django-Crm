@@ -22,6 +22,10 @@ class Contact(models.Model):
         User, related_name='contact_created_by',
         on_delete=models.SET_NULL, null=True)
     created_on = models.DateTimeField(_("Created on"), auto_now_add=True)
+    updated_by = models.ForeignKey(
+        User, related_name='contact_updated_by',
+        on_delete=models.SET_NULL, null=True)
+    updated_on = models.DateTimeField(_("Updated on"), auto_now=True)
     is_active = models.BooleanField(default=False)
     teams = models.ManyToManyField(Teams, related_name='contact_teams')
 
@@ -32,9 +36,12 @@ class Contact(models.Model):
     def created_on_arrow(self):
         return arrow.get(self.created_on).humanize()
 
+    @property
+    def updated_on_arrow(self):
+        return arrow.get(self.updated_on).humanize()
+
     class Meta:
         ordering = ['-created_on']
-
 
     @property
     def get_team_users(self):
