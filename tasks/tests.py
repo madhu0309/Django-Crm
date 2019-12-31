@@ -170,7 +170,7 @@ class TaskEditTestCase(TaskCreateTest, TestCase):
         self.client.login(email='janeDoeTask@example.com', password='password')
         response = self.client.get(
             reverse('tasks:task_edit', args=(self.task.id,)))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
 
         response = self.client.get(
             reverse('tasks:task_edit', args=(self.task_2.id,)))
@@ -228,7 +228,6 @@ class TaskDeleteTestCase(TaskCreateTest, TestCase):
         self.assertEqual(response.status_code, 302)
 
 
-
 class AddCommentTestCase(TaskCreateTest, TestCase):
 
     def test_task_add_comment(self):
@@ -264,7 +263,7 @@ class UpdateCommentTestCase(TaskCreateTest, TestCase):
         data = {
             'commentid': self.comment.id,
             'task_id': self.task.id,
-            'comment':''
+            'comment': ''
         }
         response = self.client.post(
             reverse('tasks:edit_comment'), data)
@@ -309,7 +308,7 @@ class AddAttachmentTestCase(TaskCreateTest, TestCase):
 
         data = {
             'attachment': SimpleUploadedFile('file_name.txt', bytes('file contents.', 'utf-8')),
-            'task_id':self.task.id
+            'task_id': self.task.id
         }
         self.client.login(email='johnTask@example.com', password='password')
         response = self.client.post(
@@ -323,7 +322,7 @@ class AddAttachmentTestCase(TaskCreateTest, TestCase):
 
         data = {
             'attachment': '',
-            'task_id':self.task.id
+            'task_id': self.task.id
         }
         self.client.login(email='janeDoeTask@example.com', password='password')
         response = self.client.post(
