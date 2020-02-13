@@ -33,6 +33,9 @@ from planner.forms import ReminderForm
 from planner.models import Event, Reminder
 from teams.models import Teams
 from django.core.cache import cache
+from django.db.models.functions import Concat
+from django.db.models import Value as V
+
 
 
 @login_required
@@ -95,9 +98,9 @@ def lead_list_view(request):
         request_post = request.POST
         if request_post:
             if request_post.get('name'):
-                queryset = queryset.filter(
-                    Q(first_name__icontains=request_post.get('name')) or
-                    Q(last_name__icontains=request_post.get('name')))
+                queryset = queryset.annotate(
+                    full_name=Concat('first_name', V(' '), 'last_name')
+                ).filter(full_name__icontains=request_post.get('name'))
             if request_post.get('city'):
                 queryset = queryset.filter(
                     city__icontains=request_post.get('city'))
