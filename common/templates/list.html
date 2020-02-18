@@ -134,6 +134,7 @@
                         {% if active_users|length > 0 %}
                         <tr>
                           <th width="20%">Username</th>
+                          <th width="20%">Created</th>
                           <th width="20%">Email Address</th>
                           <th width="8%">User Role</th>
                           <th width="8%">Permissions</th>
@@ -151,6 +152,7 @@
                         {% for user in active_users %}
                         <tr class="text-center">
                           <td><a href="{% url 'common:view_user' user.id %}">{{ user.username }}</a></td>
+                          <td data-toggle="tooltip" title="{{user.date_joined}}">{{user.date_joined.date|timesince}}
                           <td>{{ user.email }}</td>
                           <td class="user_role">{% if user.is_superuser %} ADMIN {% else %} {{user.role}} {% endif %}
                           </td>
