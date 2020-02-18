@@ -126,8 +126,13 @@ def task_create(request):
 @login_required
 @sales_access_required
 def task_detail(request, task_id):
-
     task = get_object_or_404(Task, pk=task_id)
+
+    delete_task = (request.user == task.created_by) or (
+        request.user.role == 'ADMIN')
+
+    edit_or_view = (
+        delete_task or request.user.has_sales_access or request.user in task.assigned_to.all())
 
     user_assigned_account = False
     user_assigned_accounts = set(
@@ -161,7 +166,8 @@ def task_detail(request, task_id):
             users_mention = list(task.assigned_to.all().values('username'))
         return render(request, 'task_detail.html',
                       {'task': task, 'users_mention': users_mention,
-                       'attachments': attachments, 'comments': comments})
+                       'attachments': attachments, 'comments': comments,
+                       'delete_task': delete_task, 'edit_or_view': edit_or_view})
 
 
 @login_required
@@ -170,7 +176,7 @@ def task_edit(request, task_id):
     task_obj = get_object_or_404(Task, pk=task_id)
     accounts = Account.objects.filter(status="open")
 
-    if not (request.user.role == 'ADMIN' or request.user.is_superuser or task_obj.created_by == request.user):
+    if not (request.user.role == 'ADMIN' or request.user.is_superuser or task_obj.created_by == request.user or request.user in task_obj.assigned_to.all()):
         raise PermissionDenied
 
     if request.method == 'GET':

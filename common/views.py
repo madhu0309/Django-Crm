@@ -45,7 +45,7 @@ from contacts.models import Contact
 from leads.models import Lead
 from opportunity.models import Opportunity
 from teams.models import Teams
-from marketing.models import ContactEmailCampaign, BlockedDomain, BlockedEmail 
+from marketing.models import ContactEmailCampaign, BlockedDomain, BlockedEmail
 
 
 def handler404(request, exception):
@@ -530,7 +530,7 @@ class DocumentListView(SalesAccessRequiredMixin, LoginRequiredMixin, TemplateVie
     def get_context_data(self, **kwargs):
         context = super(DocumentListView, self).get_context_data(**kwargs)
         context["users"] = User.objects.filter(
-            is_active=True).order_by('email')
+            is_active=True).order_by('username')
         context["documents"] = self.get_queryset()
         context["status_choices"] = Document.DOCUMENT_STATUS_CHOICE
         context["sharedto_list"] = [
@@ -800,6 +800,7 @@ def api_settings(request):
     }
 
     if request.method == 'POST':
+
         # settings = api_settings
         # if request.POST.get('api_settings', None):
         #     if request.POST.get('title', None):
