@@ -503,7 +503,7 @@ class TestUpdateLeadView(TestLeadModel, TestCase):
         self.client.login(username='janeLead2@example.com', password='password')
         response = self.client.get(reverse('leads:edit_lead', args=(self.lead.id,)),
                         {'status': 'assigned', 'country':'AD', 'title':'update_title'})
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
         self.client.logout()
 
 

@@ -1,7 +1,7 @@
 import datetime
 import json
 import os
-
+import phonenumbers
 import boto3
 import botocore
 import requests
@@ -40,7 +40,7 @@ from common.models import (APISettings, Attachments, Comment, Document, Google,
 from common.tasks import (resend_activation_link_to_user,
     send_email_to_new_user, send_email_user_delete, send_email_user_status)
 from common.token_generator import account_activation_token
-from common.utils import ROLES
+from common.utils import ROLES, COUNTRIES
 from contacts.models import Contact
 from leads.models import Lead
 from opportunity.models import Opportunity
@@ -651,7 +651,6 @@ def download_document(request, pk):
                     request.user not in doc_obj.shared_to.all()):
                 raise PermissionDenied
         if settings.STORAGE_TYPE == "normal":
-            # print('no no no no')
             path = doc_obj.document_file.path
             file_path = os.path.join(settings.MEDIA_ROOT, path)
             if os.path.exists(file_path):
@@ -664,14 +663,11 @@ def download_document(request, pk):
         else:
             file_path = doc_obj.document_file
             file_name = doc_obj.title
-            # print(file_path)
-            # print(file_name)
             BUCKET_NAME = "django-crm-demo"
             KEY = str(file_path)
             s3 = boto3.resource('s3')
             try:
                 s3.Bucket(BUCKET_NAME).download_file(KEY, file_name)
-                # print('got it')
                 with open(file_name, 'rb') as fh:
                     response = HttpResponse(
                         fh.read(), content_type="application/vnd.ms-excel")
@@ -705,8 +701,6 @@ def download_attachment(request, pk): # pragma: no cover
         else:
             file_path = attachment_obj.attachment
             file_name = attachment_obj.file_name
-            # print(file_path)
-            # print(file_name)
             BUCKET_NAME = "django-crm-demo"
             KEY = str(file_path)
             s3 = boto3.resource('s3')
@@ -724,8 +718,6 @@ def download_attachment(request, pk): # pragma: no cover
                     print("The object does not exist.")
                 else:
                     raise
-            # if file_path:
-            #     print('yes tus pus')
     raise Http404
 
 
@@ -1064,9 +1056,25 @@ def create_lead_from_site(request): # pragma: no cover
     if (request.get_host() in ['sales.micropyramid.com', ] and request.POST.get('origin_domain') in allowed_domains):
         if request.method == 'POST':
             if request.POST.get('full_name', None):
+                try:
+                    description = request.POST.get('enquiry_type') + '\n' + request.POST.get('message')
+                except Exception as e:
+                    print("e:::",e)
+                country = request.POST.get('country').title()
+                country_codes = list(COUNTRIES)
+                for count in country_codes:
+                    if country == count[1]:
+                        country = count[0]
+                        break
+                phone=request.POST.get('phone')
+                phone_number = phonenumbers.parse(phone, country)
                 lead = Lead.objects.create(title=request.POST.get('full_name'), email=request.POST.get(
-                    'email'), phone=request.POST.get('phone'), description=request.POST.get('message'),
+                    'email'), phone=phone_number,
+                    description=description,
+                    country=country,
                     created_from_site=True)
+                lead.source = 'micropyramid'
+                lead.save()
                 recipients = User.objects.filter(
                     role='ADMIN').values_list('id', flat=True)
                 lead.assigned_to.add(*recipients)
