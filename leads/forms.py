@@ -53,7 +53,7 @@ class LeadForm(forms.ModelForm):
         self.fields['account_name'].widget.attrs.update({
             'placeholder': 'Account Name'})
         self.fields['phone'].widget.attrs.update({
-            'placeholder': '+91-123-456-7890'})
+            'placeholder': '+911234567890'})
         self.fields['description'].widget.attrs.update({
             'rows': '6'})
         self.fields['address_line'].widget.attrs.update({
