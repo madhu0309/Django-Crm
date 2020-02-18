@@ -101,6 +101,10 @@ def lead_list_view(request):
                 queryset = queryset.annotate(
                     full_name=Concat('first_name', V(' '), 'last_name')
                 ).filter(full_name__icontains=request_post.get('name'))
+            if request_post.get('title'):
+                queryset = queryset.filter(
+                    Q(title__icontains=request_post.get('title')))
+                    # or Q(last_name__icontains=request_post.get('name')))
             if request_post.get('city'):
                 queryset = queryset.filter(
                     city__icontains=request_post.get('city'))
@@ -957,10 +961,10 @@ def upload_lead_csv_file(request):
 def sample_lead_file(request):
     sample_data = [
         'title,first name,last name,website,phone,email,address\n',
-        'lead1,john,doe,www.example.com,+91-123-456-7890,user1@email.com,address for lead1\n',
-        'lead2,jane,doe,www.website.com,+91-123-456-7891,user2@email.com,address for lead2\n',
-        'lead3,joe,doe,www.test.com,+91-123-456-7892,user3@email.com,address for lead3\n',
-        'lead4,john,doe,www.sample.com,+91-123-456-7893,user4@email.com,address for lead4\n',
+        'lead1,john,doe,www.example.com,+911234567890,user1@email.com,address for lead1\n',
+        'lead2,jane,doe,www.website.com,+911234567891,user2@email.com,address for lead2\n',
+        'lead3,joe,doe,www.test.com,+911234567892,user3@email.com,address for lead3\n',
+        'lead4,john,doe,www.sample.com,+911234567893,user4@email.com,address for lead4\n',
     ]
     response = HttpResponse(
         sample_data, content_type='text/plain')
