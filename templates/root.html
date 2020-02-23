@@ -49,7 +49,7 @@
     {% block header %}
     <header>
       <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-        <!-- <a class="navbar-brand" href="{% url 'common:home' %}">Django CRM</a> -->
+        
         <div class="dropdown">
 
             {% if request.user.is_superuser or request.user.role == 'ADMIN' %}
@@ -78,10 +78,7 @@
             {% endif %}
             {% endif %}
 
-          <!-- <a class="dropdown-toggle navbar-brand" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
-            aria-haspopup="true" aria-expanded="false" style="color:#44535c">
-            Django CRM
-          </a> -->
+          
 
           <div class="dropdown-menu mt-2" aria-labelledby="dropdownMenuLink">
             {% if user.is_superuser or user.role == 'ADMIN' %}
@@ -99,8 +96,7 @@
             {{''}}
             {% endif %}
             {% endif %}
-            <!-- <a class="dropdown-item" href="/">Sales</a>
-            <a class="dropdown-item" href="{% url 'marketing:dashboard' %}">Marketing</a> -->
+            
           </div>
         </div>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
