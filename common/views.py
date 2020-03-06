@@ -626,13 +626,12 @@ class DocumentDetailView(SalesAccessRequiredMixin, LoginRequiredMixin, DetailVie
     template_name = "doc_detail.html"
 
     def dispatch(self, request, *args, **kwargs):
-        #import pdb;pdb.set_trace()
+        document = Document.objects.get(id=kwargs['pk'])
         if not request.user.role == 'ADMIN':
-            if not request.user == Document.objects.get(id=kwargs['pk']).created_by:
-                if not request.user in Document.objects.get(id=kwargs['pk']).shared_to.all():
+            if document and not request.user == document.created_by:
+                if not request.user in document.shared_to.all():
             #or (not(request.user in Document.objects.get(id=kwargs['pk']).shared_to.all()):
                     raise PermissionDenied
-        #import pdb;pdb.set_trace()
         return super(DocumentDetailView, self).dispatch(
             request, *args, **kwargs)
     
