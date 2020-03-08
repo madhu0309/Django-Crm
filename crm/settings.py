@@ -223,7 +223,7 @@ COMPRESS_OFFLINE_CONTEXT = {
     'STATIC_URL': 'STATIC_URL',
 }
 
-DEFAULT_FROM_EMAIL = 'no-reply@django-crm.micropyramid.com'
+DEFAULT_FROM_EMAIL = 'madhuyadav6060@gmail.com'
 
 # celery Tasks
 CELERY_BROKER_URL = 'redis://localhost:6379'
@@ -277,7 +277,7 @@ GP_CLIENT_ID = os.getenv('GP_CLIENT_ID', False)
 GP_CLIENT_SECRET = os.getenv('GP_CLIENT_SECRET', False)
 ENABLE_GOOGLE_LOGIN = os.getenv('ENABLE_GOOGLE_LOGIN', False)
 
-MARKETING_REPLY_EMAIL = 'djangocrm@micropyramid.com'
+MARKETING_REPLY_EMAIL = 'madhuyadav6060@gmail.com'
 
 PASSWORD_RESET_TIMEOUT_DAYS = 3
 
@@ -400,4 +400,4 @@ CACHES = {
 }
 
 PASSWORD_RESET_MAIL_FROM_USER = os.getenv(
-    'PASSWORD_RESET_MAIL_FROM_USER', 'no-reply@django-crm.com')
+    'PASSWORD_RESET_MAIL_FROM_USER', 'madhuyadav6060@gmail.com')

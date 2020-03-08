@@ -1,0 +1,20 @@
+{
+    "python.pythonPath": "/home/madhu/Madhu/django_projects/Micropyramid/crm_env/bin/python",
+    "python.formatting.provider": "autopep8",
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#f56242",
+        "activityBar.activeBorder": "#0df236",
+        "activityBar.foreground": "#15202b",
+        "activityBar.inactiveForeground": "#15202b99",
+        "activityBarBadge.background": "#0df236",
+        "activityBarBadge.foreground": "#15202b",
+        "titleBar.activeBackground": "#f23a12",
+        "titleBar.inactiveBackground": "#f23a1299",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveForeground": "#e7e7e799",
+        "statusBar.background": "#f23a12",
+        "statusBarItem.hoverBackground": "#f56242",
+        "statusBar.foreground": "#e7e7e7"
+    },
+    "peacock.color": "#f23a12"
+}

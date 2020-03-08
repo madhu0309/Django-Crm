@@ -170,7 +170,11 @@ class TaskEditTestCase(TaskCreateTest, TestCase):
         self.client.login(email='janeDoeTask@example.com', password='password')
         response = self.client.get(
             reverse('tasks:task_edit', args=(self.task.id,)))
+<<<<<<< HEAD
         #self.assertEqual(response.status_code, )
+=======
+        # self.assertEqual(response.status_code, 403)
+>>>>>>> 32bd64ca295d3ec4d5113ca54bbc8c1f82206452
 
         response = self.client.get(
             reverse('tasks:task_edit', args=(self.task_2.id,)))

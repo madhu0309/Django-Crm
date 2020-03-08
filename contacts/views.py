@@ -73,7 +73,7 @@ class ContactsListView(SalesAccessRequiredMixin, LoginRequiredMixin, TemplateVie
         context["contact_obj_list"] = self.get_queryset()
         context["per_page"] = self.request.POST.get('per_page')
         context["users"] = User.objects.filter(
-            is_active=True).order_by('email')
+            is_active=True).order_by('username')
         context["assignedto_list"] = [
             int(i) for i in self.request.POST.getlist('assigned_to', []) if i]
         search = False

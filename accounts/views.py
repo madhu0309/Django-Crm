@@ -402,6 +402,7 @@ class AccountUpdateView(SalesAccessRequiredMixin, LoginRequiredMixin, UpdateView
         context["industries"] = INDCHOICES
         context["countries"] = COUNTRIES
         context["contact_count"] = Contact.objects.count()
+        context['edit_view'] = True
         if self.request.user.role == 'ADMIN':
             context["leads"] = Lead.objects.exclude(
                 status__in=['converted', 'closed'])

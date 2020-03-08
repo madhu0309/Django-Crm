@@ -93,15 +93,16 @@ def dashboard(request):
 def contact_lists(request):
     tags = Tag.objects.all()
     if (request.user.role == "ADMIN"):
-        queryset = ContactList.objects.all()
+        queryset = ContactList.objects.all().order_by('-created_on')
     else:
         queryset = ContactList.objects.filter(
-            Q(created_by=request.user) | Q(visible_to=request.user))
+            Q(created_by=request.user) | Q(visible_to=request.user)).order_by('-created_on')
 
     users = User.objects.filter(
         id__in=queryset.values_list('created_by_id', flat=True))
     if request.GET.get('tag'):
         queryset = queryset.filter(tags=request.GET.get('tag'))
+    search = False
     if request.method == 'POST':
         post_tags = request.POST.getlist('tag')
 
@@ -116,9 +117,15 @@ def contact_lists(request):
         if request.POST.get('tag'):
             queryset = queryset.filter(tags__id__in=post_tags)
             request_tags = request.POST.getlist('tag')
+        if (
+            request.POST.get('contact_list_name')or 
+            request.POST.get('created_by')or
+            request.POST.get('created_by')
+            ):
+            search = True   #for filter form to show in contactlist
 
     data = {'contact_lists': queryset, 'tags': tags, 'users': users,
-            'request_tags': request.POST.getlist('tag'), }
+            'request_tags': request.POST.getlist('tag'),'search':search }
     return render(request, 'marketing/lists/index.html', data)
 
 
@@ -445,12 +452,13 @@ def failed_contact_list_download_delete(request, pk):
 def email_template_list(request):
     # users = User.objects.all()
     if (request.user.role == 'ADMIN' or request.user.is_superuser):
-        queryset = EmailTemplate.objects.all()
+        queryset = EmailTemplate.objects.all().order_by('-created_on')
     else:
         queryset = EmailTemplate.objects.filter(
-            created_by=request.user)
+            created_by=request.user).order_by('-created_on')
     users = User.objects.filter(
         id__in=queryset.values_list('created_by_id', flat=True))
+    search = False
     if request.method == 'POST':
         if request.POST.get('template_name'):
             queryset = queryset.filter(
@@ -459,8 +467,11 @@ def email_template_list(request):
         if request.POST.get('created_by'):
             queryset = queryset.filter(
                 created_by=request.POST.get('created_by'))
-
-    data = {'email_templates': queryset, 'users': users}
+        if (request.POST.get('template_name')or
+            request.POST.get('created_by')
+            ):
+            search =True
+    data = {'email_templates': queryset, 'users': users, 'search':search}
     return render(request, 'marketing/email_template/index.html', data)
 
 
@@ -534,6 +545,7 @@ def campaign_list(request):
         id__in=queryset.values_list('created_by_id', flat=True))
     if request.GET.get('tag'):
         queryset = queryset.filter(tags=request.GET.get('tag'))
+    search = False
     if request.method == 'POST':
         if request.POST.get('campaign_name'):
             queryset = queryset.filter(
@@ -542,8 +554,12 @@ def campaign_list(request):
         if request.POST.get('created_by'):
             queryset = queryset.filter(
                 created_by=request.POST.get('created_by'))
-
-    data = {'campaigns_list': queryset, 'users': users}
+        #shows the filter form in marketing-Campaigns after any search is requested
+        if (request.POST.get('campaign_name')or
+            request.POST.get('created_by')
+            ):
+            search = True
+    data = {'campaigns_list': queryset,'search':search ,'users': users}
     return render(request, 'marketing/campaign/index.html', data)
 
 
@@ -1285,6 +1301,7 @@ def delete_blocked_email(request, blocked_email_id):
 @login_required(login_url='/login')
 @marketing_access_required
 def contacts_list_elastic_search(request):
+    search = False
     if (request.user.role == "ADMIN"):
         contacts = Contact.objects.filter(is_bounced=False)
         # contacts = SearchQuerySet().filter(is_bounced='false').models(Contact)
@@ -1311,6 +1328,7 @@ def contacts_list_elastic_search(request):
     if request.method == 'GET':
         context = {'contacts': contacts, 'users': users, 'contact_lists': contact_lists,
             'bounced_contacts': bounced_contacts, 'failed_contacts': failed_contacts,
+            'search':search,
         }
         return render(request, 'search_contact_emails.html', context)
 
@@ -1343,8 +1361,17 @@ def contacts_list_elastic_search(request):
             bounced_contacts = bounced_contacts.filter(contact_list__id=data.get('contact_list'))
             failed_contacts = failed_contacts.filter(contact_list__id=data.get('contact_list'))
 
+        # shows filter form in marketing-contact if any search  
+        if (
+            data.get('name')or
+            data.get('email')or
+            data.get('created_by')or
+            data.get('contact_list')
+            ):
+            search = True
         context = {'contacts': contacts, 'users': users, 'contact_lists': contact_lists,
             'bounced_contacts': bounced_contacts, 'failed_contacts': failed_contacts,
+            'search':search,
         }
         return render(request, 'search_contact_emails.html', context)
 
@@ -1353,7 +1380,6 @@ def contacts_list_elastic_search(request):
 #     form_class = MarketingContactEmailSearchForm
 
 #     def get_query(self):
-#         import pdb; pdb.set_trace()
 #         if self.form.is_valid():
 #             return self.form.cleaned_data["email_domain"]
 
@@ -1367,5 +1393,4 @@ def contacts_list_elastic_search(request):
 
 #     # def get_context_data(self, *args, **kwargs):
 #     #     context = super(MarketingContactEmailSearch, self).get_context_data(*args, **kwargs)
-#     #     import pdb; pdb.set_trace()
 #     #     return context
